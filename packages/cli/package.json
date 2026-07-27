@@ -1,0 +1,29 @@
+{
+  "name": "storepulse",
+  "version": "0.1.0",
+  "description": "One-glance release status for all your iOS & Android apps — App Store Connect + Google Play in a single terminal table.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "storepulse": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --build"
+  },
+  "dependencies": {
+    "@storepulse/core": "workspace:*",
+    "picocolors": "^1.1.1"
+  },
+  "keywords": [
+    "app-store-connect",
+    "google-play",
+    "release",
+    "dashboard",
+    "cli",
+    "expo",
+    "react-native"
+  ]
+}

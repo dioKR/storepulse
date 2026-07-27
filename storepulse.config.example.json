@@ -1,0 +1,32 @@
+{
+  "apps": [
+    {
+      "key": "myapp-ios",
+      "name": "MyApp",
+      "group": "prod",
+      "platform": "ios",
+      "storeId": "1234567890"
+    },
+    {
+      "key": "myapp-android",
+      "name": "MyApp",
+      "group": "prod",
+      "platform": "android",
+      "storeId": "com.example.myapp"
+    },
+    {
+      "key": "myapp-dev-ios",
+      "name": "MyApp Dev",
+      "group": "dev",
+      "platform": "ios",
+      "storeId": "1234567891"
+    },
+    {
+      "key": "myapp-dev-android",
+      "name": "MyApp Dev",
+      "group": "dev",
+      "platform": "android",
+      "storeId": "com.example.myapp.dev"
+    }
+  ]
+}
