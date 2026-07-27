@@ -1,0 +1,129 @@
+# 2층 — 스펙 감시.
+# Apple App Store Connect OpenAPI 스펙과 Google Play androidpublisher v3
+# discovery 문서를 주 1회 내려받아 specs/ 저장본과 비교하고,
+# 변경이 감지되면 저장본 갱신 PR과 diff 요약 이슈를 자동으로 만든다.
+#
+# 네트워크 오류 시에는 재시도 후 잡 실패로 끝낸다 — 이슈/PR은 만들지 않는다.
+# (다운로드 실패는 업스트림 "변경"이 아니므로.)
+name: Spec watch
+
+on:
+  schedule:
+    - cron: "23 3 * * 1" # 매주 월요일 03:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: spec-watch
+  cancel-in-progress: false
+
+jobs:
+  spec-watch:
+    # fork에서는 스케줄이 도는 것을 막는다
+    if: github.repository == 'dioKR/storepulse'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: App Store Connect OpenAPI 스펙 다운로드
+        run: |
+          # Apple 공식 배포 zip (https://developer.apple.com/documentation/appstoreconnectapi)
+          curl -fsSL --retry 5 --retry-delay 15 --retry-all-errors \
+            -o /tmp/asc-spec.zip \
+            "https://developer.apple.com/sample-code/app-store-connect/app-store-connect-openapi-specification.zip"
+          # zip 내부 파일명이 고정이 아니므로 (__MACOSX 리소스 포크 제외) JSON만 추출
+          unzip -p /tmp/asc-spec.zip '*.json' -x '__MACOSX/*' > /tmp/asc-openapi-raw.json
+          # 유효한 OpenAPI 문서인지 확인 — 아니면 저장본을 건드리지 않고 실패
+          jq -e '.openapi and .paths' /tmp/asc-openapi-raw.json > /dev/null
+          # 키 정렬 + pretty-print로 정규화해 diff를 안정화
+          jq -S . /tmp/asc-openapi-raw.json > specs/app-store-connect-openapi.json
+
+      - name: Google Play discovery 문서 다운로드
+        run: |
+          curl -fsSL --retry 5 --retry-delay 15 --retry-all-errors \
+            -o /tmp/play-raw.json \
+            'https://androidpublisher.googleapis.com/$discovery/rest?version=v3'
+          # 유효한 discovery 문서인지 확인 — 아니면 저장본을 건드리지 않고 실패
+          jq -e '.id == "androidpublisher:v3" and (.resources | type == "object")' \
+            /tmp/play-raw.json > /dev/null
+          # etag/revision은 의미 변화 없이도 갱신되므로 비교에서 제외하고 정규화
+          jq -S 'del(.etag, .revision)' /tmp/play-raw.json > specs/google-play-androidpublisher-v3.json
+
+      - name: 변경 감지 및 diff 요약 생성
+        id: diff
+        run: |
+          if git diff --quiet -- specs/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "업스트림 스펙 변경 없음."
+            exit 0
+          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          {
+            echo "주간 스펙 감시에서 업스트림 API 스펙 변경이 감지되었습니다."
+            echo
+            echo "## 변경된 파일"
+            echo '```'
+            git diff --stat -- specs/
+            echo '```'
+            echo
+            echo "## diff 요약 (최대 300줄)"
+            echo '```diff'
+            git diff --unified=1 -- specs/ | head -n 300 | head -c 40000
+            echo
+            echo '```'
+            echo
+            echo "_전체 diff는 함께 생성된 저장본 갱신 PR에서 확인하세요._"
+          } > /tmp/spec-diff.md
+
+      - name: 라벨 준비 (upstream-change)
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create upstream-change \
+            --repo "$GITHUB_REPOSITORY" \
+            --color D93F0B \
+            --description "플랫폼 API 스펙의 업스트림 변경 감지" \
+            --force
+
+      - name: 저장본 갱신 PR 생성
+        if: steps.diff.outputs.changed == 'true'
+        id: cpr
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          add-paths: specs/
+          branch: spec-watch/upstream-update
+          delete-branch: true
+          commit-message: "chore(specs): 업스트림 API 스펙 저장본 갱신"
+          title: "chore(specs): 업스트림 API 스펙 변경 감지 — 저장본 갱신"
+          labels: upstream-change
+          body: |
+            주간 스펙 감시(`spec-watch.yml`)가 감지한 업스트림 API 스펙 변경입니다.
+
+            - `specs/app-store-connect-openapi.json` — App Store Connect OpenAPI 스펙
+            - `specs/google-play-androidpublisher-v3.json` — Google Play androidpublisher v3 discovery
+
+            diff 요약은 함께 생성된 `upstream-change` 라벨 이슈를 참고하세요.
+            머지 전에 커넥터(`packages/core/src/connectors/`)가 영향을 받는지 확인해 주세요.
+
+      - name: diff 요약 이슈 생성
+        # PR이 "새로 " 만들어졌을 때만 이슈를 연다 — 기존 PR 갱신 시 중복 이슈 방지
+        if: steps.diff.outputs.changed == 'true' && steps.cpr.outputs.pull-request-operation == 'created'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ steps.cpr.outputs.pull-request-url }}
+        run: |
+          {
+            cat /tmp/spec-diff.md
+            echo
+            echo "저장본 갱신 PR: ${PR_URL}"
+          } > /tmp/spec-issue.md
+          gh issue create \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "업스트림 API 스펙 변경 감지 ($(date -u +%Y-%m-%d))" \
+            --label upstream-change \
+            --body-file /tmp/spec-issue.md
