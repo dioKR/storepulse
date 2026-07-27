@@ -1,0 +1,130 @@
+---
+import Base from "../../layouts/Base.astro";
+---
+
+<Base
+  lang="ko"
+  title="튜토리얼 — storepulse"
+  description="0에서 실제 릴리즈 보드까지: 데모 모드, 앱 목록 작성, App Store Connect API 키, Google Play 서비스 계정, 그리고 문제 해결까지."
+>
+  <main class="doc wrap">
+    <h1>튜토리얼</h1>
+    <p class="sub">
+      0에서 실제 보드까지 가는 길이에요. 1~2단계는 1분이면 되고, 3~4단계는
+      Apple과 Google 쪽에서 하는 5분짜리 1회성 설정이에요.
+    </p>
+
+    <section>
+      <p class="sec-label">1단계</p>
+      <h2>설치하고 데모 실행하기</h2>
+      <p>준비물: Node.js 20.12 이상, pnpm 9 이상이에요.</p>
+      <pre class="code"><span class="p">$</span> git clone https://github.com/dioKR/storepulse.git
+<span class="p">$</span> cd storepulse
+<span class="p">$</span> pnpm install
+<span class="p">$</span> pnpm demo</pre>
+      <p>
+        데모 보드는 실제 팀처럼 생긴 샘플 데이터를 써요 — 앱 두 개, 각각
+        prod·dev 변형, 양쪽 플랫폼이요. 앞으로 보게 될 배지가 전부 들어
+        있어요: <span class="g">LIVE</span>, <span class="c">50%</span>
+        (단계적 롤아웃), <span class="y">REVIEW</span>,
+        <span class="r">REJECTED</span>, <span class="d">draft</span>.
+      </p>
+    </section>
+
+    <section>
+      <p class="sec-label">2단계</p>
+      <h2>앱 목록 작성하기</h2>
+      <pre class="code"><span class="p">$</span> cp storepulse.config.example.json storepulse.config.json</pre>
+      <table>
+        <thead><tr><th>필드</th><th>설명</th></tr></thead>
+        <tbody>
+          <tr><td><code>key</code></td><td>겹치지만 않으면 아무 이름 (내부용이에요)</td></tr>
+          <tr><td><code>name</code></td><td>보드에 표시되는 이름</td></tr>
+          <tr><td><code>group</code></td><td>선택 라벨 — 예: <code>prod</code> / <code>dev</code></td></tr>
+          <tr><td><code>platform</code></td><td><code>ios</code> 또는 <code>android</code></td></tr>
+          <tr><td><code>storeId</code></td><td><b>iOS</b>: 숫자 Apple ID · <b>Android</b>: 패키지명</td></tr>
+        </tbody>
+      </table>
+      <div class="note">
+        <b>iOS 숫자 ID 찾기</b> — App Store Connect → 해당 앱 →
+        앱 정보(App Information) → 일반 정보 → <b>Apple ID</b>
+        (<code>1234567890</code> 같은 숫자예요).
+      </div>
+    </section>
+
+    <section>
+      <p class="sec-label">3단계</p>
+      <h2>Apple — App Store Connect API 키</h2>
+      <pre class="code"><span class="p">$</span> cp .env.example .env</pre>
+      <ol>
+        <li>
+          <a href="https://appstoreconnect.apple.com">App Store Connect</a> →
+          <b>사용자 및 액세스(Users and Access)</b> → <b>통합(Integrations)</b> →
+          App Store Connect API로 들어가요.
+        </li>
+        <li><b>팀 키(Team Keys)</b>에서 <b>＋</b>를 눌러요. 역할은 <b>App Manager</b>면 충분해요 — storepulse는 읽기만 하니까요.</li>
+        <li><b><code>.p8</code> 파일을 내려받아요.</b> Apple은 딱 한 번만 받게 해줘요 — 안전하게 보관하세요 (여기서는 git에서 제외돼요).</li>
+        <li>세 가지 값을 채워요:</li>
+      </ol>
+      <pre class="code">ASC_KEY_ID=ABC123DEFG          <span class="cmt"># 키의 "Key ID" 열</span>
+ASC_ISSUER_ID=xxxxxxxx-...     <span class="cmt"># 페이지 상단의 "Issuer ID"</span>
+ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
+    </section>
+
+    <section>
+      <p class="sec-label">4단계</p>
+      <h2>Google — Play 서비스 계정</h2>
+      <ol>
+        <li>
+          <a href="https://console.cloud.google.com">Google Cloud Console</a>에서
+          프로젝트를 고르거나 새로 만들고, <b>Google Play Android Developer API</b>를
+          활성화해요.
+        </li>
+        <li><b>IAM 및 관리자 → 서비스 계정</b> → 하나 만들고 (역할은 없어도 돼요) → <b>키</b> 탭 → <b>키 추가 → JSON</b>.</li>
+        <li>
+          <a href="https://play.google.com/console">Play Console</a> →
+          <b>사용자 및 권한</b> → <b>새 사용자 초대</b> → 서비스 계정 이메일
+          (<code>…@…iam.gserviceaccount.com</code>)을 붙여넣고 →
+          앱에 <b>앱 정보 보기(View app information)</b> 권한을 줘요.
+        </li>
+        <li><code>.env</code>가 그 JSON을 가리키게 해요:</li>
+      </ol>
+      <pre class="code">PLAY_SERVICE_ACCOUNT_PATH=./service-account.json</pre>
+      <div class="note">
+        <b>CI 팁</b> — 두 시크릿 모두 <code>*_BASE64</code> 변형
+        (<code>ASC_PRIVATE_KEY_BASE64</code>,
+        <code>PLAY_SERVICE_ACCOUNT_BASE64</code>)을 지원해서, 디스크에 파일을
+        두지 않고도 CI에서 storepulse를 돌릴 수 있어요.
+      </div>
+    </section>
+
+    <section>
+      <p class="sec-label">5단계</p>
+      <h2>실행</h2>
+      <pre class="code"><span class="p">$</span> pnpm status</pre>
+      <p>
+        여러분의 실제 보드가 나타나요. 크리덴셜에 문제가 있는 행은 그 자리에
+        에러만 보여줄 뿐, 나머지 보드를 가리지 않아요.
+      </p>
+    </section>
+
+    <section>
+      <p class="sec-label">문제 해결</p>
+      <h2>뭔가 어긋났을 때</h2>
+      <table>
+        <thead><tr><th>증상</th><th>이럴 가능성이 높아요</th></tr></thead>
+        <tbody>
+          <tr><td><code>ASC API 401</code></td><td>Key ID / Issuer ID가 틀렸거나, <code>.p8</code>이 그 Key ID의 것이 아니에요</td></tr>
+          <tr><td><code>ASC API 404</code></td><td><code>storeId</code>가 <i>숫자</i> Apple ID가 아니거나, 키 역할로는 그 앱이 안 보여요</td></tr>
+          <tr><td><code>Play API 403</code></td><td>Play Console에 서비스 계정이 초대되지 않았거나, Android Developer API가 꺼져 있어요</td></tr>
+          <tr><td><code>Play API 404</code></td><td>패키지명 오타이거나, 한 번도 릴리즈된 적 없는 앱이에요</td></tr>
+          <tr><td>Android 심사 상태가 안 보여요</td><td>버그 아니에요 — Google API가 심사 상태를 알려주지 않아요</td></tr>
+        </tbody>
+      </table>
+      <p>
+        그래도 막히면 <a href="https://github.com/dioKR/storepulse/issues">이슈를 열어주세요</a> —
+        보드에 뜬 에러 줄을 그대로 붙여주시면 돼요.
+      </p>
+    </section>
+  </main>
+</Base>
