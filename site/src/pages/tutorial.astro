@@ -1,0 +1,128 @@
+---
+import Base from "../layouts/Base.astro";
+---
+
+<Base
+  title="Tutorial — storepulse"
+  description="From zero to your real release board: demo mode, listing your apps, App Store Connect API key, Google Play service account, and troubleshooting."
+>
+  <main class="doc wrap">
+    <h1>Tutorial</h1>
+    <p class="sub">
+      From zero to your real board. Steps 1–2 take a minute; steps 3–4 are
+      five-minute, one-time setups on Apple's and Google's side.
+    </p>
+
+    <section>
+      <p class="sec-label">step 1</p>
+      <h2>Install &amp; run the demo</h2>
+      <p>Prerequisites: Node.js ≥ 20.12 and pnpm ≥ 9.</p>
+      <pre class="code"><span class="p">$</span> git clone https://github.com/dioKR/storepulse.git
+<span class="p">$</span> cd storepulse
+<span class="p">$</span> pnpm install
+<span class="p">$</span> pnpm demo</pre>
+      <p>
+        The demo board uses sample data shaped like a real team — two apps, each
+        with a prod and dev variant, on both platforms. Every badge you'll ever
+        see is in it: <span class="g">LIVE</span>, <span class="c">50%</span>
+        (staged rollout), <span class="y">REVIEW</span>,
+        <span class="r">REJECTED</span>, <span class="d">draft</span>.
+      </p>
+    </section>
+
+    <section>
+      <p class="sec-label">step 2</p>
+      <h2>List your apps</h2>
+      <pre class="code"><span class="p">$</span> cp storepulse.config.example.json storepulse.config.json</pre>
+      <table>
+        <thead><tr><th>field</th><th>what it is</th></tr></thead>
+        <tbody>
+          <tr><td><code>key</code></td><td>Any unique name (internal use)</td></tr>
+          <tr><td><code>name</code></td><td>Display name shown on the board</td></tr>
+          <tr><td><code>group</code></td><td>Optional label — e.g. <code>prod</code> / <code>dev</code></td></tr>
+          <tr><td><code>platform</code></td><td><code>ios</code> or <code>android</code></td></tr>
+          <tr><td><code>storeId</code></td><td><b>iOS</b>: numeric Apple ID · <b>Android</b>: package name</td></tr>
+        </tbody>
+      </table>
+      <div class="note">
+        <b>Finding the iOS numeric ID</b> — App Store Connect → your app →
+        App Information → General Information → <b>Apple ID</b> (a number like
+        <code>1234567890</code>).
+      </div>
+    </section>
+
+    <section>
+      <p class="sec-label">step 3</p>
+      <h2>Apple — App Store Connect API key</h2>
+      <pre class="code"><span class="p">$</span> cp .env.example .env</pre>
+      <ol>
+        <li>
+          <a href="https://appstoreconnect.apple.com">App Store Connect</a> →
+          <b>Users and Access</b> → <b>Integrations</b> → App Store Connect API
+        </li>
+        <li>Under <b>Team Keys</b>, click <b>＋</b>. Role: <b>App Manager</b> is plenty — storepulse only reads.</li>
+        <li><b>Download the <code>.p8</code> file.</b> Apple allows exactly one download — keep it safe (it's git-ignored here).</li>
+        <li>Fill in three values:</li>
+      </ol>
+      <pre class="code">ASC_KEY_ID=ABC123DEFG          <span class="cmt"># "Key ID" column of your key</span>
+ASC_ISSUER_ID=xxxxxxxx-...     <span class="cmt"># "Issuer ID" at the top of the page</span>
+ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
+    </section>
+
+    <section>
+      <p class="sec-label">step 4</p>
+      <h2>Google — Play service account</h2>
+      <ol>
+        <li>
+          In <a href="https://console.cloud.google.com">Google Cloud Console</a>,
+          pick (or create) a project and enable the
+          <b>Google Play Android Developer API</b>.
+        </li>
+        <li><b>IAM &amp; Admin → Service Accounts</b> → create one (no roles needed) → <b>Keys</b> tab → <b>Add key → JSON</b>.</li>
+        <li>
+          In <a href="https://play.google.com/console">Play Console</a> →
+          <b>Users and permissions</b> → <b>Invite new users</b> → paste the
+          service account email (<code>…@…iam.gserviceaccount.com</code>) →
+          grant <b>View app information</b> on your apps.
+        </li>
+        <li>Point <code>.env</code> at the JSON:</li>
+      </ol>
+      <pre class="code">PLAY_SERVICE_ACCOUNT_PATH=./service-account.json</pre>
+      <div class="note">
+        <b>CI tip</b> — both secrets accept a <code>*_BASE64</code> variant
+        (<code>ASC_PRIVATE_KEY_BASE64</code>,
+        <code>PLAY_SERVICE_ACCOUNT_BASE64</code>) so you can run storepulse in CI
+        without files on disk.
+      </div>
+    </section>
+
+    <section>
+      <p class="sec-label">step 5</p>
+      <h2>Run</h2>
+      <pre class="code"><span class="p">$</span> pnpm status</pre>
+      <p>
+        Your real board appears. Rows with credential problems show an inline
+        error — they never hide the rest of the board.
+      </p>
+    </section>
+
+    <section>
+      <p class="sec-label">troubleshooting</p>
+      <h2>When something's off</h2>
+      <table>
+        <thead><tr><th>symptom</th><th>likely cause</th></tr></thead>
+        <tbody>
+          <tr><td><code>ASC API 401</code></td><td>Wrong Key ID / Issuer ID, or the <code>.p8</code> doesn't match the Key ID</td></tr>
+          <tr><td><code>ASC API 404</code></td><td><code>storeId</code> isn't the <i>numeric</i> Apple ID, or the key's role can't see that app</td></tr>
+          <tr><td><code>Play API 403</code></td><td>Service account not invited in Play Console, or the Android Developer API isn't enabled</td></tr>
+          <tr><td><code>Play API 404</code></td><td>Package-name typo, or the app has never had a release</td></tr>
+          <tr><td>No Android review state</td><td>Not a bug — Google's API doesn't expose review status</td></tr>
+        </tbody>
+      </table>
+      <p>
+        Still stuck? <a href="https://github.com/dioKR/storepulse/issues">Open an issue</a> —
+        include the exact error line from the board.
+      </p>
+    </section>
+  </main>
+</Base>

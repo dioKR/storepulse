@@ -1,0 +1,222 @@
+---
+import Base from "../layouts/Base.astro";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<Base
+  title="storepulse — one-glance release status for iOS & Android"
+  description="Stop tab-hopping between App Store Connect and Play Console. One command shows every app's live version, review state, rollout % and test tracks."
+>
+  <header class="hero">
+    <div class="wrap">
+      <p class="kicker">open source · cli · built for expo &amp; react native teams</p>
+      <h1>
+        Which version is <span class="hl">LIVE</span>?<br />
+        Which is stuck <span class="hl">IN REVIEW</span>?<br />
+        <span class="dim">One command. Both stores.</span>
+      </h1>
+      <p class="sub">
+        storepulse pulls release status for every iOS &amp; Android app you manage —
+        versions, review states, rollout percentages, test tracks — into a single
+        terminal board. Read-only by design. Your store credentials never leave
+        your machine.
+      </p>
+      <div class="cta-row">
+        <a class="btn primary" href={`${base}/tutorial/`}>get started →</a>
+        <a class="btn" href="https://github.com/dioKR/storepulse">view on github ↗</a>
+      </div>
+
+      <div class="term">
+        <div class="term-bar">
+          <span class="sq pink"></span><span class="sq"></span><span class="sq"></span>
+          <span style="margin-left:8px">~/work — zsh</span>
+        </div>
+        <div class="term-body">
+          <pre><span class="p" style="color:var(--accent)">$</span> <span id="typed"></span><span class="type-cursor" id="tcur"></span>
+
+<span data-line>  <span class="m">storepulse</span><span class="d">  ·  one board, both stores</span></span>
+<span data-line></span>
+<span data-line>  <span class="b">APP                  OS        PRODUCTION                      BETA / TESTFLIGHT    INTERNAL</span></span>
+<span data-line>  <span class="d">─────────────────────────────────────────────────────────────────────────────────────────────</span></span>
+<span data-line>  Aurora <span class="d">[prod]</span>        iOS       2.4.1 <span class="g">LIVE</span>  <span class="d">·</span>  2.5.0 <span class="y">REVIEW</span>    2.5.0 <span class="g">LIVE</span> <span class="d">(108)</span>     <span class="d">—</span></span>
+<span data-line>                       Android   2.4.1 <span class="c">50%</span> <span class="d">(241)</span>                2.5.0 <span class="g">LIVE</span> <span class="d">(250)</span>     2.5.1 <span class="d">draft (251)</span></span>
+<span data-line>  Aurora Dev <span class="d">[dev]</span>     iOS       <span class="d">—</span>                              2.6.0 <span class="g">LIVE</span> <span class="d">(12)</span>      <span class="d">—</span></span>
+<span data-line>                       Android   <span class="d">—</span>                              <span class="d">—</span>                    2.6.0 <span class="g">LIVE</span> <span class="d">(12)</span></span>
+<span data-line>  Borealis <span class="d">[prod]</span>      iOS       1.9.2 <span class="g">LIVE</span>  <span class="d">·</span>  1.9.3 <span class="r">REJECTED</span>  1.9.3 <span class="g">LIVE</span> <span class="d">(87)</span>      <span class="d">—</span></span>
+<span data-line>                       Android   1.9.2 <span class="g">LIVE</span> <span class="d">(192)</span>               1.10.0 <span class="g">LIVE</span> <span class="d">(200)</span>    <span class="d">—</span></span></pre>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="wrap">
+      <p class="sec-label">why</p>
+      <h2>Built to be trusted with your store keys</h2>
+      <div class="grid3">
+        <div>
+          <p class="cell-title">Read-only by design</p>
+          <p>
+            storepulse never submits, promotes, or halts anything. It asks both
+            stores one question — "what state are my releases in?" — and renders
+            the answer. Nothing to break, nothing to fear.
+          </p>
+        </div>
+        <div>
+          <p class="cell-title">Credentials stay local</p>
+          <p>
+            Calls go straight from your machine to Apple and Google. No server,
+            no account, no telemetry. Secrets live in your <code>.env</code>,
+            which is git-ignored from day one.
+          </p>
+        </div>
+        <div>
+          <p class="cell-title">A library first</p>
+          <p>
+            The core is a credential-injected library; the CLI is just its first
+            surface. A web dashboard and notifiers are next — same engine,
+            more screens. Add your own source by implementing two methods.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <p class="sec-label">features</p>
+      <h2>Everything the two consoles show — in one table</h2>
+      <div class="feat">
+        <div class="feat-row">
+          <div class="k">normalized model</div>
+          <div class="v">
+            App Store states and Play tracks translated into one vocabulary:
+            channels (<code>production</code> / <code>beta</code> / <code>internal</code>)
+            × states (<code>live</code>, <code>in-review</code>, <code>rollout</code>, <code>rejected</code>…).
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">rollout tracking</div>
+          <div class="v">
+            iOS phased release day and Android staged rollout shown as a plain
+            percentage — <code>2.4.1 50%</code> means half your users have it.
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">review visibility</div>
+          <div class="v">
+            See <code>2.4.1 LIVE · 2.5.0 REVIEW</code> side by side — the
+            in-between moment both consoles make you dig for.
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">resilient board</div>
+          <div class="v">
+            One expired credential shows an error on its own row — it never
+            blanks the rest of the board.
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">demo mode</div>
+          <div class="v">
+            <code>pnpm demo</code> renders the full board with sample data —
+            evaluate the tool before creating a single API key.
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">expo-friendly</div>
+          <div class="v">
+            Works with any iOS/Android app, but built by an Expo team for Expo
+            teams — an EAS connector is on the roadmap.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <p class="sec-label">quick start</p>
+      <h2>From zero to your real board in ~15 minutes</h2>
+      <div class="step">
+        <div class="step-no">1</div>
+        <div>
+          <h3>Try the demo — no credentials needed</h3>
+          <pre class="code"><span class="p">$</span> git clone https://github.com/dioKR/storepulse.git
+<span class="p">$</span> cd storepulse &amp;&amp; pnpm install
+<span class="p">$</span> pnpm demo</pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-no">2</div>
+        <div>
+          <h3>List your apps, add your keys</h3>
+          <p>
+            Apps go in <code>storepulse.config.json</code>; secrets go in
+            <code>.env</code> (an App Store Connect API key + a Play service
+            account — both are five-minute, one-time setups).
+          </p>
+          <pre class="code"><span class="p">$</span> cp storepulse.config.example.json storepulse.config.json
+<span class="p">$</span> cp .env.example .env  <span class="cmt"># then fill in both files</span></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-no">3</div>
+        <div>
+          <h3>Run it</h3>
+          <pre class="code"><span class="p">$</span> pnpm status</pre>
+          <p>
+            Your real board appears.
+            <a href={`${base}/tutorial/`}>Full tutorial with screenshots →</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <p class="sec-label">roadmap</p>
+      <h2>Where this is going</h2>
+      <div class="roadmap">
+        <span class="done">core + connectors</span>
+        <span class="done">cli with demo mode</span>
+        <span>eas connector</span>
+        <span>slack / discord alerts</span>
+        <span>web dashboard</span>
+        <span>npx storepulse</span>
+        <span>english / korean cli output</span>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const cmd = "pnpm demo";
+    const typed = document.getElementById("typed")!;
+    const cursor = document.getElementById("tcur")!;
+    const lines = [...document.querySelectorAll("[data-line]")];
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reduced) {
+      typed.textContent = cmd;
+      cursor.remove();
+      for (const l of lines) l.classList.add("on");
+    } else {
+      let i = 0;
+      const timer = setInterval(() => {
+        i += 1;
+        typed.textContent = cmd.slice(0, i);
+        if (i === cmd.length) {
+          clearInterval(timer);
+          setTimeout(() => {
+            (cursor as HTMLElement).style.display = "none";
+            lines.forEach((l, j) => {
+              setTimeout(() => l.classList.add("on"), j * 90);
+            });
+          }, 380);
+        }
+      }, 70);
+    }
+  </script>
+</Base>
