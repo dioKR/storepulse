@@ -215,7 +215,7 @@ ESLint + Prettier を置き換える単一ツールです。エディタは Biom
 - [ ] EAS コネクタ — ストアの状態を Expo のビルド・提出と結びつける
 - [ ] 状態変化時の Slack/Discord 通知(「2.5.0 審査通過 🎉」)
 - [ ] Web ダッシュボード
-- [ ] npm 公開(`npx storepulse`)
+- [x] npm 公開(`npx storepulse`)
 - [ ] CLI 出力の英語・韓国語対応
 
 ## ライセンス

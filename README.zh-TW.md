@@ -206,7 +206,7 @@ ESLint + Prettier。編輯器裝上 Biome 擴充功能,就會自動讀取 `biome
 - [ ] EAS 連接器 —— 把商店狀態與 Expo 的建置·送審串起來
 - [ ] 狀態變化時的 Slack/Discord 通知(「2.5.0 審查通過 🎉」)
 - [ ] Web 儀表板
-- [ ] 發布到 npm(`npx storepulse`)
+- [x] 發布到 npm(`npx storepulse`)
 - [ ] CLI 輸出支援英文·韓文
 
 ## 授權條款

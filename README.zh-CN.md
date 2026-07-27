@@ -206,7 +206,7 @@ ESLint + Prettier。编辑器装上 Biome 插件,就会自动读取 `biome.json`
 - [ ] EAS 连接器 —— 把商店状态和 Expo 的构建·提交关联起来
 - [ ] 状态变化时的 Slack/Discord 通知("2.5.0 审核通过 🎉")
 - [ ] Web 看板
-- [ ] 发布到 npm(`npx storepulse`)
+- [x] 发布到 npm(`npx storepulse`)
 - [ ] CLI 输出支持英文·韩文
 
 ## 许可证

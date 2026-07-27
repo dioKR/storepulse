@@ -212,7 +212,7 @@ Prettier를 대신하는 단일 도구예요. 에디터는 Biome 확장만 설�
 - [ ] EAS 커넥터 — 스토어 상태를 Expo 빌드·제출과 연결
 - [ ] 상태가 바뀌면 Slack/Discord 알림 ("2.5.0 심사 통과 🎉")
 - [ ] 웹 대시보드
-- [ ] npm 배포 (`npx storepulse`)
+- [x] npm 배포 (`npx storepulse`)
 - [ ] CLI 출력 영어·한국어 지원
 
 ## 라이선스

@@ -210,7 +210,7 @@ picks up `biome.json` automatically.
 - [ ] EAS connector — link store status to Expo builds & submissions
 - [ ] Slack/Discord notifications on state changes ("2.5.0 approved 🎉")
 - [ ] Web dashboard
-- [ ] Publish to npm (`npx storepulse`)
+- [x] Publish to npm (`npx storepulse`)
 - [ ] CLI output in English & Korean
 
 ## License
