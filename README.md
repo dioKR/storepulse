@@ -122,9 +122,13 @@ are one-time setups that take about five minutes each.
 1. Go to [App Store Connect](https://appstoreconnect.apple.com) →
    **Users and Access** → **Integrations** → **App Store Connect API**.
 2. Under **Team Keys**, click **＋** to generate a key.
-   Role: **App Manager** is plenty (storepulse only reads).
+   Role: **Developer** is recommended — it covers everything storepulse
+   reads. **App Manager** works too, but a leaked App Manager key can submit
+   apps and edit metadata, so grant the least privilege you can.
 3. **Download the `.p8` file** — Apple lets you download it exactly once.
-   Store it somewhere safe (it's git-ignored here by default).
+   Store it somewhere safe (it's git-ignored here by default). This key can
+   write as much as its role allows — if it ever leaks, revoke it
+   immediately in App Store Connect.
 4. Copy three values into `.env`:
 
 ```ini
@@ -144,7 +148,9 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8
 3. In [Play Console](https://play.google.com/console) →
    **Users and permissions** → **Invite new users** → paste the service
    account's email (`...@...iam.gserviceaccount.com`) → grant it access to
-   your apps with **View app information** permission.
+   your apps with **View app information** permission. Grant only that —
+   **never** give the service account any Release/publish permissions;
+   storepulse doesn't need them, and a leaked key stays read-only.
 4. Point `.env` at the JSON:
 
 ```ini

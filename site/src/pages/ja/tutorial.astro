@@ -64,8 +64,8 @@ import Base from "../../layouts/Base.astro";
           <b>ユーザーとアクセス(Users and Access)</b> → <b>統合(Integrations)</b> →
           App Store Connect API へ。
         </li>
-        <li><b>チームキー(Team Keys)</b>で <b>＋</b> をクリック。ロールは <b>App Manager</b> で十分です — storepulse は読むだけですから。</li>
-        <li><b><code>.p8</code> ファイルをダウンロードします。</b> Apple がダウンロードを許すのは一度きり — 大切に保管してください(このリポジトリでは git 管理外です)。</li>
+        <li><b>チームキー(Team Keys)</b>で <b>＋</b> をクリック。ロールは <b>Developer</b> を推奨します — storepulse が読む範囲にはこれで十分です。<b>App Manager</b> でも動作しますが、キーが漏えいするとアプリの提出やメタデータの変更まで可能になるため、最小権限が安全です。</li>
+        <li><b><code>.p8</code> ファイルをダウンロードします。</b> Apple がダウンロードを許すのは一度きり — 大切に保管してください(このリポジトリでは git 管理外です)。このキーはロールが許す範囲で書き込みもできる認証情報なので、万一漏えいしたら App Store Connect で直ちに失効(revoke)させてください。</li>
         <li>3 つの値を埋めます:</li>
       </ol>
       <pre class="code">ASC_KEY_ID=ABC123DEFG          <span class="cmt"># キーの "Key ID" 列</span>
@@ -88,6 +88,10 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
           <b>ユーザーと権限</b> → <b>新しいユーザーを招待</b> → サービスアカウントの
           メールアドレス(<code>…@…iam.gserviceaccount.com</code>)を貼り付け →
           アプリに<b>アプリ情報の表示(View app information)</b>権限を付与します。
+          付与するのはこの権限だけにしてください —
+          <b>リリース(公開)系の権限は決して付与しないでください。</b>
+          storepulse には不要ですし、こうしておけばキーが漏えいしても
+          読み取り専用のままで済みます。
         </li>
         <li><code>.env</code> にその JSON を指定します:</li>
       </ol>

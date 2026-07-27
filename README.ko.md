@@ -124,9 +124,13 @@ cp .env.example .env
    **사용자 및 액세스(Users and Access)** → **통합(Integrations)** →
    **App Store Connect API**로 들어가요.
 2. **팀 키(Team Keys)**에서 **＋**를 눌러 키를 만들어요.
-   역할은 **App Manager**면 충분해요 (storepulse는 읽기만 하니까요).
+   역할은 **Developer**를 권장해요 — storepulse가 읽는 데는 이걸로
+   충분하거든요. **App Manager**로도 동작하지만, 키가 유출되면 앱 제출과
+   메타데이터 수정 권한까지 넘어가니 최소 권한으로 만드는 게 안전해요.
 3. **`.p8` 파일을 내려받아요** — Apple은 딱 한 번만 받게 해줘요.
-   안전한 곳에 보관하세요 (여기서는 기본으로 git에서 제외돼요).
+   안전한 곳에 보관하세요 (여기서는 기본으로 git에서 제외돼요). 이 키는
+   역할이 허용하는 만큼 쓰기도 가능한 크리덴셜이라, 유출됐다면 App Store
+   Connect에서 즉시 폐기(revoke)하세요.
 4. 세 가지 값을 `.env`에 옮겨요:
 
 ```ini
@@ -146,7 +150,9 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8
 3. [Play Console](https://play.google.com/console) →
    **사용자 및 권한** → **새 사용자 초대** → 서비스 계정 이메일
    (`...@...iam.gserviceaccount.com`)을 붙여넣고 → 앱에
-   **앱 정보 보기(View app information)** 권한을 줘요.
+   **앱 정보 보기(View app information)** 권한을 줘요. 권한은 딱 이것만
+   주세요 — **출시(Release) 관련 권한은 절대 주면 안 돼요.** storepulse에는
+   필요 없고, 이렇게 해야 키가 유출돼도 읽기 전용에 머물러요.
 4. `.env`가 그 JSON을 가리키게 해요:
 
 ```ini

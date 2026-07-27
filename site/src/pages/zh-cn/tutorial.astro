@@ -62,8 +62,8 @@ import Base from "../../layouts/Base.astro";
           <b>用户和访问(Users and Access)</b> → <b>集成(Integrations)</b> →
           App Store Connect API。
         </li>
-        <li>在<b>团队密钥(Team Keys)</b>下点 <b>＋</b>。角色选 <b>App Manager</b> 就够了 —— storepulse 只读不写。</li>
-        <li><b>下载 <code>.p8</code> 文件。</b> Apple 只允许下载一次 —— 请妥善保管(本仓库已默认 git 忽略)。</li>
+        <li>在<b>团队密钥(Team Keys)</b>下点 <b>＋</b>。角色建议选 <b>Developer</b> —— 对 storepulse 的读取来说已经足够。<b>App Manager</b> 也能用,但密钥一旦泄露,提交应用、改动元数据的权限也会一并流出,按最小权限原则来更稳妥。</li>
+        <li><b>下载 <code>.p8</code> 文件。</b> Apple 只允许下载一次 —— 请妥善保管(本仓库已默认 git 忽略)。这把密钥能在其角色允许的范围内执行写操作,一旦泄露,请立即到 App Store Connect 吊销(revoke)。</li>
         <li>填好三个值:</li>
       </ol>
       <pre class="code">ASC_KEY_ID=ABC123DEFG          <span class="cmt"># 密钥的 "Key ID" 列</span>
@@ -86,6 +86,8 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
           <b>用户和权限</b> → <b>邀请新用户</b> → 粘贴服务账号邮箱
           (<code>…@…iam.gserviceaccount.com</code>)→
           为你的应用授予<b>查看应用信息(View app information)</b>权限。
+          只授予这一项 —— <b>千万不要授予任何发布(Release)权限</b>;
+          storepulse 用不到,这样即使密钥泄露也只停留在只读。
         </li>
         <li>让 <code>.env</code> 指向该 JSON:</li>
       </ol>
