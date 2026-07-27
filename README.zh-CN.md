@@ -1,0 +1,209 @@
+<!-- logo: docs/images/logo.png (即将推出) -->
+
+# storepulse
+
+[English](README.md) | [한국어](README.ko.md) | [日本語](README.ja.md) | **简体中文** | [繁體中文](README.zh-TW.md)
+
+**所有 iOS · Android 应用的发布状态,一目了然。**
+
+🌐 **网站 & 教程 → [diokr.github.io/storepulse](https://diokr.github.io/storepulse/zh-cn/)**
+
+现在线上是哪个版本?哪个版本卡在审核?TestFlight 上现在跑的是什么?——
+如果确认这些事还得在 App Store Connect 和 Google Play Console 里一个应用一个
+应用地点,storepulse 就是为你准备的。一条命令,一块看板:
+
+![storepulse 演示 — pnpm demo 渲染实时发布看板](docs/images/demo.svg)
+
+它是为 **Expo / React Native** 团队优先设计的,但任何 iOS/Android 应用都能用
+—— storepulse 只跟商店打交道,不碰你的构建系统。
+
+- 🔍 **只读。** 不会改动两家商店里的任何东西。
+- 🔐 **凭据不离开你的电脑。** storepulse 直接调用 Apple 和 Google ——
+  没有服务器,没有账号,没有遥测。
+- 🧩 **易于扩展。** 核心是一个库,CLI 只是它的第一个消费者。
+
+---
+
+## 先试试看 —— 不需要凭据
+
+用示例数据,一分钟内就能看到 storepulse 到底做什么。
+
+**前置要求**:[Node.js](https://nodejs.org) ≥ 20.12,
+[pnpm](https://pnpm.io) ≥ 9。
+
+```sh
+git clone https://github.com/dioKR/storepulse.git
+cd storepulse
+pnpm install
+pnpm demo
+```
+
+就这样 —— 你看到的看板是模拟真实团队的假数据:两个应用,各有 prod·dev
+两个变体,覆盖双平台。
+
+## 怎么看这块看板
+
+每一行是"一个应用的一个平台"。每一列是一个**渠道** ——
+版本在抵达用户之前所处的位置:
+
+| 列 | iOS | Android |
+|---|---|---|
+| `PRODUCTION` | App Store | production 轨道 |
+| `BETA / TESTFLIGHT` | TestFlight(外部) | 开放/封闭测试 |
+| `INTERNAL` | TestFlight(内部) | 内部测试 |
+
+单元格里的每个版本都带着**状态**徽标:
+
+| 徽标 | 含义 |
+|---|---|
+| `2.4.1 LIVE`(绿) | 已全量发布,用户可用 |
+| `2.4.1 50%`(青) | 灰度发布中 —— 50% 的用户已拿到 |
+| `2.5.0 REVIEW`(黄) | 等待/正在商店审核 |
+| `2.5.0 PENDING`(蓝) | 已批准或处理中,尚未发布 |
+| `1.9.3 REJECTED`(红) | 审核被拒 —— 需要你处理 |
+| `2.5.1 draft`(暗) | 已准备但未提交 |
+| `(108)`(暗) | 构建号 / versionCode |
+
+一个单元格里可能有多个版本 —— `2.4.1 LIVE · 2.5.0 REVIEW` 的意思是
+"用户在用 2.4.1,而 2.5.0 正在等审核"。让这个"中间时刻"变得可见,
+正是这个工具存在的意义。
+
+---
+
+## 接入你的真实应用
+
+三步:列出应用 → 填入凭据 → 运行。
+
+### 第 1 步 —— 列出应用
+
+复制示例配置并修改:
+
+```sh
+cp storepulse.config.example.json storepulse.config.json
+```
+
+```jsonc
+{
+  "apps": [
+    { "key": "myapp-ios",     "name": "MyApp", "group": "prod",
+      "platform": "ios",     "storeId": "1234567890" },
+    { "key": "myapp-android", "name": "MyApp", "group": "prod",
+      "platform": "android", "storeId": "com.example.myapp" }
+  ]
+}
+```
+
+| 字段 | 说明 |
+|---|---|
+| `key` | 内部标识,不重复即可 |
+| `name` | 看板上显示的名称 |
+| `group` | 名称旁的标签(可选)—— 如 `prod` / `dev` |
+| `platform` | `ios` 或 `android` |
+| `storeId` | **iOS**:应用的数字 Apple ID · **Android**:包名 |
+
+**iOS 的数字 ID 在哪找?** App Store Connect → 你的应用 →
+**App 信息(App Information)** → 通用信息 → **Apple ID**(形如
+`1234567890` 的数字):
+
+![Apple ID 的位置](docs/images/asc-app-id.png)
+
+### 第 2 步 —— 填入凭据
+
+```sh
+cp .env.example .env
+```
+
+现在填 `.env`。Apple 要一样,Google 要一样 —— 各花 5 分钟左右,
+都是一次性配置。
+
+#### Apple —— App Store Connect API 密钥
+
+1. 打开 [App Store Connect](https://appstoreconnect.apple.com) →
+   **用户和访问(Users and Access)** → **集成(Integrations)** →
+   **App Store Connect API**。
+2. 在**团队密钥(Team Keys)**下点 **＋** 生成密钥。
+   角色选 **App Manager** 就够了(storepulse 只读不写)。
+3. **下载 `.p8` 文件** —— Apple 只允许下载一次。
+   请妥善保管(本仓库已默认 git 忽略)。
+4. 把三个值复制进 `.env`:
+
+```ini
+ASC_KEY_ID=ABC123DEFG          # 你创建的密钥的 "Key ID" 列
+ASC_ISSUER_ID=xxxxxxxx-...     # 页面顶部的 "Issuer ID"
+ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8
+```
+
+![创建 App Store Connect API 密钥](docs/images/asc-key.png)
+
+#### Google —— Play 服务账号
+
+1. 在 [Google Cloud Console](https://console.cloud.google.com) 选择(或创建)
+   一个项目,启用 **Google Play Android Developer API**。
+2. **IAM 和管理 → 服务账号** → 创建一个(无需特殊角色)→
+   **密钥**标签页 → **添加密钥 → JSON**,浏览器会下载一个 JSON 文件。
+3. 打开 [Play Console](https://play.google.com/console) →
+   **用户和权限** → **邀请新用户** → 粘贴服务账号邮箱
+   (`...@...iam.gserviceaccount.com`)→ 为你的应用授予
+   **查看应用信息(View app information)**权限。
+4. 让 `.env` 指向该 JSON:
+
+```ini
+PLAY_SERVICE_ACCOUNT_PATH=./service-account.json
+```
+
+![在 Play Console 邀请服务账号](docs/images/play-invite.png)
+
+> **CI 提示**:两个密钥都支持 `*_BASE64` 形式(`ASC_PRIVATE_KEY_BASE64`、
+> `PLAY_SERVICE_ACCOUNT_BASE64`),可以直接存成 CI 密钥,不用落盘。
+
+### 第 3 步 —— 运行
+
+```sh
+pnpm status
+```
+
+你的真实看板就出现了。凭据有问题的行只在原地显示错误,
+不会遮住看板的其余部分。
+
+---
+
+## 问题排查
+
+| 症状 | 大概率的原因 |
+|---|---|
+| `ASC API 401` | Key ID / Issuer ID 填错,或 `.p8` 与该 Key ID 不匹配 |
+| `ASC API 404` | `storeId` 不是*数字* Apple ID,或密钥的角色看不到这个应用 |
+| `Play API 403` | 服务账号没被邀请进 Play Console,或 Cloud 项目里的 Android Developer API 未启用 |
+| `Play API 404` | 包名拼写错误,或该应用从未发布过 |
+| Android 看不到审核状态 | 不是 bug —— Google 的 API 不提供审核状态([详情](wiki/Architecture.md)) |
+
+## 架构
+
+`@storepulse/core` 把两家商店归一化成同一个模型(渠道 × 状态),藏在只有
+两个方法的 `StoreConnector` 接口后面;CLI 只是它的第一个消费者。
+完整的架构图和说明见 [**wiki/Architecture**](wiki/Architecture.md)。
+
+## 开发
+
+```sh
+pnpm demo        # 用示例数据显示看板
+pnpm status      # 用真实配置显示看板
+pnpm typecheck   # 对全部包运行 tsc
+pnpm lint        # Biome(lint + 格式检查)
+pnpm lint:fix    # 自动修复
+```
+
+格式化和 lint 由 [Biome](https://biomejs.dev) 一个工具搞定 —— 它替代了
+ESLint + Prettier。编辑器装上 Biome 插件,就会自动读取 `biome.json`。
+
+## 路线图
+
+- [ ] EAS 连接器 —— 把商店状态和 Expo 的构建·提交关联起来
+- [ ] 状态变化时的 Slack/Discord 通知("2.5.0 审核通过 🎉")
+- [ ] Web 看板
+- [ ] 发布到 npm(`npx storepulse`)
+- [ ] CLI 输出支持英文·韩文
+
+## 许可证
+
+[MIT](LICENSE)

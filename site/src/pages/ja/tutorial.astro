@@ -1,0 +1,132 @@
+---
+import Base from "../../layouts/Base.astro";
+---
+
+<Base
+  lang="ja"
+  title="チュートリアル — storepulse"
+  description="ゼロから実際のリリースボードまで: デモモード、アプリの登録、App Store Connect API キー、Google Play サービスアカウント、そしてトラブルシューティングまで。"
+>
+  <main class="doc wrap">
+    <h1>チュートリアル</h1>
+    <p class="sub">
+      ゼロから実際のボードまでの道のりです。ステップ 1–2 は 1 分ほど、
+      ステップ 3–4 は Apple と Google 側で行う、5 分ほどの一度きりの
+      セットアップです。
+    </p>
+
+    <section>
+      <p class="sec-label">ステップ 1</p>
+      <h2>インストールしてデモを実行</h2>
+      <p>前提: Node.js 20.12 以上、pnpm 9 以上。</p>
+      <pre class="code"><span class="p">$</span> git clone https://github.com/dioKR/storepulse.git
+<span class="p">$</span> cd storepulse
+<span class="p">$</span> pnpm install
+<span class="p">$</span> pnpm demo</pre>
+      <p>
+        デモボードには、実際のチームを模したサンプルデータが入っています —
+        アプリ 2 つ、それぞれ prod・dev のバリアント、両プラットフォーム。
+        今後目にするバッジがすべて揃っています:
+        <span class="g">LIVE</span>, <span class="c">50%</span>(段階的リリース),
+        <span class="y">REVIEW</span>, <span class="r">REJECTED</span>,
+        <span class="d">draft</span>。
+      </p>
+    </section>
+
+    <section>
+      <p class="sec-label">ステップ 2</p>
+      <h2>アプリを登録する</h2>
+      <pre class="code"><span class="p">$</span> cp storepulse.config.example.json storepulse.config.json</pre>
+      <table>
+        <thead><tr><th>フィールド</th><th>説明</th></tr></thead>
+        <tbody>
+          <tr><td><code>key</code></td><td>重複しなければ何でも OK(内部用です)</td></tr>
+          <tr><td><code>name</code></td><td>ボードに表示される名前</td></tr>
+          <tr><td><code>group</code></td><td>任意のラベル — 例: <code>prod</code> / <code>dev</code></td></tr>
+          <tr><td><code>platform</code></td><td><code>ios</code> または <code>android</code></td></tr>
+          <tr><td><code>storeId</code></td><td><b>iOS</b>: 数字の Apple ID · <b>Android</b>: パッケージ名</td></tr>
+        </tbody>
+      </table>
+      <div class="note">
+        <b>iOS の数字 ID の探し方</b> — App Store Connect → 対象のアプリ →
+        App 情報(App Information)→ 一般情報 → <b>Apple ID</b>
+        (<code>1234567890</code> のような数字です)。
+      </div>
+    </section>
+
+    <section>
+      <p class="sec-label">ステップ 3</p>
+      <h2>Apple — App Store Connect API キー</h2>
+      <pre class="code"><span class="p">$</span> cp .env.example .env</pre>
+      <ol>
+        <li>
+          <a href="https://appstoreconnect.apple.com">App Store Connect</a> →
+          <b>ユーザーとアクセス(Users and Access)</b> → <b>統合(Integrations)</b> →
+          App Store Connect API へ。
+        </li>
+        <li><b>チームキー(Team Keys)</b>で <b>＋</b> をクリック。ロールは <b>App Manager</b> で十分です — storepulse は読むだけですから。</li>
+        <li><b><code>.p8</code> ファイルをダウンロードします。</b> Apple がダウンロードを許すのは一度きり — 大切に保管してください(このリポジトリでは git 管理外です)。</li>
+        <li>3 つの値を埋めます:</li>
+      </ol>
+      <pre class="code">ASC_KEY_ID=ABC123DEFG          <span class="cmt"># キーの "Key ID" 列</span>
+ASC_ISSUER_ID=xxxxxxxx-...     <span class="cmt"># ページ上部の "Issuer ID"</span>
+ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
+    </section>
+
+    <section>
+      <p class="sec-label">ステップ 4</p>
+      <h2>Google — Play サービスアカウント</h2>
+      <ol>
+        <li>
+          <a href="https://console.cloud.google.com">Google Cloud Console</a> で
+          プロジェクトを選ぶか新規作成し、<b>Google Play Android Developer API</b>
+          を有効にします。
+        </li>
+        <li><b>IAM と管理 → サービスアカウント</b> → 1 つ作成(ロールは不要)→ <b>キー</b>タブ → <b>鍵を追加 → JSON</b>。</li>
+        <li>
+          <a href="https://play.google.com/console">Play Console</a> →
+          <b>ユーザーと権限</b> → <b>新しいユーザーを招待</b> → サービスアカウントの
+          メールアドレス(<code>…@…iam.gserviceaccount.com</code>)を貼り付け →
+          アプリに<b>アプリ情報の表示(View app information)</b>権限を付与します。
+        </li>
+        <li><code>.env</code> にその JSON を指定します:</li>
+      </ol>
+      <pre class="code">PLAY_SERVICE_ACCOUNT_PATH=./service-account.json</pre>
+      <div class="note">
+        <b>CI のヒント</b> — どちらのシークレットも <code>*_BASE64</code> 形式
+        (<code>ASC_PRIVATE_KEY_BASE64</code>,
+        <code>PLAY_SERVICE_ACCOUNT_BASE64</code>)に対応しているので、ディスクに
+        ファイルを置かずに CI で storepulse を実行できます。
+      </div>
+    </section>
+
+    <section>
+      <p class="sec-label">ステップ 5</p>
+      <h2>実行</h2>
+      <pre class="code"><span class="p">$</span> pnpm status</pre>
+      <p>
+        あなたの実際のボードが現れます。認証情報に問題のある行は、その場所に
+        エラーを表示するだけで、ボードの残りを隠すことはありません。
+      </p>
+    </section>
+
+    <section>
+      <p class="sec-label">トラブルシューティング</p>
+      <h2>何かがおかしいとき</h2>
+      <table>
+        <thead><tr><th>症状</th><th>考えられる原因</th></tr></thead>
+        <tbody>
+          <tr><td><code>ASC API 401</code></td><td>Key ID / Issuer ID の誤り、または <code>.p8</code> がその Key ID のものではない</td></tr>
+          <tr><td><code>ASC API 404</code></td><td><code>storeId</code> が<i>数字の</i> Apple ID ではない、またはキーのロールからそのアプリが見えない</td></tr>
+          <tr><td><code>Play API 403</code></td><td>Play Console にサービスアカウントが招待されていない、または Android Developer API が無効</td></tr>
+          <tr><td><code>Play API 404</code></td><td>パッケージ名のタイプミス、または一度もリリースされていないアプリ</td></tr>
+          <tr><td>Android の審査状況が出ない</td><td>バグではありません — Google の API が審査状況を提供していないためです</td></tr>
+        </tbody>
+      </table>
+      <p>
+        それでも詰まったら、<a href="https://github.com/dioKR/storepulse/issues">issue を立ててください</a> —
+        ボードに出たエラー行をそのまま貼っていただければ大丈夫です。
+      </p>
+    </section>
+  </main>
+</Base>

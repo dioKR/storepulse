@@ -1,0 +1,130 @@
+---
+import Base from "../../layouts/Base.astro";
+---
+
+<Base
+  lang="zh-cn"
+  title="教程 — storepulse"
+  description="从零到你的真实发布看板:演示模式、列出应用、App Store Connect API 密钥、Google Play 服务账号,以及问题排查。"
+>
+  <main class="doc wrap">
+    <h1>教程</h1>
+    <p class="sub">
+      从零到你的真实看板。第 1–2 步一分钟搞定;第 3–4 步是在 Apple 和 Google
+      那边完成的 5 分钟一次性配置。
+    </p>
+
+    <section>
+      <p class="sec-label">第 1 步</p>
+      <h2>安装并运行演示</h2>
+      <p>前置要求:Node.js 20.12 及以上,pnpm 9 及以上。</p>
+      <pre class="code"><span class="p">$</span> git clone https://github.com/dioKR/storepulse.git
+<span class="p">$</span> cd storepulse
+<span class="p">$</span> pnpm install
+<span class="p">$</span> pnpm demo</pre>
+      <p>
+        演示看板用的是模拟真实团队的示例数据 —— 两个应用,各有 prod·dev
+        两个变体,覆盖双平台。你今后会见到的所有徽标都在里面:
+        <span class="g">LIVE</span>、<span class="c">50%</span>(灰度发布)、
+        <span class="y">REVIEW</span>、<span class="r">REJECTED</span>、
+        <span class="d">draft</span>。
+      </p>
+    </section>
+
+    <section>
+      <p class="sec-label">第 2 步</p>
+      <h2>列出你的应用</h2>
+      <pre class="code"><span class="p">$</span> cp storepulse.config.example.json storepulse.config.json</pre>
+      <table>
+        <thead><tr><th>字段</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td><code>key</code></td><td>内部标识,不重复即可</td></tr>
+          <tr><td><code>name</code></td><td>看板上显示的名称</td></tr>
+          <tr><td><code>group</code></td><td>可选标签 —— 如 <code>prod</code> / <code>dev</code></td></tr>
+          <tr><td><code>platform</code></td><td><code>ios</code> 或 <code>android</code></td></tr>
+          <tr><td><code>storeId</code></td><td><b>iOS</b>:数字 Apple ID · <b>Android</b>:包名</td></tr>
+        </tbody>
+      </table>
+      <div class="note">
+        <b>如何找到 iOS 数字 ID</b> —— App Store Connect → 你的应用 →
+        App 信息(App Information)→ 通用信息 → <b>Apple ID</b>
+        (形如 <code>1234567890</code> 的数字)。
+      </div>
+    </section>
+
+    <section>
+      <p class="sec-label">第 3 步</p>
+      <h2>Apple —— App Store Connect API 密钥</h2>
+      <pre class="code"><span class="p">$</span> cp .env.example .env</pre>
+      <ol>
+        <li>
+          <a href="https://appstoreconnect.apple.com">App Store Connect</a> →
+          <b>用户和访问(Users and Access)</b> → <b>集成(Integrations)</b> →
+          App Store Connect API。
+        </li>
+        <li>在<b>团队密钥(Team Keys)</b>下点 <b>＋</b>。角色选 <b>App Manager</b> 就够了 —— storepulse 只读不写。</li>
+        <li><b>下载 <code>.p8</code> 文件。</b> Apple 只允许下载一次 —— 请妥善保管(本仓库已默认 git 忽略)。</li>
+        <li>填好三个值:</li>
+      </ol>
+      <pre class="code">ASC_KEY_ID=ABC123DEFG          <span class="cmt"># 密钥的 "Key ID" 列</span>
+ASC_ISSUER_ID=xxxxxxxx-...     <span class="cmt"># 页面顶部的 "Issuer ID"</span>
+ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
+    </section>
+
+    <section>
+      <p class="sec-label">第 4 步</p>
+      <h2>Google —— Play 服务账号</h2>
+      <ol>
+        <li>
+          在 <a href="https://console.cloud.google.com">Google Cloud Console</a>
+          选择(或创建)一个项目,启用
+          <b>Google Play Android Developer API</b>。
+        </li>
+        <li><b>IAM 和管理 → 服务账号</b> → 创建一个(无需任何角色)→ <b>密钥</b>标签页 → <b>添加密钥 → JSON</b>。</li>
+        <li>
+          <a href="https://play.google.com/console">Play Console</a> →
+          <b>用户和权限</b> → <b>邀请新用户</b> → 粘贴服务账号邮箱
+          (<code>…@…iam.gserviceaccount.com</code>)→
+          为你的应用授予<b>查看应用信息(View app information)</b>权限。
+        </li>
+        <li>让 <code>.env</code> 指向该 JSON:</li>
+      </ol>
+      <pre class="code">PLAY_SERVICE_ACCOUNT_PATH=./service-account.json</pre>
+      <div class="note">
+        <b>CI 提示</b> —— 两个密钥都支持 <code>*_BASE64</code> 形式
+        (<code>ASC_PRIVATE_KEY_BASE64</code>、
+        <code>PLAY_SERVICE_ACCOUNT_BASE64</code>),无需在磁盘上放文件,
+        也能在 CI 里跑 storepulse。
+      </div>
+    </section>
+
+    <section>
+      <p class="sec-label">第 5 步</p>
+      <h2>运行</h2>
+      <pre class="code"><span class="p">$</span> pnpm status</pre>
+      <p>
+        你的真实看板就出现了。凭据有问题的行只会在原地显示错误,
+        不会遮住看板的其余部分。
+      </p>
+    </section>
+
+    <section>
+      <p class="sec-label">问题排查</p>
+      <h2>哪里不对劲时</h2>
+      <table>
+        <thead><tr><th>症状</th><th>大概率的原因</th></tr></thead>
+        <tbody>
+          <tr><td><code>ASC API 401</code></td><td>Key ID / Issuer ID 填错,或 <code>.p8</code> 与该 Key ID 不匹配</td></tr>
+          <tr><td><code>ASC API 404</code></td><td><code>storeId</code> 不是<i>数字</i> Apple ID,或密钥的角色看不到这个应用</td></tr>
+          <tr><td><code>Play API 403</code></td><td>服务账号没被邀请进 Play Console,或 Android Developer API 未启用</td></tr>
+          <tr><td><code>Play API 404</code></td><td>包名拼写错误,或该应用从未有过发布</td></tr>
+          <tr><td>Android 看不到审核状态</td><td>不是 bug —— Google 的 API 不提供审核状态</td></tr>
+        </tbody>
+      </table>
+      <p>
+        还是卡住了?<a href="https://github.com/dioKR/storepulse/issues">开个 issue</a> ——
+        把看板上那行错误原样贴上来就行。
+      </p>
+    </section>
+  </main>
+</Base>

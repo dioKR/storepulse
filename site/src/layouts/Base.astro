@@ -1,29 +1,84 @@
 ---
 import "../styles/global.css";
 
+type Lang = "en" | "ko" | "ja" | "zh-cn" | "zh-tw";
+
 interface Props {
   title: string;
   description: string;
-  lang?: "en" | "ko";
+  lang?: Lang;
 }
 
 const { title, description, lang = "en" } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-const isKo = lang === "ko";
 
-const homeHref = isKo ? `${base}/ko/` : `${base}/`;
-const tutorialHref = isKo ? `${base}/ko/tutorial/` : `${base}/tutorial/`;
-const tutorialLabel = isKo ? "튜토리얼" : "tutorial";
-const altHref = isKo ? `${base}/` : `${base}/ko/`;
-const altLabel = isKo ? "EN" : "KO";
-const readmeHref = isKo
-  ? "https://github.com/dioKR/storepulse/blob/main/README.md"
-  : "https://github.com/dioKR/storepulse/blob/main/README.ko.md";
-const readmeLabel = isKo ? "English README" : "한국어 README";
+const LANGS: Record<
+  Lang,
+  {
+    path: string;
+    label: string;
+    htmlLang: string;
+    hreflang: string;
+    tutorialLabel: string;
+    readmeFile: string;
+    readmeLabel: string;
+  }
+> = {
+  en: {
+    path: "",
+    label: "EN",
+    htmlLang: "en",
+    hreflang: "en",
+    tutorialLabel: "tutorial",
+    readmeFile: "README.md",
+    readmeLabel: "README",
+  },
+  ko: {
+    path: "/ko",
+    label: "KO",
+    htmlLang: "ko",
+    hreflang: "ko",
+    tutorialLabel: "튜토리얼",
+    readmeFile: "README.ko.md",
+    readmeLabel: "한국어 README",
+  },
+  ja: {
+    path: "/ja",
+    label: "JA",
+    htmlLang: "ja",
+    hreflang: "ja",
+    tutorialLabel: "チュートリアル",
+    readmeFile: "README.ja.md",
+    readmeLabel: "日本語 README",
+  },
+  "zh-cn": {
+    path: "/zh-cn",
+    label: "简",
+    htmlLang: "zh-Hans",
+    hreflang: "zh-Hans",
+    tutorialLabel: "教程",
+    readmeFile: "README.zh-CN.md",
+    readmeLabel: "简体中文 README",
+  },
+  "zh-tw": {
+    path: "/zh-tw",
+    label: "繁",
+    htmlLang: "zh-Hant",
+    hreflang: "zh-Hant",
+    tutorialLabel: "教學",
+    readmeFile: "README.zh-TW.md",
+    readmeLabel: "繁體中文 README",
+  },
+};
+
+const cur = LANGS[lang];
+const homeHref = `${base}${cur.path}/`;
+const tutorialHref = `${base}${cur.path}/tutorial/`;
+const others = (Object.keys(LANGS) as Lang[]).filter((l) => l !== lang);
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang={cur.htmlLang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -33,8 +88,10 @@ const readmeLabel = isKo ? "English README" : "한국어 README";
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
-    <link rel="alternate" hreflang="en" href={`${base}/`} />
-    <link rel="alternate" hreflang="ko" href={`${base}/ko/`} />
+    {(Object.keys(LANGS) as Lang[]).map((l) => (
+      <link rel="alternate" hreflang={LANGS[l].hreflang} href={`${base}${LANGS[l].path}/`} />
+    ))}
+    <link rel="alternate" hreflang="x-default" href={`${base}/`} />
   </head>
   <body>
     <div class="topbar">
@@ -48,9 +105,11 @@ const readmeLabel = isKo ? "English README" : "한국어 README";
           storepulse<span class="cursor">_</span>
         </a>
         <nav>
-          <a href={tutorialHref}>{tutorialLabel}</a>
+          <a href={tutorialHref}>{cur.tutorialLabel}</a>
           <a href="https://github.com/dioKR/storepulse">github ↗</a>
-          <a href={altHref} class="lang">{altLabel}</a>
+          {others.map((l) => (
+            <a href={`${base}${LANGS[l].path}/`} class="lang">{LANGS[l].label}</a>
+          ))}
         </nav>
       </div>
     </div>
@@ -60,7 +119,7 @@ const readmeLabel = isKo ? "English README" : "한국어 README";
         <span>© 2026 storepulse contributors</span>
         <a href="https://github.com/dioKR/storepulse/blob/main/LICENSE">MIT License</a>
         <a href="https://github.com/dioKR/storepulse">GitHub</a>
-        <a href={readmeHref}>{readmeLabel}</a>
+        <a href={`https://github.com/dioKR/storepulse/blob/main/${cur.readmeFile}`}>{cur.readmeLabel}</a>
       </div>
     </footer>
   </body>
