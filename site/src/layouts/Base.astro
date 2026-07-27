@@ -4,14 +4,26 @@ import "../styles/global.css";
 interface Props {
   title: string;
   description: string;
+  lang?: "en" | "ko";
 }
 
-const { title, description } = Astro.props;
+const { title, description, lang = "en" } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const isKo = lang === "ko";
+
+const homeHref = isKo ? `${base}/ko/` : `${base}/`;
+const tutorialHref = isKo ? `${base}/ko/tutorial/` : `${base}/tutorial/`;
+const tutorialLabel = isKo ? "튜토리얼" : "tutorial";
+const altHref = isKo ? `${base}/` : `${base}/ko/`;
+const altLabel = isKo ? "EN" : "KO";
+const readmeHref = isKo
+  ? "https://github.com/dioKR/storepulse/blob/main/README.md"
+  : "https://github.com/dioKR/storepulse/blob/main/README.ko.md";
+const readmeLabel = isKo ? "English README" : "한국어 README";
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -21,11 +33,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <link rel="alternate" hreflang="en" href={`${base}/`} />
+    <link rel="alternate" hreflang="ko" href={`${base}/ko/`} />
   </head>
   <body>
     <div class="topbar">
       <div class="wrap">
-        <a class="brand" href={`${base}/`}>
+        <a class="brand" href={homeHref}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="26" height="26" aria-hidden="true">
             <rect x="4" y="4" width="88" height="88" rx="10" fill="#17161A" stroke="#46414F" stroke-width="2"></rect>
             <path d="M14 52 H32 L40 32 L52 68 L60 52 H70" fill="none" stroke="#E24FD8" stroke-width="8" stroke-linecap="square"></path>
@@ -34,8 +48,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
           storepulse<span class="cursor">_</span>
         </a>
         <nav>
-          <a href={`${base}/tutorial/`}>tutorial</a>
+          <a href={tutorialHref}>{tutorialLabel}</a>
           <a href="https://github.com/dioKR/storepulse">github ↗</a>
+          <a href={altHref} class="lang">{altLabel}</a>
         </nav>
       </div>
     </div>
@@ -45,7 +60,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <span>© 2026 storepulse contributors</span>
         <a href="https://github.com/dioKR/storepulse/blob/main/LICENSE">MIT License</a>
         <a href="https://github.com/dioKR/storepulse">GitHub</a>
-        <a href="https://github.com/dioKR/storepulse/blob/main/README.ko.md">한국어 README</a>
+        <a href={readmeHref}>{readmeLabel}</a>
       </div>
     </footer>
   </body>

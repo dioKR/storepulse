@@ -6,31 +6,33 @@
 
 **모든 iOS · Android 앱의 릴리즈 현황을 한눈에.**
 
-🌐 **웹사이트 & 튜토리얼 → [diokr.github.io/storepulse](https://diokr.github.io/storepulse/)**
+🌐 **웹사이트 & 튜토리얼 → [diokr.github.io/storepulse](https://diokr.github.io/storepulse/ko/)**
 
-지금 출시된 버전이 뭐지? 어떤 버전이 심사에 걸려 있지? TestFlight에는 뭐가
-올라가 있지? — 이걸 확인하려고 App Store Connect와 Google Play Console을 앱마다
-들락거리고 있다면, storepulse가 그 일을 없애줍니다. 명령어 하나, 보드 하나:
+지금 나가 있는 버전이 뭐죠? 어떤 버전이 심사에 걸려 있죠? TestFlight엔 지금 뭐가
+올라가 있고요? 이걸 확인하려고 App Store Connect랑 Google Play Console을 앱마다
+번갈아 열고 있다면, storepulse가 그 수고를 덜어드려요. 명령어 하나, 보드 하나면
+끝나요:
 
 ![storepulse 데모 — pnpm demo가 릴리즈 보드를 그리는 애니메이션](docs/images/demo.svg)
 
-**Expo / React Native** 팀을 우선 염두에 두고 만들었지만, 어떤 iOS/Android
-앱이든 사용할 수 있습니다 — storepulse는 빌드 시스템이 아니라 스토어하고만
-통신하니까요.
+**Expo / React Native** 팀을 먼저 생각하며 만들었지만, iOS·Android 앱이라면
+어떤 것이든 잘 맞아요 — storepulse는 빌드 시스템이 아니라 스토어하고만
+이야기하거든요.
 
-- 🔍 **읽기 전용.** 두 스토어의 어떤 것도 변경하지 않습니다.
-- 🔐 **크리덴셜은 내 컴퓨터 밖으로 나가지 않습니다.** storepulse는 Apple과
-  Google을 직접 호출합니다 — 서버도, 가입도, 데이터 수집도 없습니다.
-- 🧩 **확장 가능.** 코어는 라이브러리이고, CLI는 그 첫 번째 소비자일 뿐입니다.
+- 🔍 **읽기 전용이에요.** 두 스토어의 무엇도 바꾸지 않아요.
+- 🔐 **크리덴셜은 내 컴퓨터 밖으로 나가지 않아요.** storepulse는 Apple과
+  Google을 직접 호출해요 — 서버도, 가입도, 사용 정보 수집도 없어요.
+- 🧩 **확장하기 좋아요.** 코어는 라이브러리이고, CLI는 그걸 처음 가져다 쓴
+  화면일 뿐이에요.
 
 ---
 
-## 먼저 체험해보기 — 크리덴셜 필요 없음
+## 일단 체험부터 — 크리덴셜 없이
 
-샘플 데이터로 storepulse가 뭘 하는지 1분 안에 볼 수 있습니다.
+샘플 데이터만으로 storepulse가 뭘 하는지 1분 안에 볼 수 있어요.
 
 **준비물**: [Node.js](https://nodejs.org) 20.12 이상,
-[pnpm](https://pnpm.io) 9 이상.
+[pnpm](https://pnpm.io) 9 이상이에요.
 
 ```sh
 git clone https://github.com/dioKR/storepulse.git
@@ -39,13 +41,13 @@ pnpm install
 pnpm demo
 ```
 
-끝입니다 — 지금 보이는 보드는 실제 팀 상황을 본뜬 가짜 데이터입니다:
-앱 2개, 각각 prod/dev 변형, 양 플랫폼.
+이게 다예요 — 지금 보이는 보드는 실제 팀 상황을 본뜬 가짜 데이터예요.
+앱 두 개, 각각 prod·dev 변형, 양쪽 플랫폼이요.
 
 ## 보드 읽는 법
 
-각 행은 "한 앱의 한 플랫폼"입니다. 각 열은 **채널** — 버전이 사용자에게
-도달하기까지 머무는 위치입니다:
+각 행은 "앱 하나의 플랫폼 하나"예요. 각 열은 **채널** — 버전이 사용자에게
+가닿기까지 거쳐 가는 자리고요:
 
 | 열 | iOS | Android |
 |---|---|---|
@@ -53,31 +55,31 @@ pnpm demo
 | `BETA / TESTFLIGHT` | TestFlight (외부) | 공개/비공개 테스트 |
 | `INTERNAL` | TestFlight (내부) | 내부 테스트 |
 
-셀 안의 각 버전에는 **상태** 배지가 붙습니다:
+셀 안의 버전마다 **상태** 배지가 붙어요:
 
-| 배지 | 의미 |
+| 배지 | 뜻 |
 |---|---|
-| `2.4.1 LIVE` (초록) | 완전히 출시되어 사용자에게 제공 중 |
-| `2.4.1 50%` (청록) | 단계적 출시 진행 중 — 사용자의 50%에게 배포됨 |
-| `2.5.0 REVIEW` (노랑) | 스토어 심사 대기 / 진행 중 |
-| `2.5.0 PENDING` (파랑) | 승인됐거나 처리 중, 아직 미출시 |
-| `1.9.3 REJECTED` (빨강) | 심사 거절 — 확인 필요 |
-| `2.5.1 draft` (흐림) | 준비됐지만 제출 전 |
+| `2.4.1 LIVE` (초록) | 완전히 출시돼 사용자에게 제공 중이에요 |
+| `2.4.1 50%` (청록) | 단계적으로 출시 중 — 사용자의 50%가 받았어요 |
+| `2.5.0 REVIEW` (노랑) | 스토어 심사를 기다리거나 진행 중이에요 |
+| `2.5.0 PENDING` (파랑) | 승인됐거나 처리 중인데, 아직 출시 전이에요 |
+| `1.9.3 REJECTED` (빨강) | 심사에서 거절됐어요 — 확인이 필요해요 |
+| `2.5.1 draft` (흐림) | 준비는 됐지만 아직 제출 전이에요 |
 | `(108)` (흐림) | 빌드 번호 / versionCode |
 
-한 셀에 버전이 여러 개 보일 수 있습니다 — `2.4.1 LIVE · 2.5.0 REVIEW`는
-"사용자는 2.4.1을 쓰고 있고, 2.5.0이 심사 대기 중"이라는 뜻입니다. 바로 이
-'사이의 순간'을 보이게 만드는 게 이 도구의 존재 이유입니다.
+한 셀에 버전이 여러 개 보이기도 해요 — `2.4.1 LIVE · 2.5.0 REVIEW`는
+"사용자는 2.4.1을 쓰고 있고, 2.5.0은 심사를 기다리는 중"이라는 뜻이에요.
+바로 이 '사이의 순간'을 눈에 보이게 하려고 만든 도구예요.
 
 ---
 
 ## 실제 앱 연결하기
 
-세 단계입니다: 앱 목록 작성 → 크리덴셜 입력 → 실행.
+세 단계면 돼요: 앱 목록 작성 → 크리덴셜 입력 → 실행.
 
 ### 1단계 — 앱 목록 작성
 
-예제 설정을 복사해서 수정하세요:
+예제 설정을 복사해서 고쳐요:
 
 ```sh
 cp storepulse.config.example.json storepulse.config.json
@@ -96,14 +98,14 @@ cp storepulse.config.example.json storepulse.config.json
 
 | 필드 | 설명 |
 |---|---|
-| `key` | 내부 식별용 — 겹치지만 않으면 아무 이름이나 |
-| `name` | 보드에 표시될 이름 |
-| `group` | 이름 옆에 표시되는 라벨 (선택) — 예: `prod` / `dev` |
+| `key` | 겹치지만 않으면 아무 이름이나 (내부에서만 써요) |
+| `name` | 보드에 표시되는 이름 |
+| `group` | 이름 옆에 붙는 라벨 (선택) — 예: `prod` / `dev` |
 | `platform` | `ios` 또는 `android` |
-| `storeId` | **iOS**: 앱의 숫자 Apple ID. **Android**: 패키지명 |
+| `storeId` | **iOS**: 앱의 숫자 Apple ID · **Android**: 패키지명 |
 
 **iOS 숫자 ID는 어디서 찾나요?** App Store Connect → 해당 앱 →
-**앱 정보(App Information)** → 일반 정보 → **Apple ID** (`1234567890` 같은 숫자):
+**앱 정보(App Information)** → 일반 정보 → **Apple ID** (`1234567890` 같은 숫자예요):
 
 ![Apple ID 찾는 위치](docs/images/asc-app-id.png)
 
@@ -113,22 +115,22 @@ cp storepulse.config.example.json storepulse.config.json
 cp .env.example .env
 ```
 
-이제 `.env`를 채웁니다. Apple에서 하나, Google에서 하나 — 각각 5분쯤 걸리는
-1회성 설정입니다.
+이제 `.env`를 채워요. Apple에서 하나, Google에서 하나 — 각각 5분쯤 걸리는
+1회성 설정이에요.
 
 #### Apple — App Store Connect API 키
 
 1. [App Store Connect](https://appstoreconnect.apple.com) →
    **사용자 및 액세스(Users and Access)** → **통합(Integrations)** →
-   **App Store Connect API**로 이동합니다.
-2. **팀 키(Team Keys)**에서 **＋**를 눌러 키를 생성합니다.
-   역할은 **App Manager**면 충분합니다 (storepulse는 읽기만 하니까요).
-3. **`.p8` 파일을 다운로드합니다** — Apple은 딱 한 번만 다운로드를 허용합니다.
-   안전한 곳에 보관하세요 (이 저장소에서는 기본으로 git-ignore 됩니다).
-4. 세 가지 값을 `.env`에 복사합니다:
+   **App Store Connect API**로 들어가요.
+2. **팀 키(Team Keys)**에서 **＋**를 눌러 키를 만들어요.
+   역할은 **App Manager**면 충분해요 (storepulse는 읽기만 하니까요).
+3. **`.p8` 파일을 내려받아요** — Apple은 딱 한 번만 받게 해줘요.
+   안전한 곳에 보관하세요 (여기서는 기본으로 git에서 제외돼요).
+4. 세 가지 값을 `.env`에 옮겨요:
 
 ```ini
-ASC_KEY_ID=ABC123DEFG          # 생성한 키의 "Key ID" 열
+ASC_KEY_ID=ABC123DEFG          # 만든 키의 "Key ID" 열
 ASC_ISSUER_ID=xxxxxxxx-...     # 페이지 상단의 "Issuer ID"
 ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8
 ```
@@ -138,14 +140,14 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8
 #### Google — Play 서비스 계정
 
 1. [Google Cloud Console](https://console.cloud.google.com)에서 프로젝트를
-   선택(또는 생성)하고 **Google Play Android Developer API**를 활성화합니다.
-2. **IAM 및 관리자 → 서비스 계정** → 계정 생성 (특별한 역할 불필요) →
-   **키** 탭 → **키 추가 → JSON**. JSON 파일이 다운로드됩니다.
+   고르거나 새로 만들고 **Google Play Android Developer API**를 켜요.
+2. **IAM 및 관리자 → 서비스 계정** → 하나 만들고 (특별한 역할은 없어도 돼요) →
+   **키** 탭 → **키 추가 → JSON**. JSON 파일이 내려받아져요.
 3. [Play Console](https://play.google.com/console) →
    **사용자 및 권한** → **새 사용자 초대** → 서비스 계정 이메일
-   (`...@...iam.gserviceaccount.com`)을 붙여넣고 → 앱 접근 권한으로
-   **앱 정보 보기(View app information)**를 부여합니다.
-4. `.env`에 JSON 경로를 지정합니다:
+   (`...@...iam.gserviceaccount.com`)을 붙여넣고 → 앱에
+   **앱 정보 보기(View app information)** 권한을 줘요.
+4. `.env`가 그 JSON을 가리키게 해요:
 
 ```ini
 PLAY_SERVICE_ACCOUNT_PATH=./service-account.json
@@ -155,7 +157,7 @@ PLAY_SERVICE_ACCOUNT_PATH=./service-account.json
 
 > **CI 팁**: 두 시크릿 모두 `*_BASE64` 변형(`ASC_PRIVATE_KEY_BASE64`,
 > `PLAY_SERVICE_ACCOUNT_BASE64`)을 지원해서, 파일 없이 CI 시크릿으로 넣을 수
-> 있습니다.
+> 있어요.
 
 ### 3단계 — 실행
 
@@ -163,27 +165,27 @@ PLAY_SERVICE_ACCOUNT_PATH=./service-account.json
 pnpm status
 ```
 
-실제 보드가 나타납니다. 크리덴셜에 문제가 있는 행은 보드 전체를 가리는 대신
-해당 행에만 에러를 표시합니다.
+여러분의 실제 보드가 나타나요. 크리덴셜에 문제가 있는 행은 보드 전체를 가리는
+대신 그 자리에만 에러를 보여줘요.
 
 ---
 
 ## 문제 해결
 
-| 증상 | 원인일 가능성이 높은 것 |
+| 증상 | 이럴 가능성이 높아요 |
 |---|---|
-| `ASC API 401` | Key ID / Issuer ID가 틀렸거나, `.p8`이 해당 Key ID의 것이 아님 |
-| `ASC API 404` | `storeId`가 *숫자* Apple ID가 아니거나, 키 역할이 그 앱을 볼 수 없음 |
-| `Play API 403` | Play Console에 서비스 계정이 초대되지 않았거나, Cloud 프로젝트에서 Android Developer API가 비활성 |
-| `Play API 404` | 패키지명 오타, 또는 릴리즈가 한 번도 없었던 앱 |
-| Android에 심사 상태가 안 보임 | 버그 아님 — Google API가 심사 상태를 제공하지 않습니다 ([자세히](wiki/Architecture.md)) |
+| `ASC API 401` | Key ID / Issuer ID가 틀렸거나, `.p8`이 그 Key ID의 것이 아니에요 |
+| `ASC API 404` | `storeId`가 *숫자* Apple ID가 아니거나, 키 역할로는 그 앱이 안 보여요 |
+| `Play API 403` | Play Console에 서비스 계정이 초대되지 않았거나, Cloud 프로젝트에서 Android Developer API가 꺼져 있어요 |
+| `Play API 404` | 패키지명 오타이거나, 한 번도 릴리즈된 적 없는 앱이에요 |
+| Android에 심사 상태가 안 보여요 | 버그 아니에요 — Google API가 심사 상태를 알려주지 않아요 ([자세히](wiki/Architecture.md)) |
 
 ## 아키텍처
 
-`@storepulse/core`가 두 스토어를 하나의 모델(채널 × 상태)로 정규화하고, 메서드
-2개짜리 `StoreConnector` 인터페이스 뒤에 숨깁니다. CLI는 그 첫 번째 소비자일
-뿐입니다. 다이어그램을 포함한 전체 그림은
-[**wiki/Architecture**](wiki/Architecture.md)에서 보세요.
+`@storepulse/core`가 두 스토어를 하나의 모델(채널 × 상태)로 정규화하고,
+메서드 2개짜리 `StoreConnector` 인터페이스 뒤에 감춰요. CLI는 그걸 처음
+가져다 쓴 화면일 뿐이고요. 다이어그램까지 포함한 전체 그림은
+[**wiki/Architecture**](wiki/Architecture.md)에서 볼 수 있어요.
 
 ## 개발
 
@@ -195,14 +197,14 @@ pnpm lint        # Biome (린트 + 포맷 검사)
 pnpm lint:fix    # 자동 수정
 ```
 
-포맷팅과 린팅은 [Biome](https://biomejs.dev) 하나로 처리합니다 — ESLint +
-Prettier를 대체하는 단일 도구입니다. 에디터 설정: Biome 확장을 설치하면
-`biome.json`을 자동으로 인식합니다.
+포맷팅과 린팅은 [Biome](https://biomejs.dev) 하나로 처리해요 — ESLint +
+Prettier를 대신하는 단일 도구예요. 에디터는 Biome 확장만 설치하면
+`biome.json`을 알아서 인식해요.
 
 ## 로드맵
 
 - [ ] EAS 커넥터 — 스토어 상태를 Expo 빌드·제출과 연결
-- [ ] 상태 변화 시 Slack/Discord 알림 ("2.5.0 심사 통과 🎉")
+- [ ] 상태가 바뀌면 Slack/Discord 알림 ("2.5.0 심사 통과 🎉")
 - [ ] 웹 대시보드
 - [ ] npm 배포 (`npx storepulse`)
 - [ ] CLI 출력 영어·한국어 지원

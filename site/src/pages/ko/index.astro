@@ -1,0 +1,227 @@
+---
+import Base from "../../layouts/Base.astro";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<Base
+  lang="ko"
+  title="storepulse — iOS·Android 릴리즈 상태를 한눈에"
+  description="App Store Connect와 Play Console을 번갈아 열지 마세요. 명령어 하나로 모든 앱의 출시 버전, 심사 상태, 롤아웃 비율, 테스트 트랙을 한 화면에서 확인해요."
+>
+  <header class="hero">
+    <div class="wrap">
+      <p class="kicker">오픈소스 · CLI · Expo &amp; React Native 팀을 위해</p>
+      <h1>
+        지금 <span class="hl">출시된</span> 버전은?<br />
+        <span class="hl">심사에 걸린</span> 버전은?<br />
+        <span class="dim">명령어 하나로, 두 스토어를 한 번에.</span>
+      </h1>
+      <p class="sub">
+        storepulse는 여러분이 관리하는 모든 iOS·Android 앱의 릴리즈 상태를 —
+        버전, 심사 상태, 롤아웃 비율, 테스트 트랙까지 — 터미널 보드 하나에 모아
+        보여줘요. 설계부터 읽기 전용이라, 스토어 크리덴셜이 여러분 컴퓨터 밖으로
+        나갈 일은 없어요.
+      </p>
+      <div class="cta-row">
+        <a class="btn primary" href={`${base}/ko/tutorial/`}>시작하기 →</a>
+        <a class="btn" href="https://github.com/dioKR/storepulse">GitHub에서 보기 ↗</a>
+      </div>
+
+      <div class="term">
+        <div class="term-bar">
+          <span class="sq pink"></span><span class="sq"></span><span class="sq"></span>
+          <span style="margin-left:8px">~/work — zsh</span>
+        </div>
+        <div class="term-body">
+          <pre><span class="p" style="color:var(--accent)">$</span> <span id="typed"></span><span class="type-cursor" id="tcur"></span>
+
+<span data-line>  <span class="m">storepulse</span><span class="d">  ·  one board, both stores</span></span>
+<span data-line></span>
+<span data-line>  <span class="b">APP                  OS        PRODUCTION                      BETA / TESTFLIGHT    INTERNAL</span></span>
+<span data-line>  <span class="d">─────────────────────────────────────────────────────────────────────────────────────────────</span></span>
+<span data-line>  Aurora <span class="d">[prod]</span>        iOS       2.4.1 <span class="g">LIVE</span>  <span class="d">·</span>  2.5.0 <span class="y">REVIEW</span>    2.5.0 <span class="g">LIVE</span> <span class="d">(108)</span>     <span class="d">—</span></span>
+<span data-line>                       Android   2.4.1 <span class="c">50%</span> <span class="d">(241)</span>                2.5.0 <span class="g">LIVE</span> <span class="d">(250)</span>     2.5.1 <span class="d">draft (251)</span></span>
+<span data-line>  Aurora Dev <span class="d">[dev]</span>     iOS       <span class="d">—</span>                              2.6.0 <span class="g">LIVE</span> <span class="d">(12)</span>      <span class="d">—</span></span>
+<span data-line>                       Android   <span class="d">—</span>                              <span class="d">—</span>                    2.6.0 <span class="g">LIVE</span> <span class="d">(12)</span></span>
+<span data-line>  Borealis <span class="d">[prod]</span>      iOS       1.9.2 <span class="g">LIVE</span>  <span class="d">·</span>  1.9.3 <span class="r">REJECTED</span>  1.9.3 <span class="g">LIVE</span> <span class="d">(87)</span>      <span class="d">—</span></span>
+<span data-line>                       Android   1.9.2 <span class="g">LIVE</span> <span class="d">(192)</span>               1.10.0 <span class="g">LIVE</span> <span class="d">(200)</span>    <span class="d">—</span></span></pre>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="wrap">
+      <p class="sec-label">왜</p>
+      <h2>스토어 키를 맡겨도 안심할 수 있게 만들었어요</h2>
+      <div class="grid3">
+        <div>
+          <p class="cell-title">설계부터 읽기 전용</p>
+          <p>
+            storepulse는 무언가를 제출하거나, 승격하거나, 중단하지 않아요.
+            두 스토어에 딱 한 가지만 물어봐요 — "내 릴리즈가 지금 어떤
+            상태지?" — 그리고 그 답을 그려줄 뿐이에요. 망가뜨릴 것도, 겁낼
+            것도 없어요.
+          </p>
+        </div>
+        <div>
+          <p class="cell-title">크리덴셜은 로컬에만</p>
+          <p>
+            요청은 여러분 컴퓨터에서 Apple과 Google로 곧장 가요. 서버도,
+            계정도, 사용 정보 수집도 없어요. 비밀 값은 처음부터 git에서
+            제외되는 <code>.env</code> 안에만 있어요.
+          </p>
+        </div>
+        <div>
+          <p class="cell-title">먼저 라이브러리로</p>
+          <p>
+            핵심은 크리덴셜을 주입받는 라이브러리이고, CLI는 그 첫 번째
+            화면일 뿐이에요. 웹 대시보드와 알림 기능이 다음 차례예요 — 같은
+            엔진에 화면만 더 붙이는 거죠. 메서드 두 개만 구현하면 여러분만의
+            소스도 추가할 수 있어요.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <p class="sec-label">기능</p>
+      <h2>두 콘솔이 보여주는 모든 걸, 표 하나에</h2>
+      <div class="feat">
+        <div class="feat-row">
+          <div class="k">정규화된 모델</div>
+          <div class="v">
+            App Store의 상태와 Play의 트랙을 하나의 언어로 옮겼어요:
+            채널(<code>production</code> / <code>beta</code> / <code>internal</code>)
+            × 상태(<code>live</code>, <code>in-review</code>, <code>rollout</code>, <code>rejected</code>…).
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">롤아웃 추적</div>
+          <div class="v">
+            iOS의 단계적 출시와 Android의 단계적 롤아웃을 그냥 퍼센트로
+            보여줘요 — <code>2.4.1 50%</code>는 사용자 절반이 이미 받았다는
+            뜻이에요.
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">심사 상태 한눈에</div>
+          <div class="v">
+            <code>2.4.1 LIVE · 2.5.0 REVIEW</code>를 나란히 볼 수 있어요 —
+            두 콘솔에서는 한참 파고들어야 나오는 그 '사이의 순간'이요.
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">잘 버티는 보드</div>
+          <div class="v">
+            크리덴셜 하나가 만료돼도 그 행에만 에러가 뜰 뿐, 나머지 보드가
+            통째로 비어버리지 않아요.
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">데모 모드</div>
+          <div class="v">
+            <code>pnpm demo</code> 한 줄이면 샘플 데이터로 보드 전체가
+            그려져요 — API 키를 하나도 만들기 전에 도구를 먼저 살펴볼 수
+            있어요.
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">Expo 친화적</div>
+          <div class="v">
+            어떤 iOS/Android 앱과도 잘 동작하지만, Expo 팀이 Expo 팀을
+            생각하며 만들었어요 — EAS 커넥터도 로드맵에 올라와 있어요.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <p class="sec-label">빠른 시작</p>
+      <h2>0에서 실제 보드까지, 15분이면 충분해요</h2>
+      <div class="step">
+        <div class="step-no">1</div>
+        <div>
+          <h3>데모부터 — 크리덴셜은 필요 없어요</h3>
+          <pre class="code"><span class="p">$</span> git clone https://github.com/dioKR/storepulse.git
+<span class="p">$</span> cd storepulse &amp;&amp; pnpm install
+<span class="p">$</span> pnpm demo</pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-no">2</div>
+        <div>
+          <h3>앱을 적고, 키를 넣어요</h3>
+          <p>
+            앱은 <code>storepulse.config.json</code>에, 비밀 값은
+            <code>.env</code>에 넣어요 (App Store Connect API 키 하나 +
+            Play 서비스 계정 하나 — 둘 다 5분이면 끝나는 1회성 설정이에요).
+          </p>
+          <pre class="code"><span class="p">$</span> cp storepulse.config.example.json storepulse.config.json
+<span class="p">$</span> cp .env.example .env  <span class="cmt"># 그다음 두 파일을 채워요</span></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-no">3</div>
+        <div>
+          <h3>실행해요</h3>
+          <pre class="code"><span class="p">$</span> pnpm status</pre>
+          <p>
+            여러분의 실제 보드가 나타나요.
+            <a href={`${base}/ko/tutorial/`}>스크린샷과 함께 보는 전체 튜토리얼 →</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <p class="sec-label">로드맵</p>
+      <h2>앞으로 나아갈 방향</h2>
+      <div class="roadmap">
+        <span class="done">코어 + 커넥터</span>
+        <span class="done">데모 모드 CLI</span>
+        <span>EAS 커넥터</span>
+        <span>Slack / Discord 알림</span>
+        <span>웹 대시보드</span>
+        <span>npx storepulse</span>
+        <span>CLI 영어 / 한국어 출력</span>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const cmd = "pnpm demo";
+    const typed = document.getElementById("typed")!;
+    const cursor = document.getElementById("tcur")!;
+    const lines = [...document.querySelectorAll("[data-line]")];
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reduced) {
+      typed.textContent = cmd;
+      cursor.remove();
+      for (const l of lines) l.classList.add("on");
+    } else {
+      let i = 0;
+      const timer = setInterval(() => {
+        i += 1;
+        typed.textContent = cmd.slice(0, i);
+        if (i === cmd.length) {
+          clearInterval(timer);
+          setTimeout(() => {
+            (cursor as HTMLElement).style.display = "none";
+            lines.forEach((l, j) => {
+              setTimeout(() => l.classList.add("on"), j * 90);
+            });
+          }, 380);
+        }
+      }, 70);
+    }
+  </script>
+</Base>
