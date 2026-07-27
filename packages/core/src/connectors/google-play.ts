@@ -1,6 +1,7 @@
 import { importPKCS8, SignJWT } from "jose";
 import type { StoreConnector } from "../connector.js";
 import type { AppStatus, AppTarget, Channel, ChannelStatus, ReleaseState } from "../types.js";
+import { asArray, asNumber, asString } from "./defensive.js";
 
 const PLAY_API = "https://androidpublisher.googleapis.com/androidpublisher/v3";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -43,35 +44,44 @@ export class GooglePlayConnector implements StoreConnector {
     // The Play API only exposes track info inside an "edit" transaction,
     // even for reads — create one, read tracks, then discard it.
     const edit = await this.request(token, "POST", `/applications/${pkg}/edits`);
+    const editId = asString(edit?.id);
+    if (!editId) {
+      throw new Error("Play API: edits.insert returned no edit id (API shape changed?)");
+    }
     try {
       const tracks = await this.request(
         token,
         "GET",
-        `/applications/${pkg}/edits/${edit.id}/tracks`,
+        `/applications/${pkg}/edits/${editId}/tracks`,
       );
       const channels: ChannelStatus[] = [];
-      for (const track of tracks.tracks ?? []) {
-        for (const release of track.releases ?? []) {
+      for (const track of asArray(tracks?.tracks) as any[]) {
+        // Fields may vanish in a future API version — degrade to "unknown", never crash
+        const trackName = asString(track?.track);
+        for (const release of asArray(track?.releases) as any[]) {
+          const status = asString(release?.status);
           // Play auto-names releases "33 (0.1.18)" (versionCode + versionName);
           // unwrap so the code isn't printed twice next to the build number
-          let version: string | null = release.name ?? null;
+          let version: string | null = asString(release?.name) ?? null;
           const autoName = version?.match(/^(\d+)\s*\((.+)\)$/);
           if (autoName) version = autoName[2];
+          const lastVersionCode = asArray(release?.versionCodes).at(-1);
+          const userFraction = asNumber(release?.userFraction);
           channels.push({
-            channel: trackToChannel(track.track),
+            channel: trackToChannel(trackName ?? ""),
             version,
-            build: release.versionCodes?.at(-1) ?? autoName?.[1] ?? null,
-            state: RELEASE_STATE[release.status] ?? "unknown",
-            rawState: `${track.track}/${release.status}`,
-            ...(release.userFraction != null && {
-              rolloutPercent: Math.round(release.userFraction * 100),
+            build: lastVersionCode != null ? String(lastVersionCode) : (autoName?.[1] ?? null),
+            state: (status && RELEASE_STATE[status]) || "unknown",
+            rawState: `${trackName ?? "(track missing)"}/${status ?? "(status missing)"}`,
+            ...(userFraction !== undefined && {
+              rolloutPercent: Math.round(userFraction * 100),
             }),
           });
         }
       }
       return { target, channels, fetchedAt: new Date().toISOString() };
     } finally {
-      await this.request(token, "DELETE", `/applications/${pkg}/edits/${edit.id}`).catch(() => {});
+      await this.request(token, "DELETE", `/applications/${pkg}/edits/${editId}`).catch(() => {});
     }
   }
 
@@ -109,6 +119,10 @@ export class GooglePlayConnector implements StoreConnector {
       throw new Error(`Google OAuth token exchange failed (${res.status})`);
     }
     const data = await res.json();
-    return data.access_token;
+    const accessToken = asString(data?.access_token);
+    if (!accessToken) {
+      throw new Error("Google OAuth token response missing access_token");
+    }
+    return accessToken;
   }
 }
