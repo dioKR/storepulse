@@ -107,9 +107,11 @@ const others = (Object.keys(LANGS) as Lang[]).filter((l) => l !== lang);
         <nav>
           <a href={tutorialHref}>{cur.tutorialLabel}</a>
           <a href="https://github.com/dioKR/storepulse">github ↗</a>
-          {others.map((l) => (
-            <a href={`${base}${LANGS[l].path}/`} class="lang">{LANGS[l].label}</a>
-          ))}
+          <span class="langs" aria-label="Languages">
+            {others.map((l) => (
+              <a href={`${base}${LANGS[l].path}/`} class="lang" hreflang={LANGS[l].hreflang}>{LANGS[l].label}</a>
+            ))}
+          </span>
         </nav>
       </div>
     </div>
