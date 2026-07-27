@@ -1,0 +1,101 @@
+# 3층 — 카나리 테스트.
+# 실제 스토어 API를 1개 앱으로 매일 호출해 응답 스키마의 필수 필드를 검증한다.
+# 실패하면 canary-failure 라벨 이슈를 만든다(이미 열린 이슈가 있으면 코멘트).
+#
+# 시크릿이 없으면(오픈소스 fork 등) 전부 건너뛰고 성공으로 끝난다.
+name: Canary
+
+on:
+  schedule:
+    - cron: "37 4 * * *" # 매일 04:37 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: canary
+  cancel-in-progress: false
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY_BASE64: ${{ secrets.ASC_PRIVATE_KEY_BASE64 }}
+      PLAY_SERVICE_ACCOUNT_BASE64: ${{ secrets.PLAY_SERVICE_ACCOUNT_BASE64 }}
+      CANARY_CONFIG_BASE64: ${{ secrets.CANARY_CONFIG_BASE64 }}
+    steps:
+      - name: 시크릿 존재 확인
+        id: gate
+        run: |
+          if [ -z "$CANARY_CONFIG_BASE64" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "CANARY_CONFIG_BASE64 시크릿이 없어 카나리를 건너뜁니다 (fork에서는 정상)."
+          elif [ -z "$ASC_PRIVATE_KEY_BASE64" ] && [ -z "$PLAY_SERVICE_ACCOUNT_BASE64" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "스토어 API 시크릿이 하나도 없어 카나리를 건너뜁니다."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        if: steps.gate.outputs.run == 'true'
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+        if: steps.gate.outputs.run == 'true'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        if: steps.gate.outputs.run == 'true'
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: 의존성 설치 및 빌드
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: 카나리 실행
+        if: steps.gate.outputs.run == 'true'
+        id: canary
+        run: |
+          set -o pipefail
+          # 앱 ID는 레포에 커밋하지 않는다 — 시크릿으로만 주입 (파일은 .gitignore 대상)
+          printf '%s' "$CANARY_CONFIG_BASE64" | base64 -d > storepulse.config.canary.json
+          node scripts/canary.mjs 2>&1 | tee /tmp/canary.log
+
+      - name: 실패 시 이슈 생성
+        if: failure() && steps.canary.conclusion == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create canary-failure \
+            --repo "$GITHUB_REPOSITORY" \
+            --color B60205 \
+            --description "카나리 스모크 테스트 실패 — 스토어 API 응답 이상" \
+            --force
+          {
+            echo "일일 카나리(\`canary.yml\`)가 실제 스토어 API 응답 검증에 실패했습니다."
+            echo
+            echo "## 카나리 출력"
+            echo '```'
+            head -c 30000 /tmp/canary.log
+            echo '```'
+            echo
+            echo "워크플로우 실행: ${RUN_URL}"
+          } > /tmp/canary-issue.md
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" \
+            --label canary-failure --state open \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            # 이미 열린 카나리 이슈가 있으면 새 이슈 대신 코멘트로 이어 붙인다
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" \
+              --body-file /tmp/canary-issue.md
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" \
+              --title "카나리 실패: 스토어 API 응답이 기대와 다름 ($(date -u +%Y-%m-%d))" \
+              --label canary-failure \
+              --body-file /tmp/canary-issue.md
+          fi
