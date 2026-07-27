@@ -22,6 +22,7 @@
 html {
   background: var(--bg);
   color-scheme: dark;
+  overflow-x: clip;
 }
 
 body {
@@ -30,6 +31,7 @@ body {
   font-family: var(--mono);
   line-height: 1.65;
   font-size: 15px;
+  overflow-x: clip;
 }
 
 ::selection {
@@ -67,7 +69,8 @@ button:focus-visible {
 .topbar .wrap {
   display: flex;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 4px 12px;
   padding-top: 12px;
   padding-bottom: 12px;
 }
@@ -89,17 +92,41 @@ button:focus-visible {
 .topbar nav {
   margin-left: auto;
   display: flex;
-  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 16px;
   font-size: 0.9rem;
+  min-width: 0;
 }
 
 .topbar nav a {
   color: var(--muted);
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .topbar nav a:hover {
   color: var(--ink);
+}
+
+.topbar .langs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-left: 1px solid var(--line);
+  padding-left: 14px;
+}
+
+@media (max-width: 480px) {
+  .topbar nav {
+    gap: 4px 12px;
+    font-size: 0.85rem;
+  }
+
+  .topbar .langs {
+    gap: 8px;
+    padding-left: 10px;
+  }
 }
 
 /* ── hero ────────────────────────────────── */
@@ -371,6 +398,13 @@ h2 {
   grid-template-columns: 64px 1fr;
   gap: 0 20px;
   margin-bottom: 26px;
+}
+
+/* grid items default to min-width:auto, letting long <pre> lines blow the
+   column out past the viewport on mobile — allow the cell to shrink so
+   pre.code can scroll internally instead */
+.step > div {
+  min-width: 0;
 }
 
 .step-no {
