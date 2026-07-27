@@ -52,10 +52,15 @@ export class GooglePlayConnector implements StoreConnector {
       const channels: ChannelStatus[] = [];
       for (const track of tracks.tracks ?? []) {
         for (const release of track.releases ?? []) {
+          // Play auto-names releases "33 (0.1.18)" (versionCode + versionName);
+          // unwrap so the code isn't printed twice next to the build number
+          let version: string | null = release.name ?? null;
+          const autoName = version?.match(/^(\d+)\s*\((.+)\)$/);
+          if (autoName) version = autoName[2];
           channels.push({
             channel: trackToChannel(track.track),
-            version: release.name ?? null,
-            build: release.versionCodes?.at(-1) ?? null,
+            version,
+            build: release.versionCodes?.at(-1) ?? autoName?.[1] ?? null,
             state: RELEASE_STATE[release.status] ?? "unknown",
             rawState: `${track.track}/${release.status}`,
             ...(release.userFraction != null && {

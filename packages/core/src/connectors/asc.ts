@@ -61,28 +61,36 @@ export class AscConnector implements StoreConnector {
     const data = await this.get(
       `/apps/${appId}/appStoreVersions?filter[platform]=IOS&limit=5&fields[appStoreVersions]=versionString,appStoreState`,
     );
-    const channels: ChannelStatus[] = [];
+    const entries: { id: string; channel: ChannelStatus }[] = [];
     for (const version of data.data ?? []) {
       const rawState: string = version.attributes.appStoreState;
       // Superseded versions would only repeat what the live row already says
       if (rawState === "REPLACED_WITH_NEW_VERSION") continue;
-      const state = APP_STORE_STATE[rawState] ?? "unknown";
-      const channel: ChannelStatus = {
-        channel: "production",
-        version: version.attributes.versionString,
-        state,
-        rawState,
-      };
-      if (state === "live") {
-        const rollout = await this.fetchPhasedRelease(version.id);
-        if (rollout !== null) {
-          channel.state = "rollout";
-          channel.rolloutPercent = rollout;
-        }
-      }
-      channels.push(channel);
+      entries.push({
+        id: version.id,
+        channel: {
+          channel: "production",
+          version: version.attributes.versionString,
+          state: APP_STORE_STATE[rawState] ?? "unknown",
+          rawState,
+        },
+      });
     }
-    return channels;
+
+    // The API returns newest first; older versions can keep a live-looking state
+    // forever, so everything past the first live entry is store history — drop it.
+    const firstLive = entries.findIndex((e) => e.channel.state === "live");
+    const current = firstLive === -1 ? entries : entries.slice(0, firstLive + 1);
+
+    const live = current.find((e) => e.channel.state === "live");
+    if (live) {
+      const rollout = await this.fetchPhasedRelease(live.id);
+      if (rollout !== null) {
+        live.channel.state = "rollout";
+        live.channel.rolloutPercent = rollout;
+      }
+    }
+    return current.map((e) => e.channel);
   }
 
   private async fetchPhasedRelease(versionId: string): Promise<number | null> {

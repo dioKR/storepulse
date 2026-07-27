@@ -69,7 +69,12 @@ const lines = [
   row(
     [seg("Borealis ", "w"), seg("[prod]", "d")],
     [seg("iOS", "w")],
-    [seg("1.9.2 ", "w"), seg("LIVE", "g", true), seg("  ·  1.9.3 ", "w"), seg("REJECTED", "r", true)],
+    [
+      seg("1.9.2 ", "w"),
+      seg("LIVE", "g", true),
+      seg("  ·  1.9.3 ", "w"),
+      seg("REJECTED", "r", true),
+    ],
     [seg("1.9.3 ", "w"), seg("LIVE", "g", true), seg(" (87)", "d")],
   ),
   row(
@@ -149,4 +154,6 @@ ${boardLines}
 `;
 
 writeFileSync(new URL("../docs/images/demo.svg", import.meta.url), svg);
-console.log(`OK — ${WIDTH}x${HEIGHT}, ${lines.length} board lines, loop ${LOOP}s, ${Buffer.byteLength(svg)} bytes`);
+console.log(
+  `OK — ${WIDTH}x${HEIGHT}, ${lines.length} board lines, loop ${LOOP}s, ${Buffer.byteLength(svg)} bytes`,
+);
