@@ -1,7 +1,10 @@
 node_modules/
 dist/
 *.tsbuildinfo
+
+# local-only: your real config & credentials (the *.example.* files are the committed ones)
 .env
+storepulse.config.json
 *.p8
 service-account*.json
 .DS_Store
