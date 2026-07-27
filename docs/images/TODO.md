@@ -6,12 +6,10 @@ README가 참조하는 이미지들입니다. 아래 파일명 **그대로** 이
 > ⚠️ 공통 주의: 실제 앱 이름·매출·이메일 등 민감한 정보가 화면에 있으면
 > 가리고 찍으세요 (macOS 캡처 후 미리보기에서 블러/사각형).
 
-## 1. `demo.png` — 데모 보드 (가장 중요!)
+## ~~1. `demo.png`~~ — 불필요해짐 ✅
 
-- 터미널에서 `pnpm demo` 실행
-- 창 크기를 표가 딱 맞게 조절 (가로 ~110자)
-- macOS: `Cmd+Shift+4` → `Space` → 터미널 창 클릭 (그림자 포함 창 캡처)
-- 색상이 예쁜 테마(iTerm2 등)에서 찍으면 더 좋습니다
+README 히어로는 이제 애니메이션 SVG(`demo.svg`)가 대신합니다.
+수정하려면 `scripts/gen-demo-svg.mjs`를 고치고 `node scripts/gen-demo-svg.mjs`로 재생성하세요.
 
 ## 2. `asc-app-id.png` — Apple ID 위치
 

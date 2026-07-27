@@ -6,11 +6,13 @@
 
 **모든 iOS · Android 앱의 릴리즈 현황을 한눈에.**
 
+🌐 **웹사이트 & 튜토리얼 → [diokr.github.io/storepulse](https://diokr.github.io/storepulse/)**
+
 지금 출시된 버전이 뭐지? 어떤 버전이 심사에 걸려 있지? TestFlight에는 뭐가
 올라가 있지? — 이걸 확인하려고 App Store Connect와 Google Play Console을 앱마다
 들락거리고 있다면, storepulse가 그 일을 없애줍니다. 명령어 하나, 보드 하나:
 
-![storepulse 데모 보드](docs/images/demo.png)
+![storepulse 데모 — pnpm demo가 릴리즈 보드를 그리는 애니메이션](docs/images/demo.svg)
 
 **Expo / React Native** 팀을 우선 염두에 두고 만들었지만, 어떤 iOS/Android
 앱이든 사용할 수 있습니다 — storepulse는 빌드 시스템이 아니라 스토어하고만

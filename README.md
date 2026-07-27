@@ -6,11 +6,13 @@
 
 **One-glance release status for all your iOS & Android apps.**
 
+🌐 **Website & tutorial → [diokr.github.io/storepulse](https://diokr.github.io/storepulse/)**
+
 Which version is live? Which one is stuck in review? What's on TestFlight right
 now? If answering that means clicking through App Store Connect *and* Google
 Play Console app by app — storepulse is for you. One command, one board:
 
-![storepulse demo board](docs/images/demo.png)
+![storepulse demo — pnpm demo renders a live release board](docs/images/demo.svg)
 
 Built with **Expo / React Native** teams in mind, but it works for any
 iOS/Android app — storepulse only talks to the stores, not to your build
