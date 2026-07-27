@@ -122,9 +122,12 @@ cp .env.example .env
    **用户和访问(Users and Access)** → **集成(Integrations)** →
    **App Store Connect API**。
 2. 在**团队密钥(Team Keys)**下点 **＋** 生成密钥。
-   角色选 **App Manager** 就够了(storepulse 只读不写)。
+   角色建议选 **Developer** —— 对 storepulse 的读取来说已经足够。
+   **App Manager** 也能用,但密钥一旦泄露,提交应用、改动元数据的权限
+   也会一并流出,按最小权限原则来更稳妥。
 3. **下载 `.p8` 文件** —— Apple 只允许下载一次。
-   请妥善保管(本仓库已默认 git 忽略)。
+   请妥善保管(本仓库已默认 git 忽略)。这把密钥能在其角色允许的范围内
+   执行写操作,一旦泄露,请立即到 App Store Connect 吊销(revoke)。
 4. 把三个值复制进 `.env`:
 
 ```ini
@@ -144,7 +147,9 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8
 3. 打开 [Play Console](https://play.google.com/console) →
    **用户和权限** → **邀请新用户** → 粘贴服务账号邮箱
    (`...@...iam.gserviceaccount.com`)→ 为你的应用授予
-   **查看应用信息(View app information)**权限。
+   **查看应用信息(View app information)**权限。只授予这一项 ——
+   **千万不要授予任何发布(Release)权限**;storepulse 用不到,
+   这样即使密钥泄露也只停留在只读。
 4. 让 `.env` 指向该 JSON:
 
 ```ini

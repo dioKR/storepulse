@@ -62,8 +62,8 @@ import Base from "../../layouts/Base.astro";
           <b>사용자 및 액세스(Users and Access)</b> → <b>통합(Integrations)</b> →
           App Store Connect API로 들어가요.
         </li>
-        <li><b>팀 키(Team Keys)</b>에서 <b>＋</b>를 눌러요. 역할은 <b>App Manager</b>면 충분해요 — storepulse는 읽기만 하니까요.</li>
-        <li><b><code>.p8</code> 파일을 내려받아요.</b> Apple은 딱 한 번만 받게 해줘요 — 안전하게 보관하세요 (여기서는 git에서 제외돼요).</li>
+        <li><b>팀 키(Team Keys)</b>에서 <b>＋</b>를 눌러요. 역할은 <b>Developer</b>를 권장해요 — storepulse가 읽는 데는 이걸로 충분해요. <b>App Manager</b>로도 동작하지만, 키가 유출되면 앱 제출·메타데이터 수정 권한까지 넘어가니 최소 권한이 안전해요.</li>
+        <li><b><code>.p8</code> 파일을 내려받아요.</b> Apple은 딱 한 번만 받게 해줘요 — 안전하게 보관하세요 (여기서는 git에서 제외돼요). 이 키는 역할이 허용하는 만큼 쓰기도 가능한 크리덴셜이라, 유출됐다면 App Store Connect에서 즉시 폐기(revoke)하세요.</li>
         <li>세 가지 값을 채워요:</li>
       </ol>
       <pre class="code">ASC_KEY_ID=ABC123DEFG          <span class="cmt"># 키의 "Key ID" 열</span>
@@ -86,6 +86,9 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
           <b>사용자 및 권한</b> → <b>새 사용자 초대</b> → 서비스 계정 이메일
           (<code>…@…iam.gserviceaccount.com</code>)을 붙여넣고 →
           앱에 <b>앱 정보 보기(View app information)</b> 권한을 줘요.
+          권한은 딱 이것만 주세요 — <b>출시(Release) 관련 권한은 절대 주면
+          안 돼요.</b> storepulse에는 필요 없고, 이렇게 해야 키가 유출돼도
+          읽기 전용에 머물러요.
         </li>
         <li><code>.env</code>가 그 JSON을 가리키게 해요:</li>
       </ol>

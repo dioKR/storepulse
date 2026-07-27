@@ -60,8 +60,8 @@ import Base from "../layouts/Base.astro";
           <a href="https://appstoreconnect.apple.com">App Store Connect</a> →
           <b>Users and Access</b> → <b>Integrations</b> → App Store Connect API
         </li>
-        <li>Under <b>Team Keys</b>, click <b>＋</b>. Role: <b>App Manager</b> is plenty — storepulse only reads.</li>
-        <li><b>Download the <code>.p8</code> file.</b> Apple allows exactly one download — keep it safe (it's git-ignored here).</li>
+        <li>Under <b>Team Keys</b>, click <b>＋</b>. Role: <b>Developer</b> is recommended — it covers everything storepulse reads. <b>App Manager</b> works too, but a leaked App Manager key can submit apps and edit metadata, so grant the least privilege you can.</li>
+        <li><b>Download the <code>.p8</code> file.</b> Apple allows exactly one download — keep it safe (it's git-ignored here). This key can write as much as its role allows — if it ever leaks, revoke it immediately in App Store Connect.</li>
         <li>Fill in three values:</li>
       </ol>
       <pre class="code">ASC_KEY_ID=ABC123DEFG          <span class="cmt"># "Key ID" column of your key</span>
@@ -83,7 +83,10 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
           In <a href="https://play.google.com/console">Play Console</a> →
           <b>Users and permissions</b> → <b>Invite new users</b> → paste the
           service account email (<code>…@…iam.gserviceaccount.com</code>) →
-          grant <b>View app information</b> on your apps.
+          grant <b>View app information</b> on your apps. Grant only that —
+          <b>never</b> give the service account any Release/publish
+          permissions; storepulse doesn't need them, and a leaked key stays
+          read-only.
         </li>
         <li>Point <code>.env</code> at the JSON:</li>
       </ol>
