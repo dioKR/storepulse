@@ -27,8 +27,12 @@ function badge(c: ChannelStatus): string {
       return `${version} ${pc.red("HALTED")}${build}`;
     case "draft":
       return `${version} ${pc.dim("draft")}${build}`;
-    default:
-      return `${version} ${pc.dim(c.rawState ?? "unknown")}${build}`;
+    default: {
+      // Unmapped store state (upstream API change?) — make it stand out instead
+      // of blending in: gray UNKNOWN badge with the raw store state next to it.
+      const raw = c.rawState ? ` ${pc.dim(`(${c.rawState})`)}` : "";
+      return `${version} ${pc.inverse(pc.gray(" UNKNOWN "))}${raw}${build}`;
+    }
   }
 }
 

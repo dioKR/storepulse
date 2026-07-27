@@ -1,6 +1,7 @@
 import { importPKCS8, SignJWT } from "jose";
 import type { StoreConnector } from "../connector.js";
 import type { AppStatus, AppTarget, ChannelStatus, ReleaseState } from "../types.js";
+import { asArray, asNumber, asString } from "./defensive.js";
 
 const ASC_API = "https://api.appstoreconnect.apple.com/v1";
 
@@ -61,18 +62,19 @@ export class AscConnector implements StoreConnector {
     const data = await this.get(
       `/apps/${appId}/appStoreVersions?filter[platform]=IOS&limit=5&fields[appStoreVersions]=versionString,appStoreState`,
     );
-    const entries: { id: string; channel: ChannelStatus }[] = [];
-    for (const version of data.data ?? []) {
-      const rawState: string = version.attributes.appStoreState;
+    const entries: { id: string | undefined; channel: ChannelStatus }[] = [];
+    for (const version of asArray(data?.data) as any[]) {
+      // Field may vanish in a future API version — degrade to "unknown", never crash
+      const rawState = asString(version?.attributes?.appStoreState);
       // Superseded versions would only repeat what the live row already says
       if (rawState === "REPLACED_WITH_NEW_VERSION") continue;
       entries.push({
-        id: version.id,
+        id: asString(version?.id),
         channel: {
           channel: "production",
-          version: version.attributes.versionString,
-          state: APP_STORE_STATE[rawState] ?? "unknown",
-          rawState,
+          version: asString(version?.attributes?.versionString) ?? null,
+          state: (rawState && APP_STORE_STATE[rawState]) || "unknown",
+          rawState: rawState ?? "(appStoreState missing)",
         },
       });
     }
@@ -82,8 +84,8 @@ export class AscConnector implements StoreConnector {
     const firstLive = entries.findIndex((e) => e.channel.state === "live");
     const current = firstLive === -1 ? entries : entries.slice(0, firstLive + 1);
 
-    const live = current.find((e) => e.channel.state === "live");
-    if (live) {
+    const live = current.find((e) => e.channel.state === "live" && e.id !== undefined);
+    if (live?.id) {
       const rollout = await this.fetchPhasedRelease(live.id);
       if (rollout !== null) {
         live.channel.state = "rollout";
@@ -96,10 +98,10 @@ export class AscConnector implements StoreConnector {
   private async fetchPhasedRelease(versionId: string): Promise<number | null> {
     try {
       const data = await this.get(`/appStoreVersions/${versionId}/appStoreVersionPhasedRelease`);
-      const attrs = data.data?.attributes;
+      const attrs = data?.data?.attributes;
       if (attrs?.phasedReleaseState !== "ACTIVE") return null;
-      const day = Math.min(attrs.currentDayNumber ?? 1, PHASED_RELEASE_PERCENT.length);
-      return PHASED_RELEASE_PERCENT[day - 1];
+      const day = Math.min(asNumber(attrs.currentDayNumber) ?? 1, PHASED_RELEASE_PERCENT.length);
+      return PHASED_RELEASE_PERCENT[Math.max(day - 1, 0)];
     } catch {
       // 404 = no phased release configured for this version
       return null;
@@ -110,19 +112,21 @@ export class AscConnector implements StoreConnector {
     const data = await this.get(
       `/builds?filter[app]=${appId}&sort=-uploadedDate&limit=1&fields[builds]=version,processingState&include=preReleaseVersion&fields[preReleaseVersions]=version`,
     );
-    const build = data.data?.[0];
+    const build = asArray(data?.data)[0] as any;
     if (!build) return [];
-    const marketingVersion: string | null =
-      data.included?.find((i: { type: string }) => i.type === "preReleaseVersions")?.attributes
-        ?.version ?? null;
-    const rawState: string = build.attributes.processingState;
+    const marketingVersion =
+      asString(
+        (asArray(data?.included) as any[]).find((i) => i?.type === "preReleaseVersions")?.attributes
+          ?.version,
+      ) ?? null;
+    const rawState = asString(build?.attributes?.processingState);
     return [
       {
         channel: "beta",
         version: marketingVersion,
-        build: build.attributes.version,
-        state: BUILD_PROCESSING_STATE[rawState] ?? "unknown",
-        rawState,
+        build: asString(build?.attributes?.version) ?? null,
+        state: (rawState && BUILD_PROCESSING_STATE[rawState]) || "unknown",
+        rawState: rawState ?? "(processingState missing)",
       },
     ];
   }

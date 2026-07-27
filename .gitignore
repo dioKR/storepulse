@@ -6,6 +6,8 @@ dist/
 # local-only: your real config & credentials (the *.example.* files are the committed ones)
 .env
 storepulse.config.json
+# canary app IDs are injected via the CANARY_CONFIG_BASE64 secret, never committed
+storepulse.config.canary.json
 *.p8
 service-account*.json
 .DS_Store
