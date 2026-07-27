@@ -15,6 +15,19 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dioKR/storepulse.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://diokr.github.io/storepulse/",
+  "bugs": "https://github.com/dioKR/storepulse/issues",
+  "engines": {
+    "node": ">=20.12"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc --build"
   },
