@@ -1,0 +1,224 @@
+---
+import Base from "../../layouts/Base.astro";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<Base
+  lang="ja"
+  title="storepulse — iOS・Android のリリース状況をひと目で"
+  description="App Store Connect と Play Console をタブで行き来するのはもう終わり。コマンドひとつで、全アプリの公開バージョン・審査状況・段階的リリースの割合・テストトラックを一画面に。"
+>
+  <header class="hero">
+    <div class="wrap">
+      <p class="kicker">オープンソース · CLI · Expo &amp; React Native チームのために</p>
+      <h1>
+        いま<span class="hl">公開中</span>のバージョンは?<br />
+        <span class="hl">審査で止まっている</span>のは?<br />
+        <span class="dim">コマンドひとつで、両ストアを。</span>
+      </h1>
+      <p class="sub">
+        storepulse は、管理しているすべての iOS・Android アプリのリリース状況を —
+        バージョン、審査状況、段階的リリースの割合、テストトラックまで —
+        ひとつのターミナルボードにまとめて表示します。設計から読み取り専用なので、
+        ストアの認証情報があなたのマシンの外に出ることはありません。
+      </p>
+      <div class="cta-row">
+        <a class="btn primary" href={`${base}/ja/tutorial/`}>はじめる →</a>
+        <a class="btn" href="https://github.com/dioKR/storepulse">GitHub で見る ↗</a>
+      </div>
+
+      <div class="term">
+        <div class="term-bar">
+          <span class="sq pink"></span><span class="sq"></span><span class="sq"></span>
+          <span style="margin-left:8px">~/work — zsh</span>
+        </div>
+        <div class="term-body">
+          <pre><span class="p" style="color:var(--accent)">$</span> <span id="typed"></span><span class="type-cursor" id="tcur"></span>
+
+<span data-line>  <span class="m">storepulse</span><span class="d">  ·  one board, both stores</span></span>
+<span data-line></span>
+<span data-line>  <span class="b">APP                  OS        PRODUCTION                      BETA / TESTFLIGHT    INTERNAL</span></span>
+<span data-line>  <span class="d">─────────────────────────────────────────────────────────────────────────────────────────────</span></span>
+<span data-line>  Aurora <span class="d">[prod]</span>        iOS       2.4.1 <span class="g">LIVE</span>  <span class="d">·</span>  2.5.0 <span class="y">REVIEW</span>    2.5.0 <span class="g">LIVE</span> <span class="d">(108)</span>     <span class="d">—</span></span>
+<span data-line>                       Android   2.4.1 <span class="c">50%</span> <span class="d">(241)</span>                2.5.0 <span class="g">LIVE</span> <span class="d">(250)</span>     2.5.1 <span class="d">draft (251)</span></span>
+<span data-line>  Aurora Dev <span class="d">[dev]</span>     iOS       <span class="d">—</span>                              2.6.0 <span class="g">LIVE</span> <span class="d">(12)</span>      <span class="d">—</span></span>
+<span data-line>                       Android   <span class="d">—</span>                              <span class="d">—</span>                    2.6.0 <span class="g">LIVE</span> <span class="d">(12)</span></span>
+<span data-line>  Borealis <span class="d">[prod]</span>      iOS       1.9.2 <span class="g">LIVE</span>  <span class="d">·</span>  1.9.3 <span class="r">REJECTED</span>  1.9.3 <span class="g">LIVE</span> <span class="d">(87)</span>      <span class="d">—</span></span>
+<span data-line>                       Android   1.9.2 <span class="g">LIVE</span> <span class="d">(192)</span>               1.10.0 <span class="g">LIVE</span> <span class="d">(200)</span>    <span class="d">—</span></span></pre>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="wrap">
+      <p class="sec-label">なぜ</p>
+      <h2>ストアの鍵を預けても安心できるように</h2>
+      <div class="grid3">
+        <div>
+          <p class="cell-title">設計から読み取り専用</p>
+          <p>
+            storepulse は何かを提出したり、昇格させたり、止めたりしません。
+            両ストアに尋ねるのはただひとつ —「いまリリースはどんな状態?」—
+            そしてその答えを描くだけ。壊すものも、身構えるものもありません。
+          </p>
+        </div>
+        <div>
+          <p class="cell-title">認証情報はローカルだけ</p>
+          <p>
+            リクエストはあなたのマシンから Apple と Google に直接届きます。
+            サーバーも、アカウント登録も、テレメトリもなし。シークレットは
+            最初から git 管理外の <code>.env</code> の中だけです。
+          </p>
+        </div>
+        <div>
+          <p class="cell-title">まずはライブラリとして</p>
+          <p>
+            コアは認証情報を注入して使うライブラリで、CLI はその最初の画面に
+            すぎません。次は Web ダッシュボードと通知 — 同じエンジンに画面を
+            増やしていくだけです。メソッドを 2 つ実装すれば、独自のソースも
+            追加できます。
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <p class="sec-label">機能</p>
+      <h2>2 つのコンソールが見せるすべてを、1 枚の表に</h2>
+      <div class="feat">
+        <div class="feat-row">
+          <div class="k">正規化されたモデル</div>
+          <div class="v">
+            App Store の状態と Play のトラックを、ひとつの語彙に揃えました:
+            チャンネル(<code>production</code> / <code>beta</code> / <code>internal</code>)
+            × 状態(<code>live</code>, <code>in-review</code>, <code>rollout</code>, <code>rejected</code>…)。
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">ロールアウトの追跡</div>
+          <div class="v">
+            iOS の段階的リリースも Android の段階的な公開も、ただのパーセントで
+            表示します — <code>2.4.1 50%</code> なら、ユーザーの半分に届いています。
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">審査状況をひと目で</div>
+          <div class="v">
+            <code>2.4.1 LIVE · 2.5.0 REVIEW</code> を並べて確認できます —
+            どちらのコンソールでも掘らないと出てこない、あの「あいだの瞬間」です。
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">崩れないボード</div>
+          <div class="v">
+            認証情報がひとつ期限切れになっても、エラーが出るのはその行だけ。
+            ボードの残りが真っ白になることはありません。
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">デモモード</div>
+          <div class="v">
+            <code>pnpm demo</code> だけでサンプルデータのボードが丸ごと描かれます —
+            API キーを 1 つも作る前に、じっくり試せます。
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">Expo フレンドリー</div>
+          <div class="v">
+            どんな iOS/Android アプリでも動きますが、作ったのは Expo チーム、
+            想定しているのも Expo チームです — EAS コネクタもロードマップにあります。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <p class="sec-label">クイックスタート</p>
+      <h2>ゼロから実際のボードまで、およそ 15 分</h2>
+      <div class="step">
+        <div class="step-no">1</div>
+        <div>
+          <h3>まずはデモから — 認証情報は不要です</h3>
+          <pre class="code"><span class="p">$</span> git clone https://github.com/dioKR/storepulse.git
+<span class="p">$</span> cd storepulse &amp;&amp; pnpm install
+<span class="p">$</span> pnpm demo</pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-no">2</div>
+        <div>
+          <h3>アプリを並べて、キーを入れる</h3>
+          <p>
+            アプリは <code>storepulse.config.json</code> に、シークレットは
+            <code>.env</code> に(App Store Connect API キーと Play サービス
+            アカウント — どちらも 5 分で終わる、一度きりのセットアップです)。
+          </p>
+          <pre class="code"><span class="p">$</span> cp storepulse.config.example.json storepulse.config.json
+<span class="p">$</span> cp .env.example .env  <span class="cmt"># あとは両方のファイルを埋めるだけ</span></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-no">3</div>
+        <div>
+          <h3>実行する</h3>
+          <pre class="code"><span class="p">$</span> pnpm status</pre>
+          <p>
+            あなたの実際のボードが現れます。
+            <a href={`${base}/ja/tutorial/`}>スクリーンショット付きのチュートリアル →</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <p class="sec-label">ロードマップ</p>
+      <h2>この先の予定</h2>
+      <div class="roadmap">
+        <span class="done">コア + コネクタ</span>
+        <span class="done">デモモード付き CLI</span>
+        <span>EAS コネクタ</span>
+        <span>Slack / Discord 通知</span>
+        <span>Web ダッシュボード</span>
+        <span>npx storepulse</span>
+        <span>CLI 出力の英語・韓国語対応</span>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const cmd = "pnpm demo";
+    const typed = document.getElementById("typed")!;
+    const cursor = document.getElementById("tcur")!;
+    const lines = [...document.querySelectorAll("[data-line]")];
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reduced) {
+      typed.textContent = cmd;
+      cursor.remove();
+      for (const l of lines) l.classList.add("on");
+    } else {
+      let i = 0;
+      const timer = setInterval(() => {
+        i += 1;
+        typed.textContent = cmd.slice(0, i);
+        if (i === cmd.length) {
+          clearInterval(timer);
+          setTimeout(() => {
+            (cursor as HTMLElement).style.display = "none";
+            lines.forEach((l, j) => {
+              setTimeout(() => l.classList.add("on"), j * 90);
+            });
+          }, 380);
+        }
+      }, 70);
+    }
+  </script>
+</Base>

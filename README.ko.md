@@ -2,7 +2,7 @@
 
 # storepulse
 
-[English](README.md) | **한국어**
+[English](README.md) | **한국어** | [日本語](README.ja.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md)
 
 **모든 iOS · Android 앱의 릴리즈 현황을 한눈에.**
 

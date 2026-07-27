@@ -1,0 +1,221 @@
+---
+import Base from "../../layouts/Base.astro";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<Base
+  lang="zh-cn"
+  title="storepulse — iOS·Android 发布状态一目了然"
+  description="别再在 App Store Connect 和 Play Console 之间来回切换。一条命令,所有应用的在线版本、审核状态、灰度比例、测试轨道尽收一屏。"
+>
+  <header class="hero">
+    <div class="wrap">
+      <p class="kicker">开源 · CLI · 为 Expo &amp; React Native 团队打造</p>
+      <h1>
+        哪个版本<span class="hl">已经上线</span>?<br />
+        哪个<span class="hl">卡在审核</span>?<br />
+        <span class="dim">一条命令,两大商店。</span>
+      </h1>
+      <p class="sub">
+        storepulse 把你管理的所有 iOS·Android 应用的发布状态 —— 版本、审核状态、
+        灰度比例、测试轨道 —— 汇总到一块终端看板上。从设计上就是只读的,
+        商店凭据永远不会离开你的电脑。
+      </p>
+      <div class="cta-row">
+        <a class="btn primary" href={`${base}/zh-cn/tutorial/`}>开始使用 →</a>
+        <a class="btn" href="https://github.com/dioKR/storepulse">在 GitHub 上查看 ↗</a>
+      </div>
+
+      <div class="term">
+        <div class="term-bar">
+          <span class="sq pink"></span><span class="sq"></span><span class="sq"></span>
+          <span style="margin-left:8px">~/work — zsh</span>
+        </div>
+        <div class="term-body">
+          <pre><span class="p" style="color:var(--accent)">$</span> <span id="typed"></span><span class="type-cursor" id="tcur"></span>
+
+<span data-line>  <span class="m">storepulse</span><span class="d">  ·  one board, both stores</span></span>
+<span data-line></span>
+<span data-line>  <span class="b">APP                  OS        PRODUCTION                      BETA / TESTFLIGHT    INTERNAL</span></span>
+<span data-line>  <span class="d">─────────────────────────────────────────────────────────────────────────────────────────────</span></span>
+<span data-line>  Aurora <span class="d">[prod]</span>        iOS       2.4.1 <span class="g">LIVE</span>  <span class="d">·</span>  2.5.0 <span class="y">REVIEW</span>    2.5.0 <span class="g">LIVE</span> <span class="d">(108)</span>     <span class="d">—</span></span>
+<span data-line>                       Android   2.4.1 <span class="c">50%</span> <span class="d">(241)</span>                2.5.0 <span class="g">LIVE</span> <span class="d">(250)</span>     2.5.1 <span class="d">draft (251)</span></span>
+<span data-line>  Aurora Dev <span class="d">[dev]</span>     iOS       <span class="d">—</span>                              2.6.0 <span class="g">LIVE</span> <span class="d">(12)</span>      <span class="d">—</span></span>
+<span data-line>                       Android   <span class="d">—</span>                              <span class="d">—</span>                    2.6.0 <span class="g">LIVE</span> <span class="d">(12)</span></span>
+<span data-line>  Borealis <span class="d">[prod]</span>      iOS       1.9.2 <span class="g">LIVE</span>  <span class="d">·</span>  1.9.3 <span class="r">REJECTED</span>  1.9.3 <span class="g">LIVE</span> <span class="d">(87)</span>      <span class="d">—</span></span>
+<span data-line>                       Android   1.9.2 <span class="g">LIVE</span> <span class="d">(192)</span>               1.10.0 <span class="g">LIVE</span> <span class="d">(200)</span>    <span class="d">—</span></span></pre>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="wrap">
+      <p class="sec-label">为什么</p>
+      <h2>值得托付商店密钥的设计</h2>
+      <div class="grid3">
+        <div>
+          <p class="cell-title">设计即只读</p>
+          <p>
+            storepulse 不会提交、不会推进、也不会中止任何东西。它只问两家商店
+            一个问题 ——"我的发布现在处于什么状态?"—— 然后把答案画出来。
+            没有什么可弄坏的,也没有什么可担心的。
+          </p>
+        </div>
+        <div>
+          <p class="cell-title">凭据只留在本地</p>
+          <p>
+            请求从你的电脑直达 Apple 和 Google。没有服务器,没有账号,
+            没有遥测。密钥只存在于一开始就被 git 忽略的 <code>.env</code> 里。
+          </p>
+        </div>
+        <div>
+          <p class="cell-title">首先是一个库</p>
+          <p>
+            核心是一个通过注入凭据来使用的库,CLI 只是它的第一个界面。
+            接下来是 Web 看板和消息通知 —— 同一个引擎,更多画面。
+            实现两个方法,就能接入你自己的数据源。
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <p class="sec-label">功能</p>
+      <h2>两个控制台展示的一切,尽在一张表里</h2>
+      <div class="feat">
+        <div class="feat-row">
+          <div class="k">归一化模型</div>
+          <div class="v">
+            把 App Store 的状态和 Play 的轨道翻译成同一套词汇:
+            渠道(<code>production</code> / <code>beta</code> / <code>internal</code>)
+            × 状态(<code>live</code>, <code>in-review</code>, <code>rollout</code>, <code>rejected</code>…)。
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">灰度追踪</div>
+          <div class="v">
+            iOS 的分阶段发布和 Android 的分阶段推出,都直接显示成百分比 ——
+            <code>2.4.1 50%</code> 意味着一半用户已经拿到了新版本。
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">审核状态可见</div>
+          <div class="v">
+            <code>2.4.1 LIVE · 2.5.0 REVIEW</code> 并排呈现 ——
+            这个在两个控制台里都得翻半天才能确认的"中间时刻"。
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">稳健的看板</div>
+          <div class="v">
+            某个凭据过期了,错误只会出现在它自己那一行 ——
+            绝不会让整块看板开天窗。
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">演示模式</div>
+          <div class="v">
+            <code>pnpm demo</code> 一条命令,就能用示例数据渲染出完整看板 ——
+            一个 API 密钥都不用创建,先试试合不合适。
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">Expo 友好</div>
+          <div class="v">
+            任何 iOS/Android 应用都能用,但它出自一个 Expo 团队之手,
+            也为 Expo 团队而写 —— EAS 连接器已经在路线图上了。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <p class="sec-label">快速上手</p>
+      <h2>从零到你的真实看板,大约 15 分钟</h2>
+      <div class="step">
+        <div class="step-no">1</div>
+        <div>
+          <h3>先跑演示 —— 不需要任何凭据</h3>
+          <pre class="code"><span class="p">$</span> git clone https://github.com/dioKR/storepulse.git
+<span class="p">$</span> cd storepulse &amp;&amp; pnpm install
+<span class="p">$</span> pnpm demo</pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-no">2</div>
+        <div>
+          <h3>列出应用,填入密钥</h3>
+          <p>
+            应用写进 <code>storepulse.config.json</code>,密钥放进
+            <code>.env</code>(一个 App Store Connect API 密钥 + 一个 Play
+            服务账号 —— 都是 5 分钟搞定的一次性配置)。
+          </p>
+          <pre class="code"><span class="p">$</span> cp storepulse.config.example.json storepulse.config.json
+<span class="p">$</span> cp .env.example .env  <span class="cmt"># 然后把两个文件填好</span></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-no">3</div>
+        <div>
+          <h3>运行</h3>
+          <pre class="code"><span class="p">$</span> pnpm status</pre>
+          <p>
+            你的真实看板就出现了。
+            <a href={`${base}/zh-cn/tutorial/`}>带截图的完整教程 →</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <p class="sec-label">路线图</p>
+      <h2>接下来要做的</h2>
+      <div class="roadmap">
+        <span class="done">核心 + 连接器</span>
+        <span class="done">带演示模式的 CLI</span>
+        <span>EAS 连接器</span>
+        <span>Slack / Discord 通知</span>
+        <span>Web 看板</span>
+        <span>npx storepulse</span>
+        <span>CLI 英文·韩文输出</span>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const cmd = "pnpm demo";
+    const typed = document.getElementById("typed")!;
+    const cursor = document.getElementById("tcur")!;
+    const lines = [...document.querySelectorAll("[data-line]")];
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reduced) {
+      typed.textContent = cmd;
+      cursor.remove();
+      for (const l of lines) l.classList.add("on");
+    } else {
+      let i = 0;
+      const timer = setInterval(() => {
+        i += 1;
+        typed.textContent = cmd.slice(0, i);
+        if (i === cmd.length) {
+          clearInterval(timer);
+          setTimeout(() => {
+            (cursor as HTMLElement).style.display = "none";
+            lines.forEach((l, j) => {
+              setTimeout(() => l.classList.add("on"), j * 90);
+            });
+          }, 380);
+        }
+      }, 70);
+    }
+  </script>
+</Base>
