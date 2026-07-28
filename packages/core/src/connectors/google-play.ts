@@ -14,6 +14,59 @@ export interface GooglePlayCredentials {
   privateKey: string;
 }
 
+/**
+ * Non-2xx answer from Google's OAuth token endpoint. Carries the response
+ * body so `storepulse doctor` can tell `invalid_grant` (deleted key, clock
+ * skew) apart from other failures (#6).
+ */
+export class PlayTokenExchangeError extends Error {
+  constructor(
+    readonly status: number,
+    /** Raw response body ("" when it could not be read) */
+    readonly body: string,
+  ) {
+    super(`Google OAuth token exchange failed (${status})`);
+    this.name = "PlayTokenExchangeError";
+  }
+}
+
+/**
+ * Exchange a signed service-account JWT for a Play API access token
+ * (valid 1 hour). `fetchImpl` is injectable for tests and `storepulse doctor`.
+ */
+export async function createPlayAccessToken(
+  creds: GooglePlayCredentials,
+  fetchImpl: typeof fetch = fetch,
+): Promise<string> {
+  const key = await importPKCS8(creds.privateKey, "RS256");
+  const now = Math.floor(Date.now() / 1000);
+  const assertion = await new SignJWT({ scope: SCOPE })
+    .setProtectedHeader({ alg: "RS256", typ: "JWT" })
+    .setIssuer(creds.clientEmail)
+    .setAudience(TOKEN_URL)
+    .setIssuedAt(now)
+    .setExpirationTime(now + 3600)
+    .sign(key);
+
+  const res = await fetchImpl(TOKEN_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+      assertion,
+    }),
+  });
+  if (!res.ok) {
+    throw new PlayTokenExchangeError(res.status, await res.text().catch(() => ""));
+  }
+  const data = await res.json();
+  const accessToken = asString(data?.access_token);
+  if (!accessToken) {
+    throw new Error("Google OAuth token response missing access_token");
+  }
+  return accessToken;
+}
+
 const RELEASE_STATE: Record<string, ReleaseState> = {
   completed: "live",
   inProgress: "rollout",
@@ -111,32 +164,6 @@ export class GooglePlayConnector implements StoreConnector {
   }
 
   private async token(): Promise<string> {
-    const key = await importPKCS8(this.creds.privateKey, "RS256");
-    const now = Math.floor(Date.now() / 1000);
-    const assertion = await new SignJWT({ scope: SCOPE })
-      .setProtectedHeader({ alg: "RS256", typ: "JWT" })
-      .setIssuer(this.creds.clientEmail)
-      .setAudience(TOKEN_URL)
-      .setIssuedAt(now)
-      .setExpirationTime(now + 3600)
-      .sign(key);
-
-    const res = await fetch(TOKEN_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-        assertion,
-      }),
-    });
-    if (!res.ok) {
-      throw new Error(`Google OAuth token exchange failed (${res.status})`);
-    }
-    const data = await res.json();
-    const accessToken = asString(data?.access_token);
-    if (!accessToken) {
-      throw new Error("Google OAuth token response missing access_token");
-    }
-    return accessToken;
+    return createPlayAccessToken(this.creds);
   }
 }

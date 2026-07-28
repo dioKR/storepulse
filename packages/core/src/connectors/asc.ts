@@ -12,6 +12,23 @@ export interface AscCredentials {
   privateKey: string;
 }
 
+/**
+ * Signed ES256 JWT for the App Store Connect API (valid 15 minutes).
+ * Throws when the .p8 key cannot be parsed — `storepulse doctor` relies on
+ * that to tell "broken key file" apart from "key rejected by Apple" (#6).
+ */
+export async function createAscToken(creds: AscCredentials): Promise<string> {
+  const key = await importPKCS8(creds.privateKey, "ES256");
+  const now = Math.floor(Date.now() / 1000);
+  return new SignJWT({})
+    .setProtectedHeader({ alg: "ES256", kid: creds.keyId, typ: "JWT" })
+    .setIssuer(creds.issuerId)
+    .setAudience("appstoreconnect-v1")
+    .setIssuedAt(now)
+    .setExpirationTime(now + 15 * 60)
+    .sign(key);
+}
+
 const APP_STORE_STATE: Record<string, ReleaseState> = {
   READY_FOR_SALE: "live",
   PROCESSING_FOR_APP_STORE: "pending",
@@ -181,14 +198,6 @@ export class AscConnector implements StoreConnector {
   }
 
   private async token(): Promise<string> {
-    const key = await importPKCS8(this.creds.privateKey, "ES256");
-    const now = Math.floor(Date.now() / 1000);
-    return new SignJWT({})
-      .setProtectedHeader({ alg: "ES256", kid: this.creds.keyId, typ: "JWT" })
-      .setIssuer(this.creds.issuerId)
-      .setAudience("appstoreconnect-v1")
-      .setIssuedAt(now)
-      .setExpirationTime(now + 15 * 60)
-      .sign(key);
+    return createAscToken(this.creds);
   }
 }

@@ -1,6 +1,7 @@
+import { generateKeyPairSync } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AppTarget } from "../types.js";
-import { AscConnector } from "./asc.js";
+import { AscConnector, createAscToken } from "./asc.js";
 
 const target: AppTarget = { key: "app-ios", name: "App", platform: "ios", storeId: "123" };
 
@@ -230,5 +231,29 @@ describe("AscConnector release details (releaseNotes / date / expiresAt)", () =>
     const status = await connector.fetchAppStatus(target);
     expect(status.channels[0].date).toBeUndefined();
     expect(status.channels[0].expiresAt).toBeUndefined();
+  });
+});
+
+describe("createAscToken (exported for storepulse doctor, #6)", () => {
+  const pem = generateKeyPairSync("ec", { namedCurve: "P-256" }).privateKey.export({
+    type: "pkcs8",
+    format: "pem",
+  }) as string;
+
+  it("signs an ES256 JWT carrying kid + issuer", async () => {
+    const token = await createAscToken({ keyId: "KEY123", issuerId: "issuer-1", privateKey: pem });
+    const [header, payload] = token
+      .split(".")
+      .slice(0, 2)
+      .map((part) => JSON.parse(Buffer.from(part, "base64url").toString("utf8")));
+    expect(header).toMatchObject({ alg: "ES256", kid: "KEY123", typ: "JWT" });
+    expect(payload).toMatchObject({ iss: "issuer-1", aud: "appstoreconnect-v1" });
+    expect(payload.exp - payload.iat).toBe(15 * 60);
+  });
+
+  it("throws when the .p8 content is not a parseable key", async () => {
+    await expect(
+      createAscToken({ keyId: "k", issuerId: "i", privateKey: "not a key" }),
+    ).rejects.toThrow();
   });
 });

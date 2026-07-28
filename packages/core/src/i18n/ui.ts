@@ -42,6 +42,10 @@ export const UI_STRINGS = {
     en: "explain release states (explain [state])",
     ko: "릴리즈 상태 설명 (explain [state])",
   },
+  "cli.help.doctor": {
+    en: "diagnose credentials & permissions (find the 401/403)",
+    ko: "크리덴셜·권한 진단 (401/403 원인 찾기)",
+  },
   "cli.help.lang": {
     en: "output language (also: STOREPULSE_LANG, OS locale)",
     ko: "출력 언어 (STOREPULSE_LANG, OS 로케일도 지원)",
@@ -83,6 +87,231 @@ export const UI_STRINGS = {
   "init.stepRun": {
     en: "when both are done, run: npx storepulse",
     ko: "완료되면 실행: npx storepulse",
+  },
+
+  // ── doctor (storepulse doctor, issue #6) ─────────────
+  "doctor.title": {
+    en: "credential & permission checkup",
+    ko: "크리덴셜·권한 진단",
+  },
+  "doctor.section.config": {
+    en: "config file (storepulse.config.json)",
+    ko: "설정 파일 (storepulse.config.json)",
+  },
+  "doctor.section.env": {
+    en: "secrets (.env / environment)",
+    ko: "시크릿 (.env / 환경변수)",
+  },
+  "doctor.section.apple": {
+    en: "App Store Connect chain",
+    ko: "App Store Connect 체인",
+  },
+  "doctor.section.google": {
+    en: "Google Play chain",
+    ko: "Google Play 체인",
+  },
+  "doctor.section.summary": { en: "summary", ko: "요약" },
+
+  // [1] config
+  "doctor.config.exists": { en: "config file exists", ko: "설정 파일 존재" },
+  "doctor.config.parse": { en: "valid JSON", ko: "올바른 JSON 형식" },
+  "doctor.config.fields": {
+    en: "app entries have key/name/platform/storeId",
+    ko: "앱 항목에 key/name/platform/storeId 존재",
+  },
+  "doctor.config.appsCount": { en: "{n} app(s)", ko: "앱 {n}개" },
+  "doctor.config.notFound": {
+    en: "storepulse.config.json not found in {cwd}",
+    ko: "{cwd}에 storepulse.config.json이 없습니다",
+  },
+  "doctor.config.parseError": {
+    en: "JSON parse failed: {message}",
+    ko: "JSON 파싱 실패: {message}",
+  },
+  "doctor.config.appsMissing": {
+    en: '"apps" must be a non-empty array',
+    ko: '"apps"는 비어 있지 않은 배열이어야 합니다',
+  },
+  "doctor.config.fieldMissing": {
+    en: 'app entry {app} is missing "{field}"',
+    ko: '앱 항목 {app}에 "{field}"가 없습니다',
+  },
+  "doctor.config.badPlatform": {
+    en: 'platform must be "ios" or "android", got "{platform}"',
+    ko: 'platform은 "ios" 또는 "android"여야 합니다 (현재 "{platform}")',
+  },
+  "doctor.fix.init": {
+    en: "run `storepulse init` to scaffold the config + .env templates",
+    ko: "`storepulse init`으로 설정 파일 + .env 템플릿을 생성하세요",
+  },
+  "doctor.fix.config": {
+    en: "fix storepulse.config.json — the tutorial shows the expected shape",
+    ko: "storepulse.config.json을 수정하세요 — 올바른 형식은 튜토리얼 참고",
+  },
+
+  // [2] secrets
+  "doctor.env.ascKey": {
+    en: "ASC private key (ASC_PRIVATE_KEY_PATH or _BASE64)",
+    ko: "ASC 개인 키 (ASC_PRIVATE_KEY_PATH 또는 _BASE64)",
+  },
+  "doctor.env.playSa": {
+    en: "Play service account (PLAY_SERVICE_ACCOUNT_PATH or _BASE64)",
+    ko: "Play 서비스 계정 (PLAY_SERVICE_ACCOUNT_PATH 또는 _BASE64)",
+  },
+  "doctor.env.missing": { en: "not set", ko: "설정되지 않음" },
+  "doctor.env.placeholder": {
+    en: "still the placeholder from `storepulse init` — put your real value",
+    ko: "`storepulse init`의 플레이스홀더 값 그대로입니다 — 실제 값을 입력하세요",
+  },
+  "doctor.env.fileMissing": {
+    en: "file not found: {path}",
+    ko: "파일이 없습니다: {path}",
+  },
+  "doctor.fix.envAsc": {
+    en: "fill in the App Store Connect section of .env (tutorial step 3)",
+    ko: ".env의 App Store Connect 섹션을 채우세요 (튜토리얼 3단계)",
+  },
+  "doctor.fix.envPlay": {
+    en: "fill in the Google Play section of .env (tutorial step 4)",
+    ko: ".env의 Google Play 섹션을 채우세요 (튜토리얼 4단계)",
+  },
+
+  // skip reasons
+  "doctor.skip.noIosApps": {
+    en: "skipped — no ios apps in the config",
+    ko: "건너뜀 — 설정에 ios 앱이 없습니다",
+  },
+  "doctor.skip.noAndroidApps": {
+    en: "skipped — no android apps in the config",
+    ko: "건너뜀 — 설정에 android 앱이 없습니다",
+  },
+  "doctor.skip.configFirst": {
+    en: "skipped — fix the config check [1] first",
+    ko: "건너뜀 — 설정 파일 진단 [1]을 먼저 해결하세요",
+  },
+  "doctor.skip.envFirst": {
+    en: "skipped — fix the secrets check [2] first",
+    ko: "건너뜀 — 시크릿 진단 [2]를 먼저 해결하세요",
+  },
+  "doctor.skip.prevFailed": {
+    en: "skipped — a previous check in this chain failed",
+    ko: "건너뜀 — 이 체인의 이전 진단이 실패했습니다",
+  },
+
+  // [3] App Store Connect chain
+  "doctor.asc.p8": { en: "parse .p8 key & sign JWT", ko: ".p8 키 파싱 & JWT 서명" },
+  "doctor.asc.p8Fail": {
+    en: "cannot parse the .p8 key ({message}) — the key file is damaged or not a .p8",
+    ko: ".p8 키를 파싱할 수 없습니다 ({message}) — 키 파일이 손상되었거나 .p8이 아닙니다",
+  },
+  "doctor.fix.p8": {
+    en: "download the API key (.p8) again from App Store Connect and point ASC_PRIVATE_KEY_PATH at it",
+    ko: "App Store Connect에서 API 키(.p8)를 다시 내려받아 ASC_PRIVATE_KEY_PATH로 지정하세요",
+  },
+  "doctor.asc.token": {
+    en: "token accepted by the ASC API (GET /v1/apps)",
+    ko: "ASC API 토큰 인증 (GET /v1/apps)",
+  },
+  "doctor.asc.401": {
+    en: "401 — Key ID / Issuer ID don't match this key, or the key was revoked",
+    ko: "401 — Key ID·Issuer ID가 이 키와 일치하지 않거나 키가 폐기되었습니다",
+  },
+  "doctor.fix.asc401": {
+    en: "compare ASC_KEY_ID / ASC_ISSUER_ID with App Store Connect → Users and Access → Integrations, or issue a new key",
+    ko: "App Store Connect → 사용자 및 액세스 → 통합에서 ASC_KEY_ID / ASC_ISSUER_ID를 대조하거나 새 키를 발급하세요",
+  },
+  "doctor.asc.status": {
+    en: "ASC API returned {status}",
+    ko: "ASC API가 {status}을(를) 반환했습니다",
+  },
+  "doctor.check.app": { en: "app {name} ({storeId})", ko: "앱 {name} ({storeId})" },
+  "doctor.asc.app404": {
+    en: "404 — wrong storeId, or this key's role cannot see the app",
+    ko: "404 — storeId가 잘못되었거나 이 키의 롤이 해당 앱에 접근할 수 없습니다",
+  },
+  "doctor.fix.ascApp": {
+    en: "storeId must be the numeric Apple ID on the ASC app page; also check the key's role / app access",
+    ko: "storeId는 ASC 앱 페이지의 숫자 Apple ID여야 합니다; 키의 롤/앱 접근 권한도 확인하세요",
+  },
+
+  // [4] Google Play chain
+  "doctor.play.sa": { en: "parse service account JSON", ko: "서비스 계정 JSON 파싱" },
+  "doctor.play.saParseFail": {
+    en: "service account JSON is invalid: {message}",
+    ko: "서비스 계정 JSON이 유효하지 않습니다: {message}",
+  },
+  "doctor.play.saFields": {
+    en: "service account JSON is missing client_email / a PEM private_key",
+    ko: "서비스 계정 JSON에 client_email 또는 PEM 형식 private_key가 없습니다",
+  },
+  "doctor.fix.sa": {
+    en: "download a fresh service-account key JSON from Google Cloud → IAM → Service Accounts",
+    ko: "Google Cloud → IAM → 서비스 계정에서 키 JSON을 새로 내려받으세요",
+  },
+  "doctor.play.token": { en: "OAuth token exchange", ko: "OAuth 토큰 교환" },
+  "doctor.play.invalidGrant": {
+    en: "invalid_grant — the key was deleted/disabled, or this machine's clock is off",
+    ko: "invalid_grant — 키가 삭제·비활성화되었거나 이 컴퓨터의 시계가 어긋나 있습니다",
+  },
+  "doctor.fix.invalidGrant": {
+    en: "create a new key for the service account and sync the system clock",
+    ko: "서비스 계정 키를 새로 만들고 시스템 시계를 동기화하세요",
+  },
+  "doctor.play.tokenStatus": {
+    en: "token endpoint returned {status}",
+    ko: "토큰 엔드포인트가 {status}을(를) 반환했습니다",
+  },
+  "doctor.play.apiDisabled": {
+    en: "403 — the Android Publisher API is disabled in this key's Cloud project",
+    ko: "403 — 이 키의 Cloud 프로젝트에서 Android Publisher API가 비활성화되어 있습니다",
+  },
+  "doctor.fix.apiDisabled": {
+    en: 'enable "Google Play Android Developer API" in the Google Cloud console, wait a minute, retry',
+    ko: 'Google Cloud 콘솔에서 "Google Play Android Developer API"를 활성화하고 잠시 후 다시 시도하세요',
+  },
+  "doctor.play.403": {
+    en: "403 — the service account is not invited to Play Console, or lacks permission",
+    ko: "403 — 서비스 계정이 Play Console에 초대되지 않았거나 권한이 부족합니다",
+  },
+  "doctor.fix.play403": {
+    en: 'Play Console → Users and permissions → invite {email} with "View app information"',
+    ko: 'Play Console → 사용자 및 권한에서 {email}을(를) "앱 정보 보기" 권한으로 초대하세요',
+  },
+  "doctor.play.404": {
+    en: "404 — wrong package name, or the app has no release history yet",
+    ko: "404 — 패키지명이 잘못되었거나 아직 릴리즈 이력이 없는 앱입니다",
+  },
+  "doctor.fix.play404": {
+    en: "storeId must be the applicationId shown in Play Console, and the app needs at least one release",
+    ko: "storeId는 Play Console에 표시되는 applicationId여야 하며, 앱에 릴리즈가 최소 한 번 있어야 합니다",
+  },
+  "doctor.play.status": {
+    en: "Play API returned {status}",
+    ko: "Play API가 {status}을(를) 반환했습니다",
+  },
+
+  // shared
+  "doctor.fail.network": {
+    en: "network error: {message}",
+    ko: "네트워크 오류: {message}",
+  },
+  "doctor.fix.network": {
+    en: "check your internet connection / proxy and retry",
+    ko: "인터넷 연결/프록시를 확인하고 다시 시도하세요",
+  },
+
+  // [5] summary
+  "doctor.summary.ok": {
+    en: "all checks passed — you're good to go",
+    ko: "모든 진단을 통과했습니다 — 바로 사용할 수 있습니다",
+  },
+  "doctor.summary.fail": {
+    en: "{n} check(s) failed",
+    ko: "실패한 진단 {n}개",
+  },
+  "doctor.summary.tutorial": {
+    en: "tutorial: https://diokr.github.io/storepulse/tutorial/",
+    ko: "튜토리얼: https://diokr.github.io/storepulse/ko/tutorial/",
   },
 
   "snapshot.written": {
