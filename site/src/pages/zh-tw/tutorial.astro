@@ -34,7 +34,14 @@ import Base from "../../layouts/Base.astro";
     <section>
       <p class="sec-label">步驟 2</p>
       <h2>列出你的 App</h2>
-      <pre class="code"><span class="p">$</span> cp storepulse.config.example.json storepulse.config.json</pre>
+      <pre class="code"><span class="p">$</span> npx storepulse init</pre>
+      <p>
+        在任何資料夾裡都能用 —— 它會建立 <code>storepulse.config.json</code>
+        與 <code>.env</code> 範本(已存在的檔案絕不會被覆寫),並把憑證檔案加進
+        <code>.gitignore</code>。若你是 clone 本儲存庫來開發,
+        <code>cp storepulse.config.example.json storepulse.config.json</code>
+        效果相同。接著打開 <code>storepulse.config.json</code>,列出你的 App:
+      </p>
       <table>
         <thead><tr><th>欄位</th><th>說明</th></tr></thead>
         <tbody>
@@ -55,7 +62,11 @@ import Base from "../../layouts/Base.astro";
     <section>
       <p class="sec-label">步驟 3</p>
       <h2>Apple —— App Store Connect API 金鑰</h2>
-      <pre class="code"><span class="p">$</span> cp .env.example .env</pre>
+      <p>
+        從這裡開始,要填的是 <code>storepulse init</code> 產生的
+        <code>.env</code>(儲存庫 clone 裡則用
+        <code>cp .env.example .env</code>)。
+      </p>
       <ol>
         <li>
           <a href="https://appstoreconnect.apple.com">App Store Connect</a> →
@@ -63,7 +74,7 @@ import Base from "../../layouts/Base.astro";
           App Store Connect API。
         </li>
         <li>在<b>團隊金鑰(Team Keys)</b>按 <b>＋</b>。角色建議選 <b>Developer</b> —— 對 storepulse 的讀取來說已經足夠。<b>App Manager</b> 也能用,但金鑰一旦外洩,提交 App、更動中繼資料的權限也會跟著流出,依最小權限原則比較穩妥。</li>
-        <li><b>下載 <code>.p8</code> 檔案。</b> Apple 只允許下載一次 —— 請妥善保管(本儲存庫已預設 git 忽略)。這把金鑰能在其角色允許的範圍內執行寫入,一旦外洩,請立刻到 App Store Connect 撤銷(revoke)。</li>
+        <li><b>下載 <code>.p8</code> 檔案。</b> Apple 只允許下載一次 —— 請妥善保管(<code>storepulse init</code> 已把它加入 git 忽略)。這把金鑰能在其角色允許的範圍內執行寫入,一旦外洩,請立刻到 App Store Connect 撤銷(revoke)。</li>
         <li>填入三個值:</li>
       </ol>
       <pre class="code">ASC_KEY_ID=ABC123DEFG          <span class="cmt"># 金鑰的 "Key ID" 欄</span>
@@ -112,9 +123,10 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
     <section>
       <p class="sec-label">步驟 5</p>
       <h2>執行</h2>
-      <pre class="code"><span class="p">$</span> pnpm status</pre>
+      <pre class="code"><span class="p">$</span> npx storepulse</pre>
       <p>
-        你的真實看板就會出現。憑證有問題的列只會在原位顯示錯誤,
+        你的真實看板就會出現(在儲存庫的 clone 裡,<code>pnpm status</code>
+        效果相同)。憑證有問題的列只會在原位顯示錯誤,
         不會遮住看板其餘部分。
       </p>
     </section>

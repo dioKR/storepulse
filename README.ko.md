@@ -124,11 +124,19 @@ npx storepulse snapshot --demo  # 보드를 JSON으로 출력
 
 ### 1단계 — 앱 목록 작성
 
-예제 설정을 복사해서 고쳐요:
+먼저 설정 파일부터 만들어요 — 레포를 클론할 필요 없이, 아무 폴더에서나 돼요:
 
 ```sh
-cp storepulse.config.example.json storepulse.config.json
+npx storepulse init
 ```
+
+이 명령은 `storepulse.config.json`과 `.env` 템플릿을 만들고 (이미 있는 파일은
+절대 덮어쓰지 않아요), 크리덴셜 파일이 커밋되지 않도록 `.gitignore`에 제외
+패턴을 넣은 다음, 다음 단계를 터미널에 안내해줘요 (`--lang ko|en`).
+(이 레포를 클론해서 쓰고 있다면 `cp storepulse.config.example.json
+storepulse.config.json`으로도 같은 파일을 얻을 수 있어요.)
+
+이제 `storepulse.config.json`을 열어 앱을 적어요:
 
 ```jsonc
 {
@@ -154,11 +162,8 @@ cp storepulse.config.example.json storepulse.config.json
 
 ### 2단계 — 크리덴셜 입력
 
-```sh
-cp .env.example .env
-```
-
-이제 `.env`를 채워요. Apple에서 하나, Google에서 하나 — 각각 5분쯤 걸리는
+이제 `storepulse init`이 만들어 준 `.env`를 채워요 (레포 클론이라면
+`cp .env.example .env`). Apple에서 하나, Google에서 하나 — 각각 5분쯤 걸리는
 1회성 설정이에요.
 
 #### Apple — App Store Connect API 키
@@ -171,7 +176,7 @@ cp .env.example .env
    충분하거든요. **App Manager**로도 동작하지만, 키가 유출되면 앱 제출과
    메타데이터 수정 권한까지 넘어가니 최소 권한으로 만드는 게 안전해요.
 3. **`.p8` 파일을 내려받아요** — Apple은 딱 한 번만 받게 해줘요.
-   안전한 곳에 보관하세요 (여기서는 기본으로 git에서 제외돼요). 이 키는
+   안전한 곳에 보관하세요 (`storepulse init`이 이미 git에서 제외해 뒀어요). 이 키는
    역할이 허용하는 만큼 쓰기도 가능한 크리덴셜이라, 유출됐다면 App Store
    Connect에서 즉시 폐기(revoke)하세요.
 4. 세 가지 값을 `.env`에 옮겨요:
@@ -213,11 +218,12 @@ PLAY_SERVICE_ACCOUNT_PATH=./service-account.json
 ### 3단계 — 실행
 
 ```sh
-pnpm status
+npx storepulse
 ```
 
-여러분의 실제 보드가 나타나요. 크리덴셜에 문제가 있는 행은 보드 전체를 가리는
-대신 그 자리에만 에러를 보여줘요.
+여러분의 실제 보드가 나타나요 (레포 클론에서는 `pnpm status`로도 돼요).
+크리덴셜에 문제가 있는 행은 보드 전체를 가리는 대신 그 자리에만 에러를
+보여줘요.
 
 ---
 
@@ -241,12 +247,13 @@ pnpm status
 ## 개발
 
 ```sh
-pnpm demo        # 샘플 데이터로 보드 표시
-pnpm status      # 실제 설정으로 보드 표시
-pnpm typecheck   # 전체 패키지 tsc
-pnpm test        # 유닛 테스트 (vitest)
-pnpm lint        # Biome (린트 + 포맷 검사)
-pnpm lint:fix    # 자동 수정
+pnpm demo            # 샘플 데이터로 보드 표시
+pnpm status          # 실제 설정으로 보드 표시
+npx storepulse init  # 설정 + .env 템플릿 생성 (아무 폴더에서나 돼요)
+pnpm typecheck       # 전체 패키지 tsc
+pnpm test            # 유닛 테스트 (vitest)
+pnpm lint            # Biome (린트 + 포맷 검사)
+pnpm lint:fix        # 자동 수정
 ```
 
 포맷팅과 린팅은 [Biome](https://biomejs.dev) 하나로 처리해요 — ESLint +

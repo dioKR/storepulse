@@ -118,11 +118,18 @@ npx storepulse snapshot --demo  # 把看板输出成 JSON
 
 ### 第 1 步 —— 列出应用
 
-复制示例配置并修改:
+先生成配置文件 —— 不必克隆仓库,在任意文件夹里都行:
 
 ```sh
-cp storepulse.config.example.json storepulse.config.json
+npx storepulse init
 ```
+
+这条命令会创建 `storepulse.config.json` 和 `.env` 模板(已有的文件绝不会被
+覆盖),并把凭据文件加进 `.gitignore` 以免误提交,随后在终端里打印后续步骤
+(`--lang ko|en`)。(在本仓库的克隆里工作?`cp storepulse.config.example.json
+storepulse.config.json` 也能得到同一份文件。)
+
+接着打开 `storepulse.config.json`,列出你的应用:
 
 ```jsonc
 {
@@ -149,11 +156,8 @@ cp storepulse.config.example.json storepulse.config.json
 
 ### 第 2 步 —— 填入凭据
 
-```sh
-cp .env.example .env
-```
-
-现在填 `.env`。Apple 要一样,Google 要一样 —— 各花 5 分钟左右,
+现在填 `storepulse init` 生成的 `.env`(仓库克隆里则用
+`cp .env.example .env`)。Apple 要一样,Google 要一样 —— 各花 5 分钟左右,
 都是一次性配置。
 
 #### Apple —— App Store Connect API 密钥
@@ -166,7 +170,7 @@ cp .env.example .env
    **App Manager** 也能用,但密钥一旦泄露,提交应用、改动元数据的权限
    也会一并流出,按最小权限原则来更稳妥。
 3. **下载 `.p8` 文件** —— Apple 只允许下载一次。
-   请妥善保管(本仓库已默认 git 忽略)。这把密钥能在其角色允许的范围内
+   请妥善保管(`storepulse init` 已把它加入 git 忽略)。这把密钥能在其角色允许的范围内
    执行写操作,一旦泄露,请立即到 App Store Connect 吊销(revoke)。
 4. 把三个值复制进 `.env`:
 
@@ -206,11 +210,11 @@ PLAY_SERVICE_ACCOUNT_PATH=./service-account.json
 ### 第 3 步 —— 运行
 
 ```sh
-pnpm status
+npx storepulse
 ```
 
-你的真实看板就出现了。凭据有问题的行只在原地显示错误,
-不会遮住看板的其余部分。
+你的真实看板就出现了(在仓库克隆里,`pnpm status` 效果相同)。
+凭据有问题的行只在原地显示错误,不会遮住看板的其余部分。
 
 ---
 
@@ -233,12 +237,13 @@ pnpm status
 ## 开发
 
 ```sh
-pnpm demo        # 用示例数据显示看板
-pnpm status      # 用真实配置显示看板
-pnpm typecheck   # 对全部包运行 tsc
-pnpm test        # 单元测试(vitest)
-pnpm lint        # Biome(lint + 格式检查)
-pnpm lint:fix    # 自动修复
+pnpm demo            # 用示例数据显示看板
+pnpm status          # 用真实配置显示看板
+npx storepulse init  # 生成配置 + .env 模板(任意文件夹均可)
+pnpm typecheck       # 对全部包运行 tsc
+pnpm test            # 单元测试(vitest)
+pnpm lint            # Biome(lint + 格式检查)
+pnpm lint:fix        # 自动修复
 ```
 
 格式化和 lint 由 [Biome](https://biomejs.dev) 一个工具搞定 —— 它替代了

@@ -122,11 +122,19 @@ Three steps: list your apps → add credentials → run.
 
 ### Step 1 — List your apps
 
-Copy the example config and edit it:
+Scaffold the config first — in any folder, no repo clone needed:
 
 ```sh
-cp storepulse.config.example.json storepulse.config.json
+npx storepulse init
 ```
+
+It creates `storepulse.config.json` and a `.env` template (existing files are
+never overwritten), adds the credential files to `.gitignore` so they can't be
+committed, and prints your next steps (English or Korean, `--lang ko|en`).
+(Working in a clone of this repo instead? `cp storepulse.config.example.json
+storepulse.config.json` gives you the same file.)
+
+Now open `storepulse.config.json` and describe your apps:
 
 ```jsonc
 {
@@ -153,12 +161,9 @@ cp storepulse.config.example.json storepulse.config.json
 
 ### Step 2 — Add credentials
 
-```sh
-cp .env.example .env
-```
-
-Now fill in `.env`. You need one thing from Apple and one from Google — both
-are one-time setups that take about five minutes each.
+Now fill in the `.env` that `storepulse init` created (in a repo clone:
+`cp .env.example .env`). You need one thing from Apple and one from Google —
+both are one-time setups that take about five minutes each.
 
 #### Apple — App Store Connect API key
 
@@ -169,7 +174,7 @@ are one-time setups that take about five minutes each.
    reads. **App Manager** works too, but a leaked App Manager key can submit
    apps and edit metadata, so grant the least privilege you can.
 3. **Download the `.p8` file** — Apple lets you download it exactly once.
-   Store it somewhere safe (it's git-ignored here by default). This key can
+   Store it somewhere safe (`storepulse init` already git-ignores it). This key can
    write as much as its role allows — if it ever leaks, revoke it
    immediately in App Store Connect.
 4. Copy three values into `.env`:
@@ -211,11 +216,12 @@ steps: [Getting started with the Google Play Developer API](https://developers.g
 ### Step 3 — Run
 
 ```sh
-pnpm status
+npx storepulse
 ```
 
-Your real board appears. Rows with credential problems show an inline error
-instead of hiding the rest of the board.
+Your real board appears (in a repo clone, `pnpm status` does the same). Rows
+with credential problems show an inline error instead of hiding the rest of
+the board.
 
 ---
 
@@ -239,12 +245,13 @@ just its first consumer. Read the full picture — diagrams included — in
 ## Development
 
 ```sh
-pnpm demo        # board with sample data
-pnpm status      # board with your real config
-pnpm typecheck   # tsc across all packages
-pnpm test        # unit tests (vitest)
-pnpm lint        # Biome (lint + format check)
-pnpm lint:fix    # auto-fix
+pnpm demo            # board with sample data
+pnpm status          # board with your real config
+npx storepulse init  # scaffold storepulse.config.json + .env templates (any folder)
+pnpm typecheck       # tsc across all packages
+pnpm test            # unit tests (vitest)
+pnpm lint            # Biome (lint + format check)
+pnpm lint:fix        # auto-fix
 ```
 
 Formatting and linting are handled by [Biome](https://biomejs.dev) — one tool

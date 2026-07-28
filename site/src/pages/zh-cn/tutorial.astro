@@ -34,7 +34,14 @@ import Base from "../../layouts/Base.astro";
     <section>
       <p class="sec-label">第 2 步</p>
       <h2>列出你的应用</h2>
-      <pre class="code"><span class="p">$</span> cp storepulse.config.example.json storepulse.config.json</pre>
+      <pre class="code"><span class="p">$</span> npx storepulse init</pre>
+      <p>
+        在任意文件夹里都能用 —— 它会创建 <code>storepulse.config.json</code>
+        和 <code>.env</code> 模板(已有的文件绝不会被覆盖),并把凭据文件加进
+        <code>.gitignore</code>。在本仓库的克隆里,
+        <code>cp storepulse.config.example.json storepulse.config.json</code>
+        效果相同。接着打开 <code>storepulse.config.json</code>,列出你的应用:
+      </p>
       <table>
         <thead><tr><th>字段</th><th>说明</th></tr></thead>
         <tbody>
@@ -55,7 +62,10 @@ import Base from "../../layouts/Base.astro";
     <section>
       <p class="sec-label">第 3 步</p>
       <h2>Apple —— App Store Connect API 密钥</h2>
-      <pre class="code"><span class="p">$</span> cp .env.example .env</pre>
+      <p>
+        从这里开始,要填的是 <code>storepulse init</code> 生成的
+        <code>.env</code>(仓库克隆里则用 <code>cp .env.example .env</code>)。
+      </p>
       <ol>
         <li>
           <a href="https://appstoreconnect.apple.com">App Store Connect</a> →
@@ -63,7 +73,7 @@ import Base from "../../layouts/Base.astro";
           App Store Connect API。
         </li>
         <li>在<b>团队密钥(Team Keys)</b>下点 <b>＋</b>。角色建议选 <b>Developer</b> —— 对 storepulse 的读取来说已经足够。<b>App Manager</b> 也能用,但密钥一旦泄露,提交应用、改动元数据的权限也会一并流出,按最小权限原则来更稳妥。</li>
-        <li><b>下载 <code>.p8</code> 文件。</b> Apple 只允许下载一次 —— 请妥善保管(本仓库已默认 git 忽略)。这把密钥能在其角色允许的范围内执行写操作,一旦泄露,请立即到 App Store Connect 吊销(revoke)。</li>
+        <li><b>下载 <code>.p8</code> 文件。</b> Apple 只允许下载一次 —— 请妥善保管(<code>storepulse init</code> 已把它加入 git 忽略)。这把密钥能在其角色允许的范围内执行写操作,一旦泄露,请立即到 App Store Connect 吊销(revoke)。</li>
         <li>填好三个值:</li>
       </ol>
       <pre class="code">ASC_KEY_ID=ABC123DEFG          <span class="cmt"># 密钥的 "Key ID" 列</span>
@@ -112,9 +122,10 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
     <section>
       <p class="sec-label">第 5 步</p>
       <h2>运行</h2>
-      <pre class="code"><span class="p">$</span> pnpm status</pre>
+      <pre class="code"><span class="p">$</span> npx storepulse</pre>
       <p>
-        你的真实看板就出现了。凭据有问题的行只会在原地显示错误,
+        你的真实看板就出现了(在仓库克隆里,<code>pnpm status</code>
+        效果相同)。凭据有问题的行只会在原地显示错误,
         不会遮住看板的其余部分。
       </p>
     </section>

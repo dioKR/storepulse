@@ -33,7 +33,15 @@ import Base from "../layouts/Base.astro";
     <section>
       <p class="sec-label">step 2</p>
       <h2>List your apps</h2>
-      <pre class="code"><span class="p">$</span> cp storepulse.config.example.json storepulse.config.json</pre>
+      <pre class="code"><span class="p">$</span> npx storepulse init</pre>
+      <p>
+        Works in any folder — it creates <code>storepulse.config.json</code>
+        and a <code>.env</code> template (existing files are never
+        overwritten) and git-ignores the credential files. In a clone of this
+        repo, <code>cp storepulse.config.example.json
+        storepulse.config.json</code> does the same. Now open
+        <code>storepulse.config.json</code> and list your apps:
+      </p>
       <table>
         <thead><tr><th>field</th><th>what it is</th></tr></thead>
         <tbody>
@@ -54,14 +62,18 @@ import Base from "../layouts/Base.astro";
     <section>
       <p class="sec-label">step 3</p>
       <h2>Apple — App Store Connect API key</h2>
-      <pre class="code"><span class="p">$</span> cp .env.example .env</pre>
+      <p>
+        From here on you're filling in the <code>.env</code> that
+        <code>storepulse init</code> created (repo clone:
+        <code>cp .env.example .env</code>).
+      </p>
       <ol>
         <li>
           <a href="https://appstoreconnect.apple.com">App Store Connect</a> →
           <b>Users and Access</b> → <b>Integrations</b> → App Store Connect API
         </li>
         <li>Under <b>Team Keys</b>, click <b>＋</b>. Role: <b>Developer</b> is recommended — it covers everything storepulse reads. <b>App Manager</b> works too, but a leaked App Manager key can submit apps and edit metadata, so grant the least privilege you can.</li>
-        <li><b>Download the <code>.p8</code> file.</b> Apple allows exactly one download — keep it safe (it's git-ignored here). This key can write as much as its role allows — if it ever leaks, revoke it immediately in App Store Connect.</li>
+        <li><b>Download the <code>.p8</code> file.</b> Apple allows exactly one download — keep it safe (<code>storepulse init</code> git-ignores it for you). This key can write as much as its role allows — if it ever leaks, revoke it immediately in App Store Connect.</li>
         <li>Fill in three values:</li>
       </ol>
       <pre class="code">ASC_KEY_ID=ABC123DEFG          <span class="cmt"># "Key ID" column of your key</span>
@@ -112,10 +124,11 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
     <section>
       <p class="sec-label">step 5</p>
       <h2>Run</h2>
-      <pre class="code"><span class="p">$</span> pnpm status</pre>
+      <pre class="code"><span class="p">$</span> npx storepulse</pre>
       <p>
-        Your real board appears. Rows with credential problems show an inline
-        error — they never hide the rest of the board.
+        Your real board appears (in a clone of this repo, <code>pnpm
+        status</code> does the same). Rows with credential problems show an
+        inline error — they never hide the rest of the board.
       </p>
     </section>
 

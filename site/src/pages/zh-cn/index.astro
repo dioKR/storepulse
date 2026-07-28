@@ -165,18 +165,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
             <code>.env</code>(一个 App Store Connect API 密钥 + 一个 Play
             服务账号 —— 都是 5 分钟搞定的一次性配置)。
           </p>
-          <pre class="code"><span class="p">$</span> cp storepulse.config.example.json storepulse.config.json
-<span class="p">$</span> cp .env.example .env  <span class="cmt"># 然后把两个文件填好</span></pre>
+          <pre class="code"><span class="p">$</span> npx storepulse init  <span class="cmt"># 生成两个文件 —— 然后填好即可</span></pre>
         </div>
       </div>
       <div class="step">
         <div class="step-no">3</div>
         <div>
           <h3>运行</h3>
-          <pre class="code"><span class="p">$</span> pnpm status</pre>
+          <pre class="code"><span class="p">$</span> npx storepulse</pre>
           <p>
             你的真实看板就出现了。
-            <a href={`${base}/zh-cn/tutorial/`}>带截图的完整教程 →</a>
+            <a href={`${base}/zh-cn/tutorial/`}>完整分步教程 →</a>
           </p>
         </div>
       </div>
