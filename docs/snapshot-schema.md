@@ -69,6 +69,14 @@ Current version: **1**.
 | `state` | `ReleaseState` | See below |
 | `rawState` | string? | Store-specific state string, e.g. `"READY_FOR_SALE"`, `"production/inProgress"` |
 | `rolloutPercent` | number? | 0–100, present while `state` is `"rollout"` |
+| `releaseNotes` | string? | Release notes for this release, line breaks preserved. iOS: App Store "What's New" (locale priority ko → en-US → first available). Android: `release.releaseNotes[]` text (ko-KR → en-US → first available). |
+| `date` | string? | ISO 8601. iOS only: `appStoreVersion.createdDate` (production) / TestFlight build `uploadedDate` (beta) |
+| `expiresAt` | string? | ISO 8601. TestFlight builds only: `expirationDate` of the beta build |
+
+`releaseNotes`, `date`, and `expiresAt` were added as **optional** fields after
+the initial release. Per the versioning rule above — *"Adding new optional
+fields does **not** bump it"* — `schemaVersion` remains **1**; consumers that
+ignore them keep working unchanged.
 
 ### `ReleaseState`
 
@@ -107,14 +115,18 @@ change degrades — visibly, not silently.
           "channel": "production",
           "version": "2.4.1",
           "state": "live",
-          "rawState": "READY_FOR_SALE"
+          "rawState": "READY_FOR_SALE",
+          "date": "2026-07-06T09:00:00Z",
+          "releaseNotes": "· 홈 피드 로딩 속도 개선\n· 자잘한 버그 수정"
         },
         {
           "channel": "beta",
           "version": "2.5.0",
           "build": "108",
           "state": "live",
-          "rawState": "VALID"
+          "rawState": "VALID",
+          "date": "2026-07-21T10:00:00Z",
+          "expiresAt": "2026-10-19T10:00:00Z"
         }
       ],
       "fetchedAt": "2026-07-27T12:34:56.123Z"
