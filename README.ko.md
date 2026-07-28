@@ -71,6 +71,17 @@ pnpm demo
 "사용자는 2.4.1을 쓰고 있고, 2.5.0은 심사를 기다리는 중"이라는 뜻이에요.
 바로 이 '사이의 순간'을 눈에 보이게 하려고 만든 도구예요.
 
+배지 뜻이 가물가물하다면, 범례가 CLI에 내장돼 있어요:
+
+```sh
+npx storepulse explain            # 전체 상태를 한눈에
+npx storepulse explain rejected   # 상태 하나를 깊게 — 의미, 스토어 원본 상태, 권장 액션
+```
+
+CLI의 안내문·에러·도움말은 영어와 한국어를 지원해요 — `--lang ko|en`이나
+`STOREPULSE_LANG`으로 고르고, 지정이 없으면 OS 로케일을 따라가요 (배지와
+컬럼 헤더는 어느 쪽이든 영어로 고정이에요).
+
 ## 같은 보드를 브라우저로, JSON으로
 
 CLI 보드에는 형제 명령이 둘 있어요. 둘 다 데모 모드로, 크리덴셜 없이 써볼 수
@@ -87,12 +98,19 @@ npx storepulse snapshot --demo  # 보드를 JSON으로 출력
   대시보드를 띄워요. 자동으로 새로고침되고요. 행을 클릭하면 상세 패널이
   열려요 — 릴리즈 노트 전문, 제출/업로드 날짜, 그리고 TestFlight 만료가
   7일 이하로 남으면 D-day 경고까지 보여줘요. 상단 칩으로 OS(iOS/Android)와
-  그룹(`prod`/`dev`)을 조합해 보드를 좁혀볼 수도 있고요. 옵션은 `--port`,
+  그룹(`prod`/`dev`)을 조합해 보드를 좁혀볼 수도 있고요. 헤더의 EN/KO
+  스위처로 대시보드 언어를 바꿀 수 있고(선택은 브라우저가 기억해요), 행이
+  아니라 상태 배지를 클릭하면 그 상태가 무슨 뜻인지 알려주는 용어 설명
+  다이얼로그가 열려요. 옵션은 `--port`,
   `--host`, `--refresh <초>`예요. 기본으로 `127.0.0.1`에만 바인딩돼요 —
   보드에 미출시 버전 번호가 보일 수 있으니, 밖으로 여는 건 신중하게요.
 - **`storepulse snapshot`**은 보드를 JSON으로 출력해요 (`--out <파일>`을 주면
   파일로 저장돼요) — CI 아티팩트나 자체 스크립트에 쓰기 좋아요. 문서 형식은
   [docs/snapshot-schema.md](docs/snapshot-schema.md)에 정리돼 있어요.
+
+![한국어로 표시된 대시보드 — 헤더에 EN/KO 스위처가 있어요](docs/images/dashboard-i18n.png)
+
+![상태 배지를 클릭하면 열리는 용어 설명 다이얼로그 — `storepulse explain`이 출력하는 것과 같은 설명이에요](docs/images/dashboard-explain.png)
 
 `--demo`를 빼면 두 명령 모두 아래에서 설정하는 실제 구성을 사용해요.
 
@@ -241,7 +259,7 @@ Prettier를 대신하는 단일 도구예요. 에디터는 Biome 확장만 설�
 - [ ] 상태가 바뀌면 Slack/Discord 알림 ("2.5.0 심사 통과 🎉")
 - [x] 웹 대시보드 (`storepulse serve`)
 - [x] npm 배포 (`npx storepulse`)
-- [ ] CLI 출력 영어·한국어 지원
+- [x] CLI 출력 영어·한국어 지원 (`--lang ko`, `storepulse explain`)
 
 ## 라이선스
 

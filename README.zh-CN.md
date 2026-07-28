@@ -68,6 +68,17 @@ pnpm demo
 "用户在用 2.4.1,而 2.5.0 正在等审核"。让这个"中间时刻"变得可见,
 正是这个工具存在的意义。
 
+忘了徽标是什么意思?图例就内置在 CLI 里:
+
+```sh
+npx storepulse explain            # 一览所有状态
+npx storepulse explain rejected   # 深入一个状态 —— 含义、商店原始状态、建议操作
+```
+
+CLI 的提示、错误和帮助文本支持英文和韩文 —— 用 `--lang ko|en` 或
+`STOREPULSE_LANG` 选择,未指定时跟随操作系统区域设置(徽标和列标题
+在两种语言下都保持英文)。
+
 ## 同一块看板,放进浏览器,或导出成 JSON
 
 CLI 看板还有两条兄弟命令。都支持演示模式,不需要凭据:
@@ -82,12 +93,18 @@ npx storepulse snapshot --demo  # 把看板输出成 JSON
 - **`storepulse serve`** 启动一个本地 Web 看板 —— 同一块看板,同样的设计,
   还会自动刷新。点击任意一行即可展开详情面板:发布说明全文、提交/上传日期,
   TestFlight 剩余有效期不足 7 天时还会亮出倒计时警告。顶部的筛选标签可以按
-  OS(iOS/Android)和分组(`prod`/`dev`)组合过滤看板。选项:`--port`、
+  OS(iOS/Android)和分组(`prod`/`dev`)组合过滤看板。顶栏的 EN/KO
+  切换器可以切换看板语言(选择会记在浏览器里),点击状态徽标(而不是整行)
+  会弹出解释该状态含义的术语对话框。选项:`--port`、
   `--host`、`--refresh <秒>`。默认只绑定
   `127.0.0.1` —— 看板上可能出现尚未发布的版本号,对外开放前请三思。
 - **`storepulse snapshot`** 把看板输出成 JSON(`--out <文件>` 可写入文件)
   —— 适合 CI 产物或你自己的脚本。文档格式见
   [docs/snapshot-schema.md](docs/snapshot-schema.md)。
+
+![韩文界面的看板 —— EN/KO 切换器就在顶栏](docs/images/dashboard-i18n.png)
+
+![点击状态徽标弹出的术语解释对话框 —— 和 `storepulse explain` 输出的是同一套说明](docs/images/dashboard-explain.png)
 
 去掉 `--demo`,两条命令就会使用下文配置的真实应用。
 
@@ -233,7 +250,7 @@ ESLint + Prettier。编辑器装上 Biome 插件,就会自动读取 `biome.json`
 - [ ] 状态变化时的 Slack/Discord 通知("2.5.0 审核通过 🎉")
 - [x] Web 看板(`storepulse serve`)
 - [x] 发布到 npm(`npx storepulse`)
-- [ ] CLI 输出支持英文·韩文
+- [x] CLI 输出支持英文·韩文(`--lang ko`、`storepulse explain`)
 
 ## 许可证
 
