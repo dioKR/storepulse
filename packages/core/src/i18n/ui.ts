@@ -22,6 +22,10 @@ export const UI_STRINGS = {
     en: "show the release board for storepulse.config.json",
     ko: "storepulse.config.json의 릴리즈 보드를 표시",
   },
+  "cli.help.init": {
+    en: "create storepulse.config.json + .env templates here",
+    ko: "현재 폴더에 storepulse.config.json + .env 템플릿 생성",
+  },
   "cli.help.demo": {
     en: "show the board with sample data (no credentials needed)",
     ko: "샘플 데이터로 보드를 표시 (크리덴셜 불필요)",
@@ -42,6 +46,45 @@ export const UI_STRINGS = {
     en: "output language (also: STOREPULSE_LANG, OS locale)",
     ko: "출력 언어 (STOREPULSE_LANG, OS 로케일도 지원)",
   },
+  // ── init (storepulse init, issue #9) ─────────────────
+  "init.created": {
+    en: "created {file}",
+    ko: "{file}을(를) 생성했습니다",
+  },
+  "init.skipped": {
+    en: "{file} already exists — skipped (never overwritten)",
+    ko: "{file}이(가) 이미 있어 건너뜁니다 (덮어쓰지 않습니다)",
+  },
+  "init.gitignoreCreated": {
+    en: "created .gitignore ignoring {entries}",
+    ko: ".gitignore를 생성해 {entries}을(를) 무시하도록 했습니다",
+  },
+  "init.gitignoreAppended": {
+    en: "appended {entries} to .gitignore",
+    ko: ".gitignore에 {entries}을(를) 추가했습니다",
+  },
+  "init.gitignoreUnchanged": {
+    en: ".gitignore already ignores all credential files",
+    ko: ".gitignore가 이미 모든 크리덴셜 파일을 무시하고 있습니다",
+  },
+  "init.nextSteps": { en: "next steps", ko: "다음 단계" },
+  "init.stepConfig": {
+    en:
+      "add your apps to storepulse.config.json — storeId is the numeric Apple ID " +
+      "on the App Store Connect app page (ios) or the package name (android)",
+    ko:
+      "storepulse.config.json에 앱 정보를 입력하세요 — storeId는 App Store Connect " +
+      "앱 페이지의 숫자 Apple ID(ios) 또는 패키지명(android)입니다",
+  },
+  "init.stepKeys": {
+    en: "issue read-only store API keys — tutorial: https://diokr.github.io/storepulse/",
+    ko: "스토어 API 키를 발급하세요 — 튜토리얼: https://diokr.github.io/storepulse/ko/",
+  },
+  "init.stepRun": {
+    en: "when both are done, run: npx storepulse",
+    ko: "완료되면 실행: npx storepulse",
+  },
+
   "snapshot.written": {
     en: "snapshot written to {path}",
     ko: "스냅샷을 {path}에 저장했습니다",
