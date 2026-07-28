@@ -3,6 +3,7 @@ import { fetchAll, type Lang, uiString } from "@storepulse/core";
 import { loadConfig } from "./config.js";
 import { demoConnector, demoTargets } from "./demo.js";
 import { runExplain } from "./explain.js";
+import { runInit } from "./init.js";
 import { extractLangFlag, resolveLang } from "./lang.js";
 import { renderBoard } from "./render.js";
 import { runServe } from "./serve.js";
@@ -23,6 +24,7 @@ function usage(unknownCommand: string, l: Lang): string {
   return (
     `\n${uiString("cli.error.unknownCommand", l, { command: unknownCommand })}\n\n` +
     `  storepulse           ${uiString("cli.help.default", l)}\n` +
+    `  storepulse init      ${uiString("cli.help.init", l)}\n` +
     `  storepulse demo      ${uiString("cli.help.demo", l)}\n` +
     `  storepulse snapshot  ${uiString("cli.help.snapshot", l)}\n` +
     `  storepulse serve     ${uiString("cli.help.serve", l)}\n` +
@@ -32,7 +34,9 @@ function usage(unknownCommand: string, l: Lang): string {
 }
 
 try {
-  if (command === "demo") {
+  if (command === "init") {
+    runInit(lang);
+  } else if (command === "demo") {
     console.log(renderBoard(await fetchAll([demoConnector], demoTargets), lang));
   } else if (command === "snapshot") {
     await runSnapshot(rest, lang);
