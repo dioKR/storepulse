@@ -215,6 +215,10 @@ PLAY_SERVICE_ACCOUNT_PATH=./service-account.json
 > `PLAY_SERVICE_ACCOUNT_BASE64`)을 지원해서, 파일 없이 CI 시크릿으로 넣을 수
 > 있어요.
 
+다 채웠나요? 실행 전에 `npx storepulse doctor`로 방금 입력한 크리덴셜이
+두 스토어에서 제대로 동작하는지 단계별로 미리 점검해볼 수도 있어요
+(선택이에요).
+
 ### 3단계 — 실행
 
 ```sh
@@ -228,6 +232,9 @@ npx storepulse
 ---
 
 ## 문제 해결
+
+먼저 `npx storepulse doctor`를 실행해 보세요 — 아래 원인 대부분을 자동으로
+진단하고, 실패 항목마다 한 줄 해결책을 알려줘요.
 
 | 증상 | 이럴 가능성이 높아요 |
 |---|---|
@@ -247,13 +254,14 @@ npx storepulse
 ## 개발
 
 ```sh
-pnpm demo            # 샘플 데이터로 보드 표시
-pnpm status          # 실제 설정으로 보드 표시
-npx storepulse init  # 설정 + .env 템플릿 생성 (아무 폴더에서나 돼요)
-pnpm typecheck       # 전체 패키지 tsc
-pnpm test            # 유닛 테스트 (vitest)
-pnpm lint            # Biome (린트 + 포맷 검사)
-pnpm lint:fix        # 자동 수정
+pnpm demo              # 샘플 데이터로 보드 표시
+pnpm status            # 실제 설정으로 보드 표시
+npx storepulse init    # 설정 + .env 템플릿 생성 (아무 폴더에서나 돼요)
+npx storepulse doctor  # 크리덴셜·권한 진단 (401/403 원인 찾기)
+pnpm typecheck         # 전체 패키지 tsc
+pnpm test              # 유닛 테스트 (vitest)
+pnpm lint              # Biome (린트 + 포맷 검사)
+pnpm lint:fix          # 자동 수정
 ```
 
 포맷팅과 린팅은 [Biome](https://biomejs.dev) 하나로 처리해요 — ESLint +

@@ -23,6 +23,7 @@ npx storepulse demo       # the board with sample data — no credentials needed
 npx storepulse snapshot   # the board as JSON (--demo, --out <file>)
 npx storepulse serve      # local web dashboard (--demo, --port, --host, --refresh)
 npx storepulse explain    # badge glossary (explain <state> for one state in depth)
+npx storepulse doctor     # diagnose credentials & permissions (find the 401/403)
 ```
 
 Every command accepts `--lang ko|en` (or `STOREPULSE_LANG`; falls back to your
