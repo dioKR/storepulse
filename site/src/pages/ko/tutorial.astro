@@ -34,7 +34,15 @@ import Base from "../../layouts/Base.astro";
     <section>
       <p class="sec-label">2단계</p>
       <h2>앱 목록 작성하기</h2>
-      <pre class="code"><span class="p">$</span> cp storepulse.config.example.json storepulse.config.json</pre>
+      <pre class="code"><span class="p">$</span> npx storepulse init</pre>
+      <p>
+        아무 폴더에서나 돼요 — <code>storepulse.config.json</code>과
+        <code>.env</code> 템플릿을 만들고 (이미 있는 파일은 덮어쓰지 않아요),
+        크리덴셜 파일을 <code>.gitignore</code>에 넣어줘요. 이 레포를 클론해서
+        쓰고 있다면 <code>cp storepulse.config.example.json
+        storepulse.config.json</code>도 같아요. 이제
+        <code>storepulse.config.json</code>을 열어 앱을 적어요:
+      </p>
       <table>
         <thead><tr><th>필드</th><th>설명</th></tr></thead>
         <tbody>
@@ -55,7 +63,10 @@ import Base from "../../layouts/Base.astro";
     <section>
       <p class="sec-label">3단계</p>
       <h2>Apple — App Store Connect API 키</h2>
-      <pre class="code"><span class="p">$</span> cp .env.example .env</pre>
+      <p>
+        여기부터는 <code>storepulse init</code>이 만들어 준 <code>.env</code>를
+        채우는 단계예요 (레포 클론이라면 <code>cp .env.example .env</code>).
+      </p>
       <ol>
         <li>
           <a href="https://appstoreconnect.apple.com">App Store Connect</a> →
@@ -63,7 +74,7 @@ import Base from "../../layouts/Base.astro";
           App Store Connect API로 들어가요.
         </li>
         <li><b>팀 키(Team Keys)</b>에서 <b>＋</b>를 눌러요. 역할은 <b>Developer</b>를 권장해요 — storepulse가 읽는 데는 이걸로 충분해요. <b>App Manager</b>로도 동작하지만, 키가 유출되면 앱 제출·메타데이터 수정 권한까지 넘어가니 최소 권한이 안전해요.</li>
-        <li><b><code>.p8</code> 파일을 내려받아요.</b> Apple은 딱 한 번만 받게 해줘요 — 안전하게 보관하세요 (여기서는 git에서 제외돼요). 이 키는 역할이 허용하는 만큼 쓰기도 가능한 크리덴셜이라, 유출됐다면 App Store Connect에서 즉시 폐기(revoke)하세요.</li>
+        <li><b><code>.p8</code> 파일을 내려받아요.</b> Apple은 딱 한 번만 받게 해줘요 — 안전하게 보관하세요 (<code>storepulse init</code>이 이미 git에서 제외해 뒀어요). 이 키는 역할이 허용하는 만큼 쓰기도 가능한 크리덴셜이라, 유출됐다면 App Store Connect에서 즉시 폐기(revoke)하세요.</li>
         <li>세 가지 값을 채워요:</li>
       </ol>
       <pre class="code">ASC_KEY_ID=ABC123DEFG          <span class="cmt"># 키의 "Key ID" 열</span>
@@ -114,10 +125,11 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
     <section>
       <p class="sec-label">5단계</p>
       <h2>실행</h2>
-      <pre class="code"><span class="p">$</span> pnpm status</pre>
+      <pre class="code"><span class="p">$</span> npx storepulse</pre>
       <p>
-        여러분의 실제 보드가 나타나요. 크리덴셜에 문제가 있는 행은 그 자리에
-        에러만 보여줄 뿐, 나머지 보드를 가리지 않아요.
+        여러분의 실제 보드가 나타나요 (레포 클론에서는
+        <code>pnpm status</code>로도 돼요). 크리덴셜에 문제가 있는 행은 그
+        자리에 에러만 보여줄 뿐, 나머지 보드를 가리지 않아요.
       </p>
     </section>
 

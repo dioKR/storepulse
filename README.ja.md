@@ -126,11 +126,21 @@ npx storepulse snapshot --demo  # ボードを JSON で出力
 
 ### ステップ 1 — アプリを登録
 
-サンプル設定をコピーして編集します:
+まず設定ファイルを作ります — リポジトリをクローンしなくても、どのフォルダ
+でも使えます:
 
 ```sh
-cp storepulse.config.example.json storepulse.config.json
+npx storepulse init
 ```
+
+このコマンドは `storepulse.config.json` と `.env` のテンプレートを作成し
+(既存のファイルは決して上書きしません)、認証情報ファイルがコミットされない
+よう `.gitignore` に除外パターンを追加して、次のステップをターミナルに
+案内します(`--lang ko|en`)。(このリポジトリのクローンで作業しているなら、
+`cp storepulse.config.example.json storepulse.config.json` でも同じファイルが
+得られます。)
+
+続いて `storepulse.config.json` を開き、アプリを登録します:
 
 ```jsonc
 {
@@ -157,11 +167,8 @@ cp storepulse.config.example.json storepulse.config.json
 
 ### ステップ 2 — 認証情報を入力
 
-```sh
-cp .env.example .env
-```
-
-次に `.env` を埋めます。必要なのは Apple から 1 つ、Google から 1 つ —
+次に、`storepulse init` が作った `.env` を埋めます(リポジトリのクローンなら
+`cp .env.example .env`)。必要なのは Apple から 1 つ、Google から 1 つ —
 どちらも 5 分ほどで終わる、一度きりのセットアップです。
 
 #### Apple — App Store Connect API キー
@@ -175,8 +182,8 @@ cp .env.example .env
    アプリの提出やメタデータの変更まで可能になってしまうので、
    最小権限で作るのが安全です。
 3. **`.p8` ファイルをダウンロードします** — Apple がダウンロードを許すのは
-   一度きり。大切に保管してください(このリポジトリではデフォルトで
-   git 管理外です)。このキーはロールが許す範囲で書き込みもできる
+   一度きり。大切に保管してください(`storepulse init` が既に
+   git 管理外にしています)。このキーはロールが許す範囲で書き込みもできる
    認証情報なので、万一漏えいしたら App Store Connect で直ちに
    失効(revoke)させてください。
 4. 3 つの値を `.env` に写します:
@@ -219,11 +226,12 @@ PLAY_SERVICE_ACCOUNT_PATH=./service-account.json
 ### ステップ 3 — 実行
 
 ```sh
-pnpm status
+npx storepulse
 ```
 
-あなたの実際のボードが現れます。認証情報に問題のある行は、ボード全体を
-隠す代わりに、その場所にエラーを表示するだけです。
+あなたの実際のボードが現れます(リポジトリのクローンでは `pnpm status`
+でも同じです)。認証情報に問題のある行は、ボード全体を隠す代わりに、
+その場所にエラーを表示するだけです。
 
 ---
 
@@ -247,12 +255,13 @@ pnpm status
 ## 開発
 
 ```sh
-pnpm demo        # サンプルデータでボードを表示
-pnpm status      # 実際の設定でボードを表示
-pnpm typecheck   # 全パッケージで tsc
-pnpm test        # ユニットテスト(vitest)
-pnpm lint        # Biome(lint + フォーマットチェック)
-pnpm lint:fix    # 自動修正
+pnpm demo            # サンプルデータでボードを表示
+pnpm status          # 実際の設定でボードを表示
+npx storepulse init  # 設定 + .env テンプレートを生成(どのフォルダでも可)
+pnpm typecheck       # 全パッケージで tsc
+pnpm test            # ユニットテスト(vitest)
+pnpm lint            # Biome(lint + フォーマットチェック)
+pnpm lint:fix        # 自動修正
 ```
 
 フォーマットと lint は [Biome](https://biomejs.dev) ひとつで済ませています —

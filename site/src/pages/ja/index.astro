@@ -169,18 +169,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
             <code>.env</code> に(App Store Connect API キーと Play サービス
             アカウント — どちらも 5 分で終わる、一度きりのセットアップです)。
           </p>
-          <pre class="code"><span class="p">$</span> cp storepulse.config.example.json storepulse.config.json
-<span class="p">$</span> cp .env.example .env  <span class="cmt"># あとは両方のファイルを埋めるだけ</span></pre>
+          <pre class="code"><span class="p">$</span> npx storepulse init  <span class="cmt"># 両方のファイルを生成 — あとは埋めるだけ</span></pre>
         </div>
       </div>
       <div class="step">
         <div class="step-no">3</div>
         <div>
           <h3>実行する</h3>
-          <pre class="code"><span class="p">$</span> pnpm status</pre>
+          <pre class="code"><span class="p">$</span> npx storepulse</pre>
           <p>
             あなたの実際のボードが現れます。
-            <a href={`${base}/ja/tutorial/`}>スクリーンショット付きのチュートリアル →</a>
+            <a href={`${base}/ja/tutorial/`}>手順を追った完全チュートリアル →</a>
           </p>
         </div>
       </div>

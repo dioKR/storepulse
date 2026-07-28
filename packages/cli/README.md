@@ -18,6 +18,7 @@ npx storepulse demo   # see the board with sample data — no credentials needed
 
 ```sh
 npx storepulse            # release board for storepulse.config.json
+npx storepulse init       # scaffold storepulse.config.json + .env templates here
 npx storepulse demo       # the board with sample data — no credentials needed
 npx storepulse snapshot   # the board as JSON (--demo, --out <file>)
 npx storepulse serve      # local web dashboard (--demo, --port, --host, --refresh)
@@ -35,11 +36,14 @@ top. The JSON document written by
 
 ## Real apps
 
-1. Create `storepulse.config.json` (app list) and `.env` (an App Store Connect
-   API key + a Google Play service account) in your working directory.
-2. Run `npx storepulse`.
+1. Run `npx storepulse init` — it scaffolds `storepulse.config.json` (app
+   list) and a `.env` template in the current folder, never overwriting
+   existing files, and git-ignores the credential files.
+2. Fill them in: your apps in the config, an App Store Connect API key and a
+   Google Play service account in `.env`.
+3. Run `npx storepulse`.
 
-Full step-by-step tutorial with screenshots:
+Full step-by-step tutorial:
 **https://diokr.github.io/storepulse/**
 
 ## Links

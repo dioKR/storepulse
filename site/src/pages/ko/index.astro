@@ -172,18 +172,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
             <code>.env</code>에 넣어요 (App Store Connect API 키 하나 +
             Play 서비스 계정 하나 — 둘 다 5분이면 끝나는 1회성 설정이에요).
           </p>
-          <pre class="code"><span class="p">$</span> cp storepulse.config.example.json storepulse.config.json
-<span class="p">$</span> cp .env.example .env  <span class="cmt"># 그다음 두 파일을 채워요</span></pre>
+          <pre class="code"><span class="p">$</span> npx storepulse init  <span class="cmt"># 두 파일을 만들어 줘요 — 그다음 채우면 돼요</span></pre>
         </div>
       </div>
       <div class="step">
         <div class="step-no">3</div>
         <div>
           <h3>실행해요</h3>
-          <pre class="code"><span class="p">$</span> pnpm status</pre>
+          <pre class="code"><span class="p">$</span> npx storepulse</pre>
           <p>
             여러분의 실제 보드가 나타나요.
-            <a href={`${base}/ko/tutorial/`}>스크린샷과 함께 보는 전체 튜토리얼 →</a>
+            <a href={`${base}/ko/tutorial/`}>차근차근 따라가는 전체 튜토리얼 →</a>
           </p>
         </div>
       </div>

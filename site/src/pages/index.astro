@@ -167,18 +167,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
             <code>.env</code> (an App Store Connect API key + a Play service
             account — both are five-minute, one-time setups).
           </p>
-          <pre class="code"><span class="p">$</span> cp storepulse.config.example.json storepulse.config.json
-<span class="p">$</span> cp .env.example .env  <span class="cmt"># then fill in both files</span></pre>
+          <pre class="code"><span class="p">$</span> npx storepulse init  <span class="cmt"># scaffolds both files — then fill them in</span></pre>
         </div>
       </div>
       <div class="step">
         <div class="step-no">3</div>
         <div>
           <h3>Run it</h3>
-          <pre class="code"><span class="p">$</span> pnpm status</pre>
+          <pre class="code"><span class="p">$</span> npx storepulse</pre>
           <p>
             Your real board appears.
-            <a href={`${base}/tutorial/`}>Full tutorial with screenshots →</a>
+            <a href={`${base}/tutorial/`}>Full step-by-step tutorial →</a>
           </p>
         </div>
       </div>

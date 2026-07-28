@@ -36,7 +36,16 @@ import Base from "../../layouts/Base.astro";
     <section>
       <p class="sec-label">ステップ 2</p>
       <h2>アプリを登録する</h2>
-      <pre class="code"><span class="p">$</span> cp storepulse.config.example.json storepulse.config.json</pre>
+      <pre class="code"><span class="p">$</span> npx storepulse init</pre>
+      <p>
+        どのフォルダでも使えます — <code>storepulse.config.json</code> と
+        <code>.env</code> のテンプレートを作成し(既存のファイルは
+        上書きしません)、認証情報ファイルを <code>.gitignore</code> に
+        追加します。このリポジトリのクローンなら
+        <code>cp storepulse.config.example.json storepulse.config.json</code>
+        でも同じです。続いて <code>storepulse.config.json</code> を開き、
+        アプリを登録します:
+      </p>
       <table>
         <thead><tr><th>フィールド</th><th>説明</th></tr></thead>
         <tbody>
@@ -57,7 +66,11 @@ import Base from "../../layouts/Base.astro";
     <section>
       <p class="sec-label">ステップ 3</p>
       <h2>Apple — App Store Connect API キー</h2>
-      <pre class="code"><span class="p">$</span> cp .env.example .env</pre>
+      <p>
+        ここからは <code>storepulse init</code> が作った <code>.env</code> を
+        埋めていきます(リポジトリのクローンなら
+        <code>cp .env.example .env</code>)。
+      </p>
       <ol>
         <li>
           <a href="https://appstoreconnect.apple.com">App Store Connect</a> →
@@ -65,7 +78,7 @@ import Base from "../../layouts/Base.astro";
           App Store Connect API へ。
         </li>
         <li><b>チームキー(Team Keys)</b>で <b>＋</b> をクリック。ロールは <b>Developer</b> を推奨します — storepulse が読む範囲にはこれで十分です。<b>App Manager</b> でも動作しますが、キーが漏えいするとアプリの提出やメタデータの変更まで可能になるため、最小権限が安全です。</li>
-        <li><b><code>.p8</code> ファイルをダウンロードします。</b> Apple がダウンロードを許すのは一度きり — 大切に保管してください(このリポジトリでは git 管理外です)。このキーはロールが許す範囲で書き込みもできる認証情報なので、万一漏えいしたら App Store Connect で直ちに失効(revoke)させてください。</li>
+        <li><b><code>.p8</code> ファイルをダウンロードします。</b> Apple がダウンロードを許すのは一度きり — 大切に保管してください(<code>storepulse init</code> が既に git 管理外にしています)。このキーはロールが許す範囲で書き込みもできる認証情報なので、万一漏えいしたら App Store Connect で直ちに失効(revoke)させてください。</li>
         <li>3 つの値を埋めます:</li>
       </ol>
       <pre class="code">ASC_KEY_ID=ABC123DEFG          <span class="cmt"># キーの "Key ID" 列</span>
@@ -118,10 +131,11 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
     <section>
       <p class="sec-label">ステップ 5</p>
       <h2>実行</h2>
-      <pre class="code"><span class="p">$</span> pnpm status</pre>
+      <pre class="code"><span class="p">$</span> npx storepulse</pre>
       <p>
-        あなたの実際のボードが現れます。認証情報に問題のある行は、その場所に
-        エラーを表示するだけで、ボードの残りを隠すことはありません。
+        あなたの実際のボードが現れます(リポジトリのクローンでは
+        <code>pnpm status</code> でも同じです)。認証情報に問題のある行は、
+        その場所にエラーを表示するだけで、ボードの残りを隠すことはありません。
       </p>
     </section>
 
