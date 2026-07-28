@@ -77,16 +77,21 @@ npx storepulse serve --demo     # 本地 Web 看板 → http://127.0.0.1:4780
 npx storepulse snapshot --demo  # 把看板输出成 JSON
 ```
 
-![storepulse Web 看板渲染演示数据](docs/images/dashboard-demo.png)
+![storepulse Web 看板 —— 顶部筛选标签,展开的行里是发布说明、日期和 TestFlight 到期倒计时](docs/images/dashboard-details.png)
 
 - **`storepulse serve`** 启动一个本地 Web 看板 —— 同一块看板,同样的设计,
-  还会自动刷新。选项:`--port`、`--host`、`--refresh <秒>`。默认只绑定
+  还会自动刷新。点击任意一行即可展开详情面板:发布说明全文、提交/上传日期,
+  TestFlight 剩余有效期不足 7 天时还会亮出倒计时警告。顶部的筛选标签可以按
+  OS(iOS/Android)和分组(`prod`/`dev`)组合过滤看板。选项:`--port`、
+  `--host`、`--refresh <秒>`。默认只绑定
   `127.0.0.1` —— 看板上可能出现尚未发布的版本号,对外开放前请三思。
 - **`storepulse snapshot`** 把看板输出成 JSON(`--out <文件>` 可写入文件)
   —— 适合 CI 产物或你自己的脚本。文档格式见
   [docs/snapshot-schema.md](docs/snapshot-schema.md)。
 
 去掉 `--demo`,两条命令就会使用下文配置的真实应用。
+
+想让整个团队在线看这块看板?**[部署指南](docs/deploy/README.md)** 覆盖 AWS、Cloudflare、Vercel、Netlify 和 Google Cloud —— 内置快照定时刷新与访问控制。
 
 ---
 

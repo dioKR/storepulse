@@ -81,17 +81,22 @@ npx storepulse serve --demo     # 로컬 웹 대시보드 → http://127.0.0.1:4
 npx storepulse snapshot --demo  # 보드를 JSON으로 출력
 ```
 
-![데모 보드를 그린 storepulse 웹 대시보드](docs/images/dashboard-demo.png)
+![상단 필터 칩과 릴리즈 노트·날짜·TestFlight 만료가 보이는 storepulse 웹 대시보드](docs/images/dashboard-details.png)
 
 - **`storepulse serve`**는 같은 보드를 같은 디자인으로 보여주는 로컬 웹
-  대시보드를 띄워요. 자동으로 새로고침되고요. 옵션은 `--port`, `--host`,
-  `--refresh <초>`예요. 기본으로 `127.0.0.1`에만 바인딩돼요 — 보드에 미출시
-  버전 번호가 보일 수 있으니, 밖으로 여는 건 신중하게요.
+  대시보드를 띄워요. 자동으로 새로고침되고요. 행을 클릭하면 상세 패널이
+  열려요 — 릴리즈 노트 전문, 제출/업로드 날짜, 그리고 TestFlight 만료가
+  7일 이하로 남으면 D-day 경고까지 보여줘요. 상단 칩으로 OS(iOS/Android)와
+  그룹(`prod`/`dev`)을 조합해 보드를 좁혀볼 수도 있고요. 옵션은 `--port`,
+  `--host`, `--refresh <초>`예요. 기본으로 `127.0.0.1`에만 바인딩돼요 —
+  보드에 미출시 버전 번호가 보일 수 있으니, 밖으로 여는 건 신중하게요.
 - **`storepulse snapshot`**은 보드를 JSON으로 출력해요 (`--out <파일>`을 주면
   파일로 저장돼요) — CI 아티팩트나 자체 스크립트에 쓰기 좋아요. 문서 형식은
   [docs/snapshot-schema.md](docs/snapshot-schema.md)에 정리돼 있어요.
 
 `--demo`를 빼면 두 명령 모두 아래에서 설정하는 실제 구성을 사용해요.
+
+팀 전체가 온라인으로 보게 하고 싶나요? **[배포 가이드](docs/deploy/README.md)**가 AWS, Cloudflare, Vercel, Netlify, Google Cloud를 다뤄요 — 스냅샷 주기 갱신과 접근 제어까지 포함해서요.
 
 ---
 
