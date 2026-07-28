@@ -69,6 +69,17 @@ A cell can show more than one version — `2.4.1 LIVE · 2.5.0 REVIEW` means
 2.4.1 is what users have while 2.5.0 waits for review. That in-between moment
 is exactly what this tool exists to make visible.
 
+Forget what a badge means? The legend is built into the CLI:
+
+```sh
+npx storepulse explain            # every state at a glance
+npx storepulse explain rejected   # one state in depth — meaning, raw store states, what to do
+```
+
+All CLI messages, errors, and help are available in English and Korean — pick
+with `--lang ko|en` or `STOREPULSE_LANG`, or let it follow your OS locale
+(badges and column headers stay in English either way).
+
 ## The same board — in a browser, or as JSON
 
 The CLI board has two siblings. Both work in demo mode, no credentials needed:
@@ -85,12 +96,19 @@ npx storepulse snapshot --demo  # the board as JSON, to stdout
   notes, submission/upload dates, and a TestFlight expiry countdown that
   turns into a warning at D-7. The chips at the top filter the board by OS
   (iOS/Android) and by group (e.g. `prod` / `dev`), combined together.
+  The EN/KO switcher in the header flips the dashboard between English and
+  Korean (your browser remembers the choice), and clicking a state badge —
+  as opposed to the row — opens a glossary dialog explaining that state.
   Options: `--port`, `--host`, `--refresh <seconds>`. It
   binds to `127.0.0.1` by default; the board may list unreleased version
   numbers, so think twice before exposing it.
 - **`storepulse snapshot`** prints the board as JSON (`--out <file>` writes it
   to a file) — handy for CI artifacts or your own scripts. The document format
   is specified in [docs/snapshot-schema.md](docs/snapshot-schema.md).
+
+![The dashboard in Korean — the EN/KO switcher lives in the header](docs/images/dashboard-i18n.png)
+
+![Clicking a state badge opens a glossary dialog — the same explanations `storepulse explain` prints](docs/images/dashboard-explain.png)
 
 Drop `--demo` and both commands use your real config, set up below.
 
@@ -239,7 +257,7 @@ picks up `biome.json` automatically.
 - [ ] Slack/Discord notifications on state changes ("2.5.0 approved 🎉")
 - [x] Web dashboard (`storepulse serve`)
 - [x] Publish to npm (`npx storepulse`)
-- [ ] CLI output in English & Korean
+- [x] CLI output in English & Korean (`--lang ko`, `storepulse explain`)
 
 ## License
 

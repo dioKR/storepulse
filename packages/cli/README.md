@@ -21,7 +21,11 @@ npx storepulse            # release board for storepulse.config.json
 npx storepulse demo       # the board with sample data — no credentials needed
 npx storepulse snapshot   # the board as JSON (--demo, --out <file>)
 npx storepulse serve      # local web dashboard (--demo, --port, --host, --refresh)
+npx storepulse explain    # badge glossary (explain <state> for one state in depth)
 ```
+
+Every command accepts `--lang ko|en` (or `STOREPULSE_LANG`; falls back to your
+OS locale) to switch CLI messages between English and Korean.
 
 `serve` binds to `127.0.0.1` by default — click a row for release notes,
 dates, and TestFlight expiry, and filter by OS/group with the chips at the
