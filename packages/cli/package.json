@@ -1,6 +1,6 @@
 {
   "name": "storepulse",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "One-glance release status for all your iOS & Android apps — App Store Connect + Google Play in a single terminal table.",
   "license": "MIT",
   "type": "module",

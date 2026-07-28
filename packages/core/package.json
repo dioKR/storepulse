@@ -1,6 +1,6 @@
 {
   "name": "@storepulse/core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Normalized App Store Connect / Google Play release status — connectors and types. Bring your own credentials.",
   "license": "MIT",
   "type": "module",
