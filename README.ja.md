@@ -80,10 +80,14 @@ npx storepulse serve --demo     # ローカル Web ダッシュボード → htt
 npx storepulse snapshot --demo  # ボードを JSON で出力
 ```
 
-![デモボードを描画した storepulse の Web ダッシュボード](docs/images/dashboard-demo.png)
+![フィルターチップと、リリースノート・日付・TestFlight 期限を開いた storepulse の Web ダッシュボード](docs/images/dashboard-details.png)
 
 - **`storepulse serve`** は、同じボードを同じデザインで表示するローカル Web
-  ダッシュボードを起動します。自動で更新されます。オプションは `--port`、
+  ダッシュボードを起動します。自動で更新されます。行をクリックすると
+  詳細パネルが開き、リリースノート全文、提出/アップロード日、そして TestFlight
+  の有効期限が残り 7 日以下になると D-day 警告を表示します。上部のチップで
+  OS(iOS/Android)とグループ(`prod`/`dev`)を組み合わせて絞り込むことも
+  できます。オプションは `--port`、
   `--host`、`--refresh <秒>`。デフォルトでは `127.0.0.1` にのみバインドします —
   ボードには未公開のバージョン番号が並ぶことがあるので、外部に公開するのは
   慎重に。
@@ -93,6 +97,8 @@ npx storepulse snapshot --demo  # ボードを JSON で出力
   [docs/snapshot-schema.md](docs/snapshot-schema.md) にまとまっています。
 
 `--demo` を外せば、どちらのコマンドもこの後で設定する実際の構成を使います。
+
+ボードをチーム全体でオンライン共有したいですか? **[デプロイガイド](docs/deploy/README.md)** が AWS、Cloudflare、Vercel、Netlify、Google Cloud をカバーしています — スナップショットの定期更新とアクセス制御も込みです。
 
 ---
 

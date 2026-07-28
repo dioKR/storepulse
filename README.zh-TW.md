@@ -77,16 +77,21 @@ npx storepulse serve --demo     # 本機 Web 儀表板 → http://127.0.0.1:4780
 npx storepulse snapshot --demo  # 把看板輸出成 JSON
 ```
 
-![storepulse Web 儀表板繪製展示資料](docs/images/dashboard-demo.png)
+![storepulse Web 儀表板 —— 上方是篩選標籤,展開的列裡有版本說明、日期和 TestFlight 到期倒數](docs/images/dashboard-details.png)
 
 - **`storepulse serve`** 會啟動一個本機 Web 儀表板 —— 同一塊看板、同樣的
-  設計,還會自動重新整理。選項:`--port`、`--host`、`--refresh <秒>`。預設
+  設計,還會自動重新整理。點選任一列就會展開詳細面板:版本說明全文、
+  送審/上傳日期,TestFlight 有效期限剩不到 7 天時還會亮出倒數警告。上方的
+  篩選標籤可以依 OS(iOS/Android)與群組(`prod`/`dev`)組合過濾看板。
+  選項:`--port`、`--host`、`--refresh <秒>`。預設
   只綁定 `127.0.0.1` —— 看板上可能出現尚未發布的版本號,對外開放前請三思。
 - **`storepulse snapshot`** 會把看板輸出成 JSON(`--out <檔案>` 可寫入檔案)
   —— 適合 CI 產物或你自己的腳本。文件格式請見
   [docs/snapshot-schema.md](docs/snapshot-schema.md)。
 
 拿掉 `--demo`,兩道指令就會使用下方設定的真實 App。
+
+想讓整個團隊在線上看這塊看板?**[部署指南](docs/deploy/README.md)** 涵蓋 AWS、Cloudflare、Vercel、Netlify 與 Google Cloud —— 內建快照定期更新與存取控制。
 
 ---
 

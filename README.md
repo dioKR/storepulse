@@ -78,10 +78,14 @@ npx storepulse serve --demo     # local web dashboard → http://127.0.0.1:4780
 npx storepulse snapshot --demo  # the board as JSON, to stdout
 ```
 
-![storepulse web dashboard rendering the demo board](docs/images/dashboard-demo.png)
+![storepulse web dashboard — filter chips on top, an expanded row showing release notes, dates, and TestFlight expiry](docs/images/dashboard-details.png)
 
 - **`storepulse serve`** starts a local, auto-refreshing web dashboard — same
-  board, same design. Options: `--port`, `--host`, `--refresh <seconds>`. It
+  board, same design. Click any row to open a detail panel: full release
+  notes, submission/upload dates, and a TestFlight expiry countdown that
+  turns into a warning at D-7. The chips at the top filter the board by OS
+  (iOS/Android) and by group (e.g. `prod` / `dev`), combined together.
+  Options: `--port`, `--host`, `--refresh <seconds>`. It
   binds to `127.0.0.1` by default; the board may list unreleased version
   numbers, so think twice before exposing it.
 - **`storepulse snapshot`** prints the board as JSON (`--out <file>` writes it
