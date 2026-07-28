@@ -145,9 +145,7 @@ cp storepulse.config.example.json storepulse.config.json
 
 **iOS 的數字 ID 去哪找?** App Store Connect → 你的 App →
 **App 資訊(App Information)** → 一般資訊 → **Apple ID**(像
-`1234567890` 這樣的數字):
-
-![Apple ID 的位置](docs/images/asc-app-id.png)
+`1234567890` 這樣的數字)。
 
 ### 步驟 2 —— 填入憑證
 
@@ -178,7 +176,8 @@ ASC_ISSUER_ID=xxxxxxxx-...     # 頁面上方的 "Issuer ID"
 ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8
 ```
 
-![建立 App Store Connect API 金鑰](docs/images/asc-key.png)
+主控台介面時常變動 —— 如果選單位置對不上,請按照 Apple 官方指南
+[Creating API Keys for App Store Connect API](https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api) 操作。
 
 #### Google —— Play 服務帳戶
 
@@ -198,7 +197,8 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8
 PLAY_SERVICE_ACCOUNT_PATH=./service-account.json
 ```
 
-![在 Play Console 邀請服務帳戶](docs/images/play-invite.png)
+如果主控台版面有變,Google 官方的
+[Google Play Developer API 入門指南](https://developers.google.com/android-publisher/getting_started)涵蓋了同樣的步驟。
 
 > **CI 小提醒**:兩個金鑰都支援 `*_BASE64` 形式(`ASC_PRIVATE_KEY_BASE64`、
 > `PLAY_SERVICE_ACCOUNT_BASE64`),可以直接存成 CI 密鑰,不必落地成檔案。

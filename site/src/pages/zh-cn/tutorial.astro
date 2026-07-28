@@ -69,6 +69,11 @@ import Base from "../../layouts/Base.astro";
       <pre class="code">ASC_KEY_ID=ABC123DEFG          <span class="cmt"># 密钥的 "Key ID" 列</span>
 ASC_ISSUER_ID=xxxxxxxx-...     <span class="cmt"># 页面顶部的 "Issuer ID"</span>
 ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
+      <p>
+        控制台界面时常变动 —— 如果菜单位置对不上,请按照 Apple 官方指南
+        <a href="https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api">Creating API Keys for App Store Connect API</a>
+        操作。
+      </p>
     </section>
 
     <section>
@@ -92,6 +97,10 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
         <li>让 <code>.env</code> 指向该 JSON:</li>
       </ol>
       <pre class="code">PLAY_SERVICE_ACCOUNT_PATH=./service-account.json</pre>
+      <p>
+        如果控制台布局有变,Google 官方的
+        <a href="https://developers.google.com/android-publisher/getting_started">Google Play Developer API 入门指南</a>覆盖了同样的步骤。
+      </p>
       <div class="note">
         <b>CI 提示</b> —— 两个密钥都支持 <code>*_BASE64</code> 形式
         (<code>ASC_PRIVATE_KEY_BASE64</code>、
