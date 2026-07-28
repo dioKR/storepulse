@@ -73,8 +73,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <div>
           <p class="cell-title">先是一個函式庫</p>
           <p>
-            核心是以注入憑證方式使用的函式庫,CLI 只是它的第一個介面。
-            接下來是 Web 儀表板與通知 —— 同一顆引擎,更多畫面。
+            核心是以注入憑證方式使用的函式庫,CLI 與 Web 儀表板只是它最早的
+            兩個介面。接下來是通知 —— 同一顆引擎,更多畫面。
             實作兩個方法,就能接上你自己的資料來源。
           </p>
         </div>
@@ -121,6 +121,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
           <div class="v">
             一道 <code>pnpm demo</code> 就能用範例資料畫出完整看板 ——
             連一把 API 金鑰都還沒建立,就能先評估這個工具。
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">Web 儀表板</div>
+          <div class="v">
+            <code>storepulse serve</code> 讓同一塊看板在瀏覽器裡打開 ——
+            同樣的設計、自動重新整理,預設只綁定 <code>127.0.0.1</code>。
+            <code>storepulse snapshot</code> 則把看板輸出成 JSON。
           </div>
         </div>
         <div class="feat-row">
@@ -183,7 +191,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <span class="done">含展示模式的 CLI</span>
         <span>EAS 連接器</span>
         <span>Slack / Discord 通知</span>
-        <span>Web 儀表板</span>
+        <span class="done">Web 儀表板</span>
         <span class="done">npx storepulse</span>
         <span>CLI 英文·韓文輸出</span>
       </div>

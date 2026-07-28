@@ -14,6 +14,19 @@ npx storepulse demo   # see the board with sample data — no credentials needed
 - 🔐 **Credentials stay on your machine** — direct API calls, no server, no telemetry
 - 🧩 Built on [`@storepulse/core`](https://www.npmjs.com/package/@storepulse/core), embeddable in your own tools
 
+## Commands
+
+```sh
+npx storepulse            # release board for storepulse.config.json
+npx storepulse demo       # the board with sample data — no credentials needed
+npx storepulse snapshot   # the board as JSON (--demo, --out <file>)
+npx storepulse serve      # local web dashboard (--demo, --port, --host, --refresh)
+```
+
+`serve` binds to `127.0.0.1` by default. The JSON document written by
+`snapshot` (and served at `/api/status`) is specified in
+[docs/snapshot-schema.md](https://github.com/dioKR/storepulse/blob/main/docs/snapshot-schema.md).
+
 ## Real apps
 
 1. Create `storepulse.config.json` (app list) and `.env` (an App Store Connect

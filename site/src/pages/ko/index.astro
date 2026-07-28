@@ -76,8 +76,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <div>
           <p class="cell-title">먼저 라이브러리로</p>
           <p>
-            핵심은 크리덴셜을 주입받는 라이브러리이고, CLI는 그 첫 번째
-            화면일 뿐이에요. 웹 대시보드와 알림 기능이 다음 차례예요 — 같은
+            핵심은 크리덴셜을 주입받는 라이브러리이고, CLI와 웹 대시보드는
+            그 첫 화면들일 뿐이에요. 알림 기능이 다음 차례예요 — 같은
             엔진에 화면만 더 붙이는 거죠. 메서드 두 개만 구현하면 여러분만의
             소스도 추가할 수 있어요.
           </p>
@@ -127,6 +127,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
             <code>pnpm demo</code> 한 줄이면 샘플 데이터로 보드 전체가
             그려져요 — API 키를 하나도 만들기 전에 도구를 먼저 살펴볼 수
             있어요.
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">웹 대시보드</div>
+          <div class="v">
+            <code>storepulse serve</code>로 같은 보드를 브라우저에서 볼 수
+            있어요 — 같은 디자인에, 자동 새로고침까지요. 기본으로
+            <code>127.0.0.1</code>에만 바인딩돼요. <code>storepulse snapshot</code>은
+            보드를 JSON으로 내보내고요.
           </div>
         </div>
         <div class="feat-row">
@@ -189,7 +198,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <span class="done">데모 모드 CLI</span>
         <span>EAS 커넥터</span>
         <span>Slack / Discord 알림</span>
-        <span>웹 대시보드</span>
+        <span class="done">웹 대시보드</span>
         <span class="done">npx storepulse</span>
         <span>CLI 영어 / 한국어 출력</span>
       </div>

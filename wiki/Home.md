@@ -10,4 +10,10 @@ Welcome! This wiki holds design documents for storepulse.
 ## Pages
 
 - [[Architecture]] — system overview, data flow, the normalized model, and
-  extension points. Start here.
+  extension points (including the `status.json` snapshot contract). Start here.
+
+## Related docs (in the main repo)
+
+- [Snapshot schema (`status.json`)](https://github.com/dioKR/storepulse/blob/main/docs/snapshot-schema.md) —
+  the JSON contract between `storepulse snapshot` / `storepulse serve` and
+  anything that consumes the board.

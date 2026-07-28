@@ -115,6 +115,20 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
     </section>
 
     <section>
+      <p class="sec-label">ステップ 6</p>
+      <h2>Web ダッシュボードで見る</h2>
+      <pre class="code"><span class="p">$</span> npx storepulse serve</pre>
+      <p>
+        <a href="http://127.0.0.1:4780">http://127.0.0.1:4780</a> を開くと、
+        同じボードが同じデザインの Web ダッシュボードとして表示されます。
+        自動で更新されます。認証情報がまだなら
+        <code>npx storepulse serve --demo</code> でも大丈夫です。デフォルトでは
+        <code>127.0.0.1</code> にのみバインドします — ボードには未公開の
+        バージョンが並ぶことがあるので、ローカルに留めておくのが安全です。
+      </p>
+    </section>
+
+    <section>
       <p class="sec-label">トラブルシューティング</p>
       <h2>何かがおかしいとき</h2>
       <table>

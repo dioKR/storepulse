@@ -111,6 +111,19 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
     </section>
 
     <section>
+      <p class="sec-label">第 6 步</p>
+      <h2>在浏览器里看</h2>
+      <pre class="code"><span class="p">$</span> npx storepulse serve</pre>
+      <p>
+        打开 <a href="http://127.0.0.1:4780">http://127.0.0.1:4780</a>,
+        同一块看板就以同样的设计出现在 Web 看板里,并自动刷新。还没配好
+        凭据?<code>npx storepulse serve --demo</code> 也行。默认只绑定
+        <code>127.0.0.1</code> —— 看板上可能出现尚未发布的版本号,
+        留在本机更稳妥。
+      </p>
+    </section>
+
+    <section>
       <p class="sec-label">问题排查</p>
       <h2>哪里不对劲时</h2>
       <table>

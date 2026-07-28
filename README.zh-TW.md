@@ -68,6 +68,26 @@ pnpm demo
 「使用者用的是 2.4.1,而 2.5.0 正在等審查」。讓這個「中間時刻」變得可見,
 正是這個工具存在的意義。
 
+## 同一塊看板,搬進瀏覽器,或輸出成 JSON
+
+CLI 看板還有兩道兄弟指令。都支援展示模式,不需要憑證:
+
+```sh
+npx storepulse serve --demo     # 本機 Web 儀表板 → http://127.0.0.1:4780
+npx storepulse snapshot --demo  # 把看板輸出成 JSON
+```
+
+![storepulse Web 儀表板繪製展示資料](docs/images/dashboard-demo.png)
+
+- **`storepulse serve`** 會啟動一個本機 Web 儀表板 —— 同一塊看板、同樣的
+  設計,還會自動重新整理。選項:`--port`、`--host`、`--refresh <秒>`。預設
+  只綁定 `127.0.0.1` —— 看板上可能出現尚未發布的版本號,對外開放前請三思。
+- **`storepulse snapshot`** 會把看板輸出成 JSON(`--out <檔案>` 可寫入檔案)
+  —— 適合 CI 產物或你自己的腳本。文件格式請見
+  [docs/snapshot-schema.md](docs/snapshot-schema.md)。
+
+拿掉 `--demo`,兩道指令就會使用下方設定的真實 App。
+
 ---
 
 ## 接上你的真實 App
@@ -194,6 +214,7 @@ pnpm status
 pnpm demo        # 用範例資料顯示看板
 pnpm status      # 用真實設定顯示看板
 pnpm typecheck   # 對所有套件執行 tsc
+pnpm test        # 單元測試(vitest)
 pnpm lint        # Biome(lint + 格式檢查)
 pnpm lint:fix    # 自動修復
 ```
@@ -205,7 +226,7 @@ ESLint + Prettier。編輯器裝上 Biome 擴充功能,就會自動讀取 `biome
 
 - [ ] EAS 連接器 —— 把商店狀態與 Expo 的建置·送審串起來
 - [ ] 狀態變化時的 Slack/Discord 通知(「2.5.0 審查通過 🎉」)
-- [ ] Web 儀表板
+- [x] Web 儀表板(`storepulse serve`)
 - [x] 發布到 npm(`npx storepulse`)
 - [ ] CLI 輸出支援英文·韓文
 

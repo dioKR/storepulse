@@ -70,6 +70,30 @@ pnpm demo
 は「ユーザーが使っているのは 2.4.1 で、2.5.0 は審査待ち」という意味です。
 まさにこの「あいだの瞬間」を見えるようにするのが、このツールの存在理由です。
 
+## 同じボードを、ブラウザでも、JSON でも
+
+CLI のボードには兄弟コマンドが 2 つあります。どちらもデモモードなら
+認証情報なしで試せます:
+
+```sh
+npx storepulse serve --demo     # ローカル Web ダッシュボード → http://127.0.0.1:4780
+npx storepulse snapshot --demo  # ボードを JSON で出力
+```
+
+![デモボードを描画した storepulse の Web ダッシュボード](docs/images/dashboard-demo.png)
+
+- **`storepulse serve`** は、同じボードを同じデザインで表示するローカル Web
+  ダッシュボードを起動します。自動で更新されます。オプションは `--port`、
+  `--host`、`--refresh <秒>`。デフォルトでは `127.0.0.1` にのみバインドします —
+  ボードには未公開のバージョン番号が並ぶことがあるので、外部に公開するのは
+  慎重に。
+- **`storepulse snapshot`** はボードを JSON で出力します(`--out <ファイル>`
+  でファイルに書き出せます)— CI のアーティファクトや自作スクリプトに
+  便利です。ドキュメント形式は
+  [docs/snapshot-schema.md](docs/snapshot-schema.md) にまとまっています。
+
+`--demo` を外せば、どちらのコマンドもこの後で設定する実際の構成を使います。
+
 ---
 
 ## 実際のアプリをつなぐ
@@ -202,6 +226,7 @@ pnpm status
 pnpm demo        # サンプルデータでボードを表示
 pnpm status      # 実際の設定でボードを表示
 pnpm typecheck   # 全パッケージで tsc
+pnpm test        # ユニットテスト(vitest)
 pnpm lint        # Biome(lint + フォーマットチェック)
 pnpm lint:fix    # 自動修正
 ```
@@ -214,7 +239,7 @@ ESLint + Prettier を置き換える単一ツールです。エディタは Biom
 
 - [ ] EAS コネクタ — ストアの状態を Expo のビルド・提出と結びつける
 - [ ] 状態変化時の Slack/Discord 通知(「2.5.0 審査通過 🎉」)
-- [ ] Web ダッシュボード
+- [x] Web ダッシュボード(`storepulse serve`)
 - [x] npm 公開(`npx storepulse`)
 - [ ] CLI 出力の英語・韓国語対応
 
