@@ -35,6 +35,7 @@ describe("embedded templates — sync with the repo example files", () => {
   it("keeps the least-privilege security guidance in the .env template", () => {
     expect(ENV_TEMPLATE).toContain("prefer the least privilege");
     expect(ENV_TEMPLATE).toContain('Grant ONLY "View app information"');
+    expect(ENV_TEMPLATE).toContain('"View Only" robot token');
   });
 
   it("config template is valid JSON with the fields loadConfig requires", () => {

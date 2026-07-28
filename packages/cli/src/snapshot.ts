@@ -5,6 +5,7 @@ import {
   type AppStatus,
   createSnapshot,
   DEFAULT_LANG,
+  enrichAll,
   fetchAll,
   type Lang,
   uiString,
@@ -15,12 +16,12 @@ import { demoConnector, demoTargets } from "./demo.js";
 /**
  * Fetch the release board once, from either the demo fixtures or the
  * real connectors configured by storepulse.config.json + .env.
- * Shared by `storepulse snapshot` and `storepulse serve`.
+ * Shared by `storepulse snapshot`, `storepulse serve` and the default board.
  */
 export async function collectStatuses(demo: boolean): Promise<AppStatus[]> {
   if (demo) return fetchAll([demoConnector], demoTargets);
-  const { connectors, targets } = loadConfig();
-  return fetchAll(connectors, targets);
+  const { connectors, targets, enrichers } = loadConfig();
+  return enrichAll(enrichers, await fetchAll(connectors, targets));
 }
 
 export function renderSnapshotJson(apps: AppStatus[]): string {

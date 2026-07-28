@@ -31,6 +31,31 @@ export interface AppTarget {
   storeId: string;
   /** Optional display grouping, e.g. "prod" | "dev" */
   group?: string;
+  /**
+   * EAS project ID (app.json → extra.eas.projectId). The ios and android
+   * targets of the same app share one projectId — the platform filter
+   * happens in the EAS build query, not here.
+   */
+  easProjectId?: string;
+}
+
+/**
+ * EAS build/submission info attached to a channel entry by the EasEnricher.
+ * Pure enrichment: answers "which commit/profile/build is this store
+ * version?" — every field optional, and the whole block absent when no
+ * EAS build matches.
+ */
+export interface EasBuildInfo {
+  /** EAS build profile, e.g. "production" */
+  profile?: string;
+  /** Full git commit hash the build was made from */
+  commit?: string;
+  /** EAS build ID (UUID) — `eas build:view <id>` */
+  buildId?: string;
+  /** ISO date the EAS build finished */
+  completedAt?: string;
+  /** Latest EAS submission status for this build, e.g. "FINISHED" */
+  submissionStatus?: string;
 }
 
 export interface ChannelStatus {
@@ -50,6 +75,8 @@ export interface ChannelStatus {
   date?: string;
   /** ISO date. TestFlight build expirationDate only */
   expiresAt?: string;
+  /** EAS build info matched to this release (EasEnricher) */
+  eas?: EasBuildInfo;
 }
 
 export interface AppStatus {

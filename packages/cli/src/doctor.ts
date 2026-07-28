@@ -5,6 +5,9 @@ import {
   createAscToken,
   createPlayAccessToken,
   DEFAULT_LANG,
+  EasGraphqlError,
+  fetchEasProject,
+  fetchEasViewer,
   type GooglePlayCredentials,
   type Lang,
   PlayTokenExchangeError,
@@ -223,11 +226,26 @@ export async function runDoctorChecks(options: DoctorOptions = {}): Promise<Doct
     googleChecks = await googleChain(androidTargets, env, cwd, fetchImpl, t);
   }
 
+  // ── [5] Expo (EAS) chain — optional enrichment ───────────────────
+  // Skipped entirely when neither side of the pair (EAS_TOKEN in the env,
+  // easProjectId in the config) is present — EAS is opt-in, not a failure.
+  const easProjectIds = [
+    ...new Set((targets ?? []).flatMap((a) => (a.easProjectId ? [a.easProjectId] : []))),
+  ];
+  const easToken = env.EAS_TOKEN;
+  let easChecks: DoctorCheck[];
+  if (!easToken && easProjectIds.length === 0) {
+    easChecks = [skip("eas.chain", t("doctor.skip.noEas"))];
+  } else {
+    easChecks = await easChain(easProjectIds, easToken, fetchImpl, t);
+  }
+
   const sections: DoctorSection[] = [
     { title: t("doctor.section.config"), checks: configChecks },
     { title: t("doctor.section.env"), checks: envChecks },
     { title: t("doctor.section.apple"), checks: appleChecks },
     { title: t("doctor.section.google"), checks: googleChecks },
+    { title: t("doctor.section.eas"), checks: easChecks },
   ];
   const ok = sections.every((s) => s.checks.every((c) => c.status !== "fail"));
   return { sections, ok };
@@ -246,6 +264,8 @@ function configIssueDetail(issue: ConfigIssue, lang: Lang): string {
       });
     case "bad-platform":
       return uiString("doctor.config.badPlatform", lang, { platform: issue.platform });
+    case "bad-eas-project-id":
+      return uiString("doctor.config.badEasProjectId", lang, { app: JSON.stringify(issue.app) });
   }
 }
 
@@ -549,7 +569,102 @@ async function googleChain(
   return checks;
 }
 
-/** ✓/✗/– checklist + [5] summary with one-line fixes and the tutorial link. */
+/**
+ * EAS chain: token present → token accepted (CurrentUser, the same viewer
+ * query eas-cli runs) → each configured easProjectId visible to that token.
+ * Reached only when the user opted into EAS on at least one side.
+ */
+async function easChain(
+  projectIds: string[],
+  token: string | undefined,
+  fetchImpl: typeof fetch,
+  t: Translate,
+): Promise<DoctorCheck[]> {
+  const checks: DoctorCheck[] = [];
+
+  const tokenCheck: DoctorCheck = !token
+    ? fail("eas.token", "EAS_TOKEN", t("doctor.env.missing"), t("doctor.fix.envEas"))
+    : isPlaceholder(token)
+      ? fail("eas.token", "EAS_TOKEN", t("doctor.env.placeholder"), t("doctor.fix.envEas"))
+      : pass("eas.token", "EAS_TOKEN");
+  checks.push(tokenCheck);
+
+  // Token validity, independent of any specific project: a GraphQL error on
+  // CurrentUser means EAS rejected the token itself (invalid/revoked).
+  let viewerOk = false;
+  if (token === undefined || tokenCheck.status !== "pass") {
+    checks.push(skip("eas.viewer", t("doctor.eas.viewer"), t("doctor.skip.easTokenFirst")));
+  } else {
+    try {
+      const viewer = await fetchEasViewer(token, fetchImpl);
+      viewerOk = true;
+      const name = viewer.name ?? viewer.id ?? "?";
+      checks.push(pass("eas.viewer", t("doctor.eas.viewer"), t("doctor.eas.viewerAs", { name })));
+    } catch (err) {
+      if (err instanceof EasGraphqlError) {
+        checks.push(
+          fail(
+            "eas.viewer",
+            t("doctor.eas.viewer"),
+            t("doctor.eas.viewerFail", { message: err.message }),
+            t("doctor.fix.easToken"),
+          ),
+        );
+      } else {
+        checks.push(
+          fail(
+            "eas.viewer",
+            t("doctor.eas.viewer"),
+            t("doctor.fail.network", { message: errMessage(err) }),
+            t("doctor.fix.network"),
+          ),
+        );
+      }
+    }
+  }
+
+  // Each configured easProjectId: an error with a valid token means a wrong
+  // project id, or a project the token's account simply cannot see.
+  if (projectIds.length === 0) {
+    checks.push(skip("eas.projects", t("doctor.skip.noEasProjects")));
+    return checks;
+  }
+  for (const projectId of projectIds) {
+    const id = `eas.project:${projectId}`;
+    const label = t("doctor.check.easProject", { projectId });
+    if (token === undefined || !viewerOk) {
+      checks.push(skip(id, label, t("doctor.skip.prevFailed")));
+      continue;
+    }
+    try {
+      const project = await fetchEasProject(token, projectId, fetchImpl);
+      checks.push(pass(id, label, project.fullName ?? project.name));
+    } catch (err) {
+      if (err instanceof EasGraphqlError) {
+        checks.push(
+          fail(
+            id,
+            label,
+            t("doctor.eas.projectFail", { message: err.message }),
+            t("doctor.fix.easProject"),
+          ),
+        );
+      } else {
+        checks.push(
+          fail(
+            id,
+            label,
+            t("doctor.fail.network", { message: errMessage(err) }),
+            t("doctor.fix.network"),
+          ),
+        );
+      }
+    }
+  }
+  return checks;
+}
+
+/** ✓/✗/– checklist + [6] summary with one-line fixes and the tutorial link. */
 export function renderDoctorReport(report: DoctorReport, lang: Lang = DEFAULT_LANG): string {
   const out: string[] = [""];
   out.push(
