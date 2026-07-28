@@ -90,6 +90,8 @@ npx storepulse snapshot --demo  # the board as JSON, to stdout
 
 Drop `--demo` and both commands use your real config, set up below.
 
+Want the board online for your whole team? The **[deployment guides](docs/deploy/README.md)** cover AWS, Cloudflare, Vercel, Netlify, and Google Cloud — with scheduled snapshot refresh and access control built in.
+
 ---
 
 ## Connect your real apps
