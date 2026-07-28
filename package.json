@@ -7,7 +7,7 @@
     "demo": "tsx packages/cli/src/index.ts demo",
     "status": "tsx packages/cli/src/index.ts",
     "typecheck": "tsc --build",
-    "build": "tsc --build",
+    "build": "tsc --build && node scripts/copy-dashboard.mjs",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "test": "vitest run",

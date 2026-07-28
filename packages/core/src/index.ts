@@ -5,4 +5,5 @@ export {
   type GooglePlayCredentials,
 } from "./connectors/google-play.js";
 export { MockConnector } from "./connectors/mock.js";
+export * from "./snapshot.js";
 export * from "./types.js";

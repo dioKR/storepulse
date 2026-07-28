@@ -1,0 +1,239 @@
+/* storepulse dashboard — terminal brutalism, dark-only by design.
+   Palette mirrors site/src/styles/global.css so the web board reads
+   like the CLI board. */
+:root {
+  --bg: #121014;
+  --panel: #17161a;
+  --panel-2: #1c1a20;
+  --line: #2e2b33;
+  --line-strong: #46414f;
+  --ink: #ece8ee;
+  --muted: #8f879a;
+  --accent: #e24fd8;
+  --green: #52c98a;
+  --yellow: #e0b34d;
+  --red: #e8766c;
+  --cyan: #5ec8d8;
+  --blue: #7aa2e8;
+  --gray: #9a94a5;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+::selection {
+  background: var(--accent);
+  color: #121014;
+}
+
+.wrap {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 40px 20px 60px;
+}
+
+/* ── terminal window ─────────────────────── */
+.term {
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+}
+
+.term-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.term-bar .sq {
+  width: 9px;
+  height: 9px;
+  background: var(--line-strong);
+  display: inline-block;
+}
+
+.term-bar .sq.pink {
+  background: var(--accent);
+}
+
+.term-body {
+  padding: 18px 20px 22px;
+}
+
+/* ── board header / footer ───────────────── */
+.board-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-bottom: 14px;
+}
+
+.brand {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.brand .cursor {
+  animation: blink 1.2s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand .cursor {
+    animation: none;
+  }
+}
+
+.meta,
+.board-foot {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.board-foot {
+  margin-top: 14px;
+}
+
+/* ── board table ─────────────────────────── */
+.board-scroll {
+  overflow-x: auto;
+}
+
+table.board {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+table.board th {
+  text-align: left;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid var(--line-strong);
+  padding: 8px 18px 8px 0;
+}
+
+table.board td {
+  border-bottom: 1px solid var(--line);
+  padding: 9px 18px 9px 0;
+  vertical-align: top;
+}
+
+table.board tr:last-child td {
+  border-bottom: none;
+}
+
+td.app {
+  font-weight: 700;
+}
+
+td.app .group {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+td.os {
+  color: var(--muted);
+}
+
+/* ── badges ──────────────────────────────── */
+.badge {
+  font-weight: 700;
+}
+
+.st-live {
+  color: var(--green);
+}
+
+.st-rollout {
+  color: var(--cyan);
+}
+
+.st-in-review {
+  color: var(--yellow);
+}
+
+.st-pending {
+  color: var(--blue);
+}
+
+.st-rejected,
+.st-halted {
+  color: var(--red);
+}
+
+.st-draft {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* unmapped store state — stand out instead of blending in (mirrors the CLI) */
+.st-unknown {
+  background: var(--gray);
+  color: #121014;
+  padding: 0 0.4em;
+}
+
+.dim {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.err {
+  color: var(--red);
+}
+
+/* ── message panel (load failure / empty) ── */
+.notice {
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--accent);
+  background: var(--panel-2);
+  padding: 14px 16px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.notice .title {
+  color: var(--ink);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.notice code {
+  color: var(--ink);
+  background: var(--bg);
+  padding: 0.1em 0.4em;
+}
+
+.notice.warn {
+  border-left-color: var(--yellow);
+  margin-bottom: 14px;
+}

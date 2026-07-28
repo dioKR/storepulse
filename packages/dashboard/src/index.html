@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>storepulse — release board</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="term">
+        <div class="term-bar">
+          <span class="sq pink"></span><span class="sq"></span><span class="sq"></span>
+          <span class="term-title">storepulse — release board</span>
+        </div>
+        <div class="term-body">
+          <header class="board-head">
+            <span class="brand">storepulse<span class="cursor">▌</span></span>
+            <span class="meta" id="meta">loading status.json…</span>
+          </header>
+          <div id="board" aria-live="polite"></div>
+          <footer class="board-foot" id="foot"></footer>
+        </div>
+      </div>
+    </main>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

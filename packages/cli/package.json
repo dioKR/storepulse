@@ -24,7 +24,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc --build"
+    "build": "tsc --build && node ../../scripts/copy-dashboard.mjs"
   },
   "dependencies": {
     "@storepulse/core": "workspace:*",

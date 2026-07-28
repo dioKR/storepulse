@@ -1,0 +1,10 @@
+{
+  "name": "@storepulse/dashboard",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Static web dashboard for storepulse — renders a status.json snapshot. Vanilla HTML/CSS/JS, zero dependencies; `build` just copies src/ to dist/.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  }
+}
