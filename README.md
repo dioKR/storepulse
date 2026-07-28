@@ -69,6 +69,27 @@ A cell can show more than one version — `2.4.1 LIVE · 2.5.0 REVIEW` means
 2.4.1 is what users have while 2.5.0 waits for review. That in-between moment
 is exactly what this tool exists to make visible.
 
+## The same board — in a browser, or as JSON
+
+The CLI board has two siblings. Both work in demo mode, no credentials needed:
+
+```sh
+npx storepulse serve --demo     # local web dashboard → http://127.0.0.1:4780
+npx storepulse snapshot --demo  # the board as JSON, to stdout
+```
+
+![storepulse web dashboard rendering the demo board](docs/images/dashboard-demo.png)
+
+- **`storepulse serve`** starts a local, auto-refreshing web dashboard — same
+  board, same design. Options: `--port`, `--host`, `--refresh <seconds>`. It
+  binds to `127.0.0.1` by default; the board may list unreleased version
+  numbers, so think twice before exposing it.
+- **`storepulse snapshot`** prints the board as JSON (`--out <file>` writes it
+  to a file) — handy for CI artifacts or your own scripts. The document format
+  is specified in [docs/snapshot-schema.md](docs/snapshot-schema.md).
+
+Drop `--demo` and both commands use your real config, set up below.
+
 ---
 
 ## Connect your real apps
@@ -197,6 +218,7 @@ just its first consumer. Read the full picture — diagrams included — in
 pnpm demo        # board with sample data
 pnpm status      # board with your real config
 pnpm typecheck   # tsc across all packages
+pnpm test        # unit tests (vitest)
 pnpm lint        # Biome (lint + format check)
 pnpm lint:fix    # auto-fix
 ```
@@ -209,7 +231,7 @@ picks up `biome.json` automatically.
 
 - [ ] EAS connector — link store status to Expo builds & submissions
 - [ ] Slack/Discord notifications on state changes ("2.5.0 approved 🎉")
-- [ ] Web dashboard
+- [x] Web dashboard (`storepulse serve`)
 - [x] Publish to npm (`npx storepulse`)
 - [ ] CLI output in English & Korean
 

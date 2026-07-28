@@ -74,9 +74,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <div>
           <p class="cell-title">A library first</p>
           <p>
-            The core is a credential-injected library; the CLI is just its first
-            surface. A web dashboard and notifiers are next — same engine,
-            more screens. Add your own source by implementing two methods.
+            The core is a credential-injected library; the CLI and the web
+            dashboard are just its first surfaces. Notifiers are next — same
+            engine, more screens. Add your own source by implementing two methods.
           </p>
         </div>
       </div>
@@ -122,6 +122,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
           <div class="v">
             <code>pnpm demo</code> renders the full board with sample data —
             evaluate the tool before creating a single API key.
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">web dashboard</div>
+          <div class="v">
+            <code>storepulse serve</code> opens the same board in your browser —
+            same design, auto-refreshing, bound to <code>127.0.0.1</code> by
+            default. <code>storepulse snapshot</code> exports it as JSON.
           </div>
         </div>
         <div class="feat-row">
@@ -184,7 +192,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <span class="done">cli with demo mode</span>
         <span>eas connector</span>
         <span>slack / discord alerts</span>
-        <span>web dashboard</span>
+        <span class="done">web dashboard</span>
         <span class="done">npx storepulse</span>
         <span>english / korean cli output</span>
       </div>

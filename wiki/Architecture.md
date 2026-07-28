@@ -120,7 +120,7 @@ flowchart TB
     subgraph consumers["Consumers (anything that calls fetchAll)"]
         CLIC["CLI ✅ today"]
         NOTIF["Slack/Discord notifier 🔜"]
-        WEB["Web dashboard 🔜"]
+        WEB["Web dashboard ✅ storepulse serve"]
         CI["CI job / cron 🔜"]
     end
     subgraph core["@storepulse/core"]
@@ -142,6 +142,19 @@ flowchart TB
 Adding a data source = implementing two methods. Adding a surface = calling one
 function. That is the whole plugin story, on purpose — no registration
 machinery until the ecosystem actually needs it.
+
+### The snapshot contract (`status.json`)
+
+Consumers don't even have to link against `core`: `storepulse snapshot` (and
+`storepulse serve`, at `/api/status`) emit the board as a `status.json`
+document — normalized store data only, never credentials. The document carries
+an integer `schemaVersion` (currently **1**) that is bumped only on breaking
+shape changes; adding optional fields does not bump it. Consumers should check
+it and degrade gracefully, and must tolerate unknown `state` values — render
+them like `unknown`, with `rawState` alongside — so an upstream store API
+change surfaces visibly instead of silently. The web dashboard is the first
+consumer built purely on this contract; the field-by-field spec lives in
+[docs/snapshot-schema.md](https://github.com/dioKR/storepulse/blob/main/docs/snapshot-schema.md).
 
 ## Design decisions & trade-offs
 

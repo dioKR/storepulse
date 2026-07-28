@@ -73,8 +73,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <div>
           <p class="cell-title">首先是一个库</p>
           <p>
-            核心是一个通过注入凭据来使用的库,CLI 只是它的第一个界面。
-            接下来是 Web 看板和消息通知 —— 同一个引擎,更多画面。
+            核心是一个通过注入凭据来使用的库,CLI 和 Web 看板只是它最早的
+            两个界面。接下来是消息通知 —— 同一个引擎,更多画面。
             实现两个方法,就能接入你自己的数据源。
           </p>
         </div>
@@ -121,6 +121,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
           <div class="v">
             <code>pnpm demo</code> 一条命令,就能用示例数据渲染出完整看板 ——
             一个 API 密钥都不用创建,先试试合不合适。
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">Web 看板</div>
+          <div class="v">
+            <code>storepulse serve</code> 让同一块看板在浏览器里打开 ——
+            同样的设计,自动刷新,默认只绑定 <code>127.0.0.1</code>。
+            <code>storepulse snapshot</code> 则把看板导出成 JSON。
           </div>
         </div>
         <div class="feat-row">
@@ -183,7 +191,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <span class="done">带演示模式的 CLI</span>
         <span>EAS 连接器</span>
         <span>Slack / Discord 通知</span>
-        <span>Web 看板</span>
+        <span class="done">Web 看板</span>
         <span class="done">npx storepulse</span>
         <span>CLI 英文·韩文输出</span>
       </div>

@@ -71,6 +71,28 @@ pnpm demo
 "사용자는 2.4.1을 쓰고 있고, 2.5.0은 심사를 기다리는 중"이라는 뜻이에요.
 바로 이 '사이의 순간'을 눈에 보이게 하려고 만든 도구예요.
 
+## 같은 보드를 브라우저로, JSON으로
+
+CLI 보드에는 형제 명령이 둘 있어요. 둘 다 데모 모드로, 크리덴셜 없이 써볼 수
+있어요:
+
+```sh
+npx storepulse serve --demo     # 로컬 웹 대시보드 → http://127.0.0.1:4780
+npx storepulse snapshot --demo  # 보드를 JSON으로 출력
+```
+
+![데모 보드를 그린 storepulse 웹 대시보드](docs/images/dashboard-demo.png)
+
+- **`storepulse serve`**는 같은 보드를 같은 디자인으로 보여주는 로컬 웹
+  대시보드를 띄워요. 자동으로 새로고침되고요. 옵션은 `--port`, `--host`,
+  `--refresh <초>`예요. 기본으로 `127.0.0.1`에만 바인딩돼요 — 보드에 미출시
+  버전 번호가 보일 수 있으니, 밖으로 여는 건 신중하게요.
+- **`storepulse snapshot`**은 보드를 JSON으로 출력해요 (`--out <파일>`을 주면
+  파일로 저장돼요) — CI 아티팩트나 자체 스크립트에 쓰기 좋아요. 문서 형식은
+  [docs/snapshot-schema.md](docs/snapshot-schema.md)에 정리돼 있어요.
+
+`--demo`를 빼면 두 명령 모두 아래에서 설정하는 실제 구성을 사용해요.
+
 ---
 
 ## 실제 앱 연결하기
@@ -199,6 +221,7 @@ pnpm status
 pnpm demo        # 샘플 데이터로 보드 표시
 pnpm status      # 실제 설정으로 보드 표시
 pnpm typecheck   # 전체 패키지 tsc
+pnpm test        # 유닛 테스트 (vitest)
 pnpm lint        # Biome (린트 + 포맷 검사)
 pnpm lint:fix    # 자동 수정
 ```
@@ -211,7 +234,7 @@ Prettier를 대신하는 단일 도구예요. 에디터는 Biome 확장만 설�
 
 - [ ] EAS 커넥터 — 스토어 상태를 Expo 빌드·제출과 연결
 - [ ] 상태가 바뀌면 Slack/Discord 알림 ("2.5.0 심사 통과 🎉")
-- [ ] 웹 대시보드
+- [x] 웹 대시보드 (`storepulse serve`)
 - [x] npm 배포 (`npx storepulse`)
 - [ ] CLI 출력 영어·한국어 지원
 

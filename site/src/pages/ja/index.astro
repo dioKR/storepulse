@@ -75,8 +75,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <div>
           <p class="cell-title">まずはライブラリとして</p>
           <p>
-            コアは認証情報を注入して使うライブラリで、CLI はその最初の画面に
-            すぎません。次は Web ダッシュボードと通知 — 同じエンジンに画面を
+            コアは認証情報を注入して使うライブラリで、CLI と Web ダッシュボードは
+            その最初の画面にすぎません。次は通知 — 同じエンジンに画面を
             増やしていくだけです。メソッドを 2 つ実装すれば、独自のソースも
             追加できます。
           </p>
@@ -124,6 +124,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
           <div class="v">
             <code>pnpm demo</code> だけでサンプルデータのボードが丸ごと描かれます —
             API キーを 1 つも作る前に、じっくり試せます。
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="k">Web ダッシュボード</div>
+          <div class="v">
+            <code>storepulse serve</code> で同じボードをブラウザでも —
+            同じデザインのまま、自動更新付きです。デフォルトでは
+            <code>127.0.0.1</code> にのみバインドします。
+            <code>storepulse snapshot</code> はボードを JSON で書き出します。
           </div>
         </div>
         <div class="feat-row">
@@ -186,7 +195,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <span class="done">デモモード付き CLI</span>
         <span>EAS コネクタ</span>
         <span>Slack / Discord 通知</span>
-        <span>Web ダッシュボード</span>
+        <span class="done">Web ダッシュボード</span>
         <span class="done">npx storepulse</span>
         <span>CLI 出力の英語・韓国語対応</span>
       </div>
