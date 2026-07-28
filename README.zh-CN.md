@@ -207,6 +207,9 @@ PLAY_SERVICE_ACCOUNT_PATH=./service-account.json
 > **CI 提示**:两个密钥都支持 `*_BASE64` 形式(`ASC_PRIVATE_KEY_BASE64`、
 > `PLAY_SERVICE_ACCOUNT_BASE64`),可以直接存成 CI 密钥,不用落盘。
 
+都填好了?正式运行前,还可以先用 `npx storepulse doctor` 逐步检查一遍
+刚填入的凭据在两家商店是否有效(可选)。
+
 ### 第 3 步 —— 运行
 
 ```sh
@@ -219,6 +222,9 @@ npx storepulse
 ---
 
 ## 问题排查
+
+先运行 `npx storepulse doctor` —— 下面这些原因,它大多能自动诊断出来,
+每个失败项还会给出一行解决办法。
 
 | 症状 | 大概率的原因 |
 |---|---|
@@ -237,13 +243,14 @@ npx storepulse
 ## 开发
 
 ```sh
-pnpm demo            # 用示例数据显示看板
-pnpm status          # 用真实配置显示看板
-npx storepulse init  # 生成配置 + .env 模板(任意文件夹均可)
-pnpm typecheck       # 对全部包运行 tsc
-pnpm test            # 单元测试(vitest)
-pnpm lint            # Biome(lint + 格式检查)
-pnpm lint:fix        # 自动修复
+pnpm demo              # 用示例数据显示看板
+pnpm status            # 用真实配置显示看板
+npx storepulse init    # 生成配置 + .env 模板(任意文件夹均可)
+npx storepulse doctor  # 诊断凭据与权限(找出 401/403 的原因)
+pnpm typecheck         # 对全部包运行 tsc
+pnpm test              # 单元测试(vitest)
+pnpm lint              # Biome(lint + 格式检查)
+pnpm lint:fix          # 自动修复
 ```
 
 格式化和 lint 由 [Biome](https://biomejs.dev) 一个工具搞定 —— 它替代了

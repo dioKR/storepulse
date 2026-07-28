@@ -223,6 +223,10 @@ PLAY_SERVICE_ACCOUNT_PATH=./service-account.json
 > (`ASC_PRIVATE_KEY_BASE64`, `PLAY_SERVICE_ACCOUNT_BASE64`)に対応して
 > いるので、ファイルを置かずに CI シークレットとして渡せます。
 
+すべて記入できたら、実行の前に `npx storepulse doctor` で、いま入力した
+認証情報が両ストアで正しく動くかを段階的に点検しておくこともできます
+(任意です)。
+
 ### ステップ 3 — 実行
 
 ```sh
@@ -236,6 +240,9 @@ npx storepulse
 ---
 
 ## トラブルシューティング
+
+まずは `npx storepulse doctor` を実行してください — 下記の原因の大半を
+自動で診断し、失敗した項目ごとに一行の解決策を示します。
 
 | 症状 | 考えられる原因 |
 |---|---|
@@ -255,13 +262,14 @@ npx storepulse
 ## 開発
 
 ```sh
-pnpm demo            # サンプルデータでボードを表示
-pnpm status          # 実際の設定でボードを表示
-npx storepulse init  # 設定 + .env テンプレートを生成(どのフォルダでも可)
-pnpm typecheck       # 全パッケージで tsc
-pnpm test            # ユニットテスト(vitest)
-pnpm lint            # Biome(lint + フォーマットチェック)
-pnpm lint:fix        # 自動修正
+pnpm demo              # サンプルデータでボードを表示
+pnpm status            # 実際の設定でボードを表示
+npx storepulse init    # 設定 + .env テンプレートを生成(どのフォルダでも可)
+npx storepulse doctor  # 認証情報と権限を診断(401/403 の原因探し)
+pnpm typecheck         # 全パッケージで tsc
+pnpm test              # ユニットテスト(vitest)
+pnpm lint              # Biome(lint + フォーマットチェック)
+pnpm lint:fix          # 自動修正
 ```
 
 フォーマットと lint は [Biome](https://biomejs.dev) ひとつで済ませています —

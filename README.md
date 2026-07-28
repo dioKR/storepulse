@@ -213,6 +213,10 @@ steps: [Getting started with the Google Play Developer API](https://developers.g
 > (`ASC_PRIVATE_KEY_BASE64`, `PLAY_SERVICE_ACCOUNT_BASE64`) so you can store
 > them as CI secrets without files.
 
+Everything filled in? Before the first real run you can optionally run
+`npx storepulse doctor` — it verifies the credentials you just entered,
+step by step, against both stores.
+
 ### Step 3 — Run
 
 ```sh
@@ -226,6 +230,9 @@ the board.
 ---
 
 ## Troubleshooting
+
+First, run `npx storepulse doctor` — it diagnoses most of the causes below
+automatically, with a one-line fix for each.
 
 | Symptom | Likely cause |
 |---|---|
@@ -245,13 +252,14 @@ just its first consumer. Read the full picture — diagrams included — in
 ## Development
 
 ```sh
-pnpm demo            # board with sample data
-pnpm status          # board with your real config
-npx storepulse init  # scaffold storepulse.config.json + .env templates (any folder)
-pnpm typecheck       # tsc across all packages
-pnpm test            # unit tests (vitest)
-pnpm lint            # Biome (lint + format check)
-pnpm lint:fix        # auto-fix
+pnpm demo              # board with sample data
+pnpm status            # board with your real config
+npx storepulse init    # scaffold storepulse.config.json + .env templates (any folder)
+npx storepulse doctor  # diagnose credentials & permissions (find the 401/403)
+pnpm typecheck         # tsc across all packages
+pnpm test              # unit tests (vitest)
+pnpm lint              # Biome (lint + format check)
+pnpm lint:fix          # auto-fix
 ```
 
 Formatting and linting are handled by [Biome](https://biomejs.dev) — one tool
