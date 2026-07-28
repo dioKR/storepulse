@@ -60,7 +60,7 @@ export class AscConnector implements StoreConnector {
 
   private async fetchAppStoreVersions(appId: string): Promise<ChannelStatus[]> {
     const data = await this.get(
-      `/apps/${appId}/appStoreVersions?filter[platform]=IOS&limit=5&fields[appStoreVersions]=versionString,appStoreState`,
+      `/apps/${appId}/appStoreVersions?filter[platform]=IOS&limit=5&fields[appStoreVersions]=versionString,appStoreState,createdDate`,
     );
     const entries: { id: string | undefined; channel: ChannelStatus }[] = [];
     for (const version of asArray(data?.data) as any[]) {
@@ -68,6 +68,7 @@ export class AscConnector implements StoreConnector {
       const rawState = asString(version?.attributes?.appStoreState);
       // Superseded versions would only repeat what the live row already says
       if (rawState === "REPLACED_WITH_NEW_VERSION") continue;
+      const createdDate = asString(version?.attributes?.createdDate);
       entries.push({
         id: asString(version?.id),
         channel: {
@@ -75,6 +76,7 @@ export class AscConnector implements StoreConnector {
           version: asString(version?.attributes?.versionString) ?? null,
           state: (rawState && APP_STORE_STATE[rawState]) || "unknown",
           rawState: rawState ?? "(appStoreState missing)",
+          ...(createdDate !== undefined && { date: createdDate }),
         },
       });
     }
@@ -85,14 +87,47 @@ export class AscConnector implements StoreConnector {
     const current = firstLive === -1 ? entries : entries.slice(0, firstLive + 1);
 
     const live = current.find((e) => e.channel.state === "live" && e.id !== undefined);
-    if (live?.id) {
-      const rollout = await this.fetchPhasedRelease(live.id);
-      if (rollout !== null) {
-        live.channel.state = "rollout";
-        live.channel.rolloutPercent = rollout;
-      }
-    }
+    // Release notes only for the 1-3 entries that survived the history trim,
+    // one extra call each — never for the full 5-item page.
+    await Promise.all([
+      ...current
+        .filter((e) => e.id !== undefined)
+        .map(async (e) => {
+          const notes = await this.fetchReleaseNotes(e.id as string);
+          if (notes !== undefined) e.channel.releaseNotes = notes;
+        }),
+      (async () => {
+        if (!live?.id) return;
+        const rollout = await this.fetchPhasedRelease(live.id);
+        if (rollout !== null) {
+          live.channel.state = "rollout";
+          live.channel.rolloutPercent = rollout;
+        }
+      })(),
+    ]);
     return current.map((e) => e.channel);
+  }
+
+  /** "What's New" of one version — locale priority ko → en-US → first with text. */
+  private async fetchReleaseNotes(versionId: string): Promise<string | undefined> {
+    try {
+      const data = await this.get(
+        `/appStoreVersions/${versionId}/appStoreVersionLocalizations?fields[appStoreVersionLocalizations]=locale,whatsNew`,
+      );
+      const locs = (asArray(data?.data) as any[]).map((l) => ({
+        locale: asString(l?.attributes?.locale),
+        whatsNew: asString(l?.attributes?.whatsNew),
+      }));
+      const withNotes = locs.filter((l) => l.whatsNew !== undefined);
+      const pick =
+        withNotes.find((l) => l.locale === "ko") ??
+        withNotes.find((l) => l.locale === "en-US") ??
+        withNotes[0];
+      return pick?.whatsNew;
+    } catch {
+      // Notes are decoration — a failed localization call must not sink the row
+      return undefined;
+    }
   }
 
   private async fetchPhasedRelease(versionId: string): Promise<number | null> {
@@ -110,7 +145,7 @@ export class AscConnector implements StoreConnector {
 
   private async fetchLatestTestFlightBuild(appId: string): Promise<ChannelStatus[]> {
     const data = await this.get(
-      `/builds?filter[app]=${appId}&sort=-uploadedDate&limit=1&fields[builds]=version,processingState&include=preReleaseVersion&fields[preReleaseVersions]=version`,
+      `/builds?filter[app]=${appId}&sort=-uploadedDate&limit=1&fields[builds]=version,processingState,uploadedDate,expirationDate&include=preReleaseVersion&fields[preReleaseVersions]=version`,
     );
     const build = asArray(data?.data)[0] as any;
     if (!build) return [];
@@ -120,6 +155,8 @@ export class AscConnector implements StoreConnector {
           ?.version,
       ) ?? null;
     const rawState = asString(build?.attributes?.processingState);
+    const uploadedDate = asString(build?.attributes?.uploadedDate);
+    const expirationDate = asString(build?.attributes?.expirationDate);
     return [
       {
         channel: "beta",
@@ -127,6 +164,8 @@ export class AscConnector implements StoreConnector {
         build: asString(build?.attributes?.version) ?? null,
         state: (rawState && BUILD_PROCESSING_STATE[rawState]) || "unknown",
         rawState: rawState ?? "(processingState missing)",
+        ...(uploadedDate !== undefined && { date: uploadedDate }),
+        ...(expirationDate !== undefined && { expiresAt: expirationDate }),
       },
     ];
   }
