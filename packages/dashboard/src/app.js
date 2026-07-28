@@ -6,32 +6,25 @@
  *  - static deploys put a `storepulse snapshot --out status.json` file next to index.html
  * Same build artifact either way; there is no mode detection.
  *
+ * i18n (issue #17): ./i18n.js is generated from packages/core/src/i18n/ at
+ * build time — explanations ship with the bundle, never inside status.json.
+ * Badge text stays language-invariant; only prose is translated.
+ *
  * All data is inserted via textContent — snapshot strings never become markup.
  */
+
+import { STATE_EXPLANATIONS, SUPPORTED_LANGS, UI_STRINGS } from "./i18n.js";
 
 const DATA_URL = "./status.json";
 const REFRESH_MS = 60_000;
 const SUPPORTED_SCHEMA_VERSION = 1;
+const LANG_STORAGE_KEY = "storepulse-lang";
 
+// Channel names are terms — English in every language, like the CLI columns.
 const CHANNELS = [
   { id: "production", label: "Production" },
   { id: "beta", label: "Beta / TestFlight" },
   { id: "internal", label: "Internal" },
-];
-
-const STATE_LABELS = {
-  live: "LIVE",
-  "in-review": "REVIEW",
-  pending: "PENDING",
-  rejected: "REJECTED",
-  halted: "HALTED",
-  draft: "draft",
-};
-
-const OS_FILTERS = [
-  { id: "all", label: "All" },
-  { id: "ios", label: "iOS" },
-  { id: "android", label: "Android" },
 ];
 
 /** TestFlight builds expiring in ≤ this many days get a warning color. */
@@ -42,12 +35,73 @@ const boardEl = document.getElementById("board");
 const filtersEl = document.getElementById("filters");
 const metaEl = document.getElementById("meta");
 const footEl = document.getElementById("foot");
+const langSwitchEl = document.getElementById("lang-switch");
+const explainEl = document.getElementById("explain");
 
 // UI state that must survive the 60s auto-refresh re-render.
 const expandedKeys = new Set();
 let osFilter = "all";
 let groupFilter = "all";
 let lastSnapshot = null;
+let lastError = null;
+
+/* ── i18n ────────────────────────────────── */
+
+function initialLang() {
+  // localStorage remembers the choice; browser language is the default.
+  try {
+    const stored = localStorage.getItem(LANG_STORAGE_KEY);
+    if (SUPPORTED_LANGS.includes(stored)) return stored;
+  } catch {
+    // storage may be unavailable (private mode) — fall through to the browser language
+  }
+  const primary = String(navigator.language || "en")
+    .toLowerCase()
+    .split(/[-_]/)[0];
+  return SUPPORTED_LANGS.includes(primary) ? primary : "en";
+}
+
+let lang = initialLang();
+
+/** UI string in the current language, with `{name}` placeholders filled. */
+function t(key, params) {
+  const entry = UI_STRINGS[key];
+  const template = entry ? (entry[lang] ?? entry.en) : key;
+  if (!params) return template;
+  return template.replace(/\{(\w+)\}/g, (match, name) =>
+    name in params ? String(params[name]) : match,
+  );
+}
+
+/** Pick the current language out of a {en, ko} dictionary value. */
+function loc(localized) {
+  return localized[lang] ?? localized.en;
+}
+
+function setLang(next) {
+  if (next === lang || !SUPPORTED_LANGS.includes(next)) return;
+  lang = next;
+  try {
+    localStorage.setItem(LANG_STORAGE_KEY, next);
+  } catch {
+    // storage unavailable — the choice just won't survive a reload
+  }
+  document.documentElement.lang = next;
+  renderLangSwitch();
+  if (openExplainState) renderExplainPanel();
+  if (lastSnapshot) render(lastSnapshot);
+  else if (lastError) renderLoadError(lastError);
+}
+
+function renderLangSwitch() {
+  langSwitchEl.setAttribute("role", "group");
+  langSwitchEl.setAttribute("aria-label", t("dash.langLabel"));
+  langSwitchEl.replaceChildren();
+  for (const l of SUPPORTED_LANGS) {
+    const btn = chip(l.toUpperCase(), lang === l, () => setLang(l));
+    langSwitchEl.append(btn);
+  }
+}
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -56,18 +110,40 @@ function el(tag, className, text) {
   return node;
 }
 
+/* ── state badges (click = term explanation) ─ */
+
+/**
+ * The badge itself is a button: clicking it opens the glossary panel for that
+ * state, while clicking anywhere else on the row toggles the detail panel —
+ * two separate flows, so the badge click must not bubble into the row.
+ */
+function badgeButton(stateId, text) {
+  const btn = el("button", `badge badge-btn st-${stateId}`, text);
+  btn.type = "button";
+  btn.setAttribute("aria-haspopup", "dialog");
+  btn.setAttribute(
+    "aria-label",
+    t("dash.explainBadge", { badge: STATE_EXPLANATIONS[stateId].badge }),
+  );
+  btn.addEventListener("click", (event) => {
+    event.stopPropagation(); // keep the row's detail toggle out of this
+    openExplain(stateId);
+  });
+  return btn;
+}
+
 /** One "2.4.1 LIVE (108)" cluster, colored like the CLI board. */
 function badge(entry) {
   const frag = document.createDocumentFragment();
   frag.append(`${entry.version ?? "?"} `);
 
   if (entry.state === "rollout") {
-    frag.append(el("span", "badge st-rollout", `${entry.rolloutPercent ?? "?"}%`));
-  } else if (entry.state in STATE_LABELS) {
-    frag.append(el("span", `badge st-${entry.state}`, STATE_LABELS[entry.state]));
+    frag.append(badgeButton("rollout", `${entry.rolloutPercent ?? "?"}%`));
+  } else if (Object.hasOwn(STATE_EXPLANATIONS, entry.state) && entry.state !== "unknown") {
+    frag.append(badgeButton(entry.state, STATE_EXPLANATIONS[entry.state].badge));
   } else {
     // Unmapped store state (upstream API change?) — gray UNKNOWN + raw state.
-    frag.append(el("span", "badge st-unknown", "UNKNOWN"));
+    frag.append(badgeButton("unknown", "UNKNOWN"));
     if (entry.rawState) frag.append(" ", el("span", "dim", `(${entry.rawState})`));
   }
 
@@ -98,21 +174,96 @@ function appCell(target, showName) {
   return td;
 }
 
+/* ── explanation overlay (badge glossary) ── */
+
+let openExplainState = null;
+let explainReturnFocus = null;
+
+function openExplain(stateId) {
+  openExplainState = stateId;
+  explainReturnFocus = document.activeElement;
+  renderExplainPanel();
+  explainEl.hidden = false;
+  explainEl.querySelector(".explain-close")?.focus();
+}
+
+function closeExplain() {
+  if (openExplainState === null) return;
+  openExplainState = null;
+  explainEl.hidden = true;
+  explainEl.replaceChildren();
+  if (explainReturnFocus?.isConnected) explainReturnFocus.focus();
+  explainReturnFocus = null;
+}
+
+function explainSection(panel, titleText, ...children) {
+  panel.append(el("div", "explain-section", titleText), ...children);
+}
+
+function renderExplainPanel() {
+  const stateId = openExplainState;
+  const info = STATE_EXPLANATIONS[stateId];
+  explainEl.replaceChildren();
+
+  const backdrop = el("div", "explain-backdrop");
+  backdrop.addEventListener("click", closeExplain);
+
+  const panel = el("div", "explain-panel");
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-modal", "true");
+  panel.setAttribute("aria-labelledby", "explain-title");
+
+  const head = el("div", "explain-head");
+  const title = el("h2", "explain-title");
+  title.id = "explain-title";
+  title.append(el("span", `badge st-${stateId}`, info.badge), " ", el("span", "dim", stateId));
+  const close = el("button", "explain-close", "✕");
+  close.type = "button";
+  close.setAttribute("aria-label", t("dash.explainClose"));
+  close.addEventListener("click", closeExplain);
+  head.append(title, close);
+  panel.append(head);
+
+  explainSection(
+    panel,
+    t("explain.meaning"),
+    el("p", "explain-summary", loc(info.summary)),
+    el("p", "explain-detail", loc(info.detail)),
+  );
+
+  const dl = el("dl", "kv");
+  kvPair(dl, "iOS", info.rawStates.ios.length > 0 ? info.rawStates.ios.join(", ") : "—");
+  kvPair(
+    dl,
+    "Android",
+    info.rawStates.android.length > 0 ? info.rawStates.android.join(", ") : "—",
+  );
+  explainSection(panel, t("explain.rawStates"), dl);
+
+  explainSection(panel, t("explain.action"), el("p", "explain-action", loc(info.action)));
+
+  explainEl.append(backdrop, panel);
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeExplain();
+});
+
 /* ── detail panel ────────────────────────── */
 
 function localDateTime(iso) {
-  const t = Date.parse(iso);
+  const time = Date.parse(iso);
   // Unparseable date from upstream — show it verbatim rather than hiding it.
-  return Number.isNaN(t) ? iso : new Date(t).toLocaleString();
+  return Number.isNaN(time) ? iso : new Date(time).toLocaleString();
 }
 
 /** D-day text + warning class for a TestFlight expirationDate. */
 function expiryInfo(iso) {
-  const t = Date.parse(iso);
-  if (Number.isNaN(t)) return { text: iso, cls: "" };
-  const days = Math.ceil((t - Date.now()) / DAY_MS);
-  const local = new Date(t).toLocaleDateString();
-  if (days < 0) return { text: `EXPIRED (${local})`, cls: "exp-over" };
+  const time = Date.parse(iso);
+  if (Number.isNaN(time)) return { text: iso, cls: "" };
+  const days = Math.ceil((time - Date.now()) / DAY_MS);
+  const local = new Date(time).toLocaleDateString();
+  if (days < 0) return { text: t("dash.expired", { date: local }), cls: "exp-over" };
   const label = days === 0 ? "D-day" : `D-${days}`;
   return { text: `${label} (${local})`, cls: days <= EXPIRY_WARN_DAYS ? "exp-soon" : "" };
 }
@@ -129,15 +280,15 @@ function detailEntry(entry, channelLabel) {
   box.append(head);
 
   const dl = el("dl", "kv");
-  kvPair(dl, "date", entry.date ? localDateTime(entry.date) : "—");
+  kvPair(dl, t("dash.kvDate"), entry.date ? localDateTime(entry.date) : "—");
   if (entry.expiresAt) {
     const exp = expiryInfo(entry.expiresAt);
-    kvPair(dl, "expires", exp.text, exp.cls);
+    kvPair(dl, t("dash.kvExpires"), exp.text, exp.cls);
   }
-  kvPair(dl, "build", entry.build ?? "—");
-  kvPair(dl, "state", entry.rawState ?? "—");
+  kvPair(dl, t("dash.kvBuild"), entry.build ?? "—");
+  kvPair(dl, t("dash.kvState"), entry.rawState ?? "—");
   if (entry.rolloutPercent !== undefined) {
-    kvPair(dl, "rollout", `${entry.rolloutPercent}%`);
+    kvPair(dl, t("dash.kvRollout"), `${entry.rolloutPercent}%`);
   }
   box.append(dl);
 
@@ -199,7 +350,10 @@ function buildTable(apps) {
       btn.setAttribute("aria-controls", detailId);
       btn.setAttribute(
         "aria-label",
-        `${target.name ?? key} ${target.platform === "ios" ? "iOS" : "Android"} details`,
+        t("dash.rowDetails", {
+          name: target.name ?? key,
+          os: target.platform === "ios" ? "iOS" : "Android",
+        }),
       );
       toggleTd.append(btn);
     }
@@ -224,6 +378,7 @@ function buildTable(apps) {
       tbody.append(detail);
       // One handler on the row: clicking anywhere toggles, and Enter/Space on
       // the button bubbles the same click event — keyboard works for free.
+      // (Badge buttons stopPropagation, so they never reach this handler.)
       row.addEventListener("click", () => {
         const nowOpen = detail.hidden;
         detail.hidden = !nowOpen;
@@ -254,18 +409,18 @@ function chip(label, pressed, onSelect) {
   return btn;
 }
 
-function chipRow(name, options, current, onPick) {
+function chipRow(label, ariaLabel, options, current, onPick) {
   const row = el("div", "chip-row");
   row.setAttribute("role", "group");
-  row.setAttribute("aria-label", `filter by ${name}`);
-  row.append(el("span", "chip-label", name));
+  row.setAttribute("aria-label", ariaLabel);
+  row.append(el("span", "chip-label", label));
   for (const opt of options) {
     row.append(
       chip(opt.label, current === opt.id, () => {
         onPick(opt.id);
         if (lastSnapshot) render(lastSnapshot);
         // Full re-render replaces the chips — restore focus for keyboard users.
-        filtersEl.querySelector(`.chip-row[aria-label="filter by ${name}"] .chip.on`)?.focus();
+        filtersEl.querySelector(`.chip-row[aria-label="${ariaLabel}"] .chip.on`)?.focus();
       }),
     );
   }
@@ -293,16 +448,24 @@ function renderFilters(apps) {
   }
   filtersEl.hidden = false;
 
+  const osOptions = [
+    { id: "all", label: t("dash.filterAll") },
+    { id: "ios", label: "iOS" },
+    { id: "android", label: "Android" },
+  ];
   filtersEl.append(
-    chipRow("os", OS_FILTERS, osFilter, (id) => {
+    chipRow(t("dash.filterOs"), t("dash.filterByOs"), osOptions, osFilter, (id) => {
       osFilter = id;
     }),
   );
   // No groups in the data → no group filter row at all.
   if (groups.length > 0) {
-    const options = [{ id: "all", label: "All" }, ...groups.map((g) => ({ id: g, label: g }))];
+    const options = [
+      { id: "all", label: t("dash.filterAll") },
+      ...groups.map((g) => ({ id: g, label: g })),
+    ];
     filtersEl.append(
-      chipRow("group", options, groupFilter, (id) => {
+      chipRow(t("dash.filterGroup"), t("dash.filterByGroup"), options, groupFilter, (id) => {
         groupFilter = id;
       }),
     );
@@ -333,13 +496,19 @@ function notice(title, lines) {
   return box;
 }
 
+/** Dictionary strings mark code as `backtick` segments → render them as <code>. */
+function noticeLine(text) {
+  return text.split("`").map((part, i) => (i % 2 === 1 ? { code: part } : part));
+}
+
 function render(snapshot) {
   lastSnapshot = snapshot;
+  lastError = null;
   boardEl.replaceChildren();
 
   if (snapshot.schemaVersion !== SUPPORTED_SCHEMA_VERSION) {
-    const warn = notice(`snapshot schemaVersion ${snapshot.schemaVersion}`, [
-      [`this dashboard understands version ${SUPPORTED_SCHEMA_VERSION} — rendering best-effort.`],
+    const warn = notice(t("dash.schemaWarnTitle", { version: snapshot.schemaVersion }), [
+      [t("dash.schemaWarnBody", { supported: SUPPORTED_SCHEMA_VERSION })],
     ]);
     warn.classList.add("warn");
     boardEl.append(warn);
@@ -350,13 +519,9 @@ function render(snapshot) {
   const visible = applyFilters(apps);
 
   if (apps.length === 0) {
-    boardEl.append(
-      notice("no apps in this snapshot", [
-        ["add apps to ", { code: "storepulse.config.json" }, " and regenerate."],
-      ]),
-    );
+    boardEl.append(notice(t("dash.emptyTitle"), [noticeLine(t("dash.emptyBody"))]));
   } else if (visible.length === 0) {
-    boardEl.append(el("div", "filter-empty", "no apps match the current filter"));
+    boardEl.append(el("div", "filter-empty", t("dash.filterEmpty")));
   } else {
     boardEl.append(buildTable(visible));
   }
@@ -365,28 +530,25 @@ function render(snapshot) {
   metaEl.textContent = generated ? `· ${generated.toLocaleString()}` : "";
   const targetCount =
     visible.length === apps.length
-      ? `${apps.length} targets`
-      : `${visible.length}/${apps.length} targets`;
+      ? t("dash.targets", { n: apps.length })
+      : t("dash.targetsFiltered", { shown: visible.length, total: apps.length });
   footEl.textContent =
     `schema v${snapshot.schemaVersion ?? "?"} · ${targetCount} · ` +
-    `auto-refresh ${REFRESH_MS / 1000}s`;
+    t("dash.autoRefresh", { seconds: REFRESH_MS / 1000 });
 }
 
 function renderLoadError(err) {
+  lastError = err;
   filtersEl.hidden = true;
   boardEl.replaceChildren(
-    notice(`could not load ${DATA_URL}`, [
+    notice(t("dash.loadErrorTitle", { url: DATA_URL }), [
       [String(err?.message ?? err)],
-      ["serve mode: check the terminal running ", { code: "storepulse serve" }, "."],
-      [
-        "static mode: generate a snapshot with ",
-        { code: "storepulse snapshot --demo --out status.json" },
-        " and place it next to index.html.",
-      ],
+      noticeLine(t("dash.loadErrorServe")),
+      noticeLine(t("dash.loadErrorStatic")),
     ]),
   );
-  metaEl.textContent = "· no data";
-  footEl.textContent = `retrying every ${REFRESH_MS / 1000}s`;
+  metaEl.textContent = t("dash.noData");
+  footEl.textContent = t("dash.retrying", { seconds: REFRESH_MS / 1000 });
 }
 
 async function refresh() {
@@ -399,5 +561,8 @@ async function refresh() {
   }
 }
 
+document.documentElement.lang = lang;
+metaEl.textContent = t("dash.loading");
+renderLangSwitch();
 refresh();
 setInterval(refresh, REFRESH_MS);
