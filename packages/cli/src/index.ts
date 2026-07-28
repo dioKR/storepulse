@@ -2,6 +2,7 @@
 import { fetchAll, type Lang, uiString } from "@storepulse/core";
 import { loadConfig } from "./config.js";
 import { demoConnector, demoTargets } from "./demo.js";
+import { runDoctor } from "./doctor.js";
 import { runExplain } from "./explain.js";
 import { runInit } from "./init.js";
 import { extractLangFlag, resolveLang } from "./lang.js";
@@ -28,7 +29,8 @@ function usage(unknownCommand: string, l: Lang): string {
     `  storepulse demo      ${uiString("cli.help.demo", l)}\n` +
     `  storepulse snapshot  ${uiString("cli.help.snapshot", l)}\n` +
     `  storepulse serve     ${uiString("cli.help.serve", l)}\n` +
-    `  storepulse explain   ${uiString("cli.help.explain", l)}\n\n` +
+    `  storepulse explain   ${uiString("cli.help.explain", l)}\n` +
+    `  storepulse doctor    ${uiString("cli.help.doctor", l)}\n\n` +
     `  --lang ko|en         ${uiString("cli.help.lang", l)}\n`
   );
 }
@@ -44,6 +46,8 @@ try {
     await runServe(rest, lang);
   } else if (command === "explain") {
     runExplain(rest, lang);
+  } else if (command === "doctor") {
+    await runDoctor(lang);
   } else if (command === undefined) {
     const { connectors, targets } = loadConfig();
     console.log(renderBoard(await fetchAll(connectors, targets), lang));

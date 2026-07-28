@@ -7,7 +7,7 @@ import {
   type StoreConnector,
 } from "@storepulse/core";
 
-const CONFIG_FILE = "storepulse.config.json";
+export const CONFIG_FILE = "storepulse.config.json";
 
 export interface CliConfig {
   targets: AppTarget[];
@@ -41,23 +41,50 @@ export function loadConfig(cwd = process.cwd()): CliConfig {
   return { targets, connectors };
 }
 
-function parseTargets(configPath: string): AppTarget[] {
-  const raw = JSON.parse(readFileSync(configPath, "utf8"));
-  const apps = raw.apps;
+/**
+ * Structured validation outcome — `storepulse doctor` maps each issue kind
+ * to a localized diagnosis, `loadConfig` to an English error message.
+ */
+export type ConfigIssue =
+  | { kind: "apps-missing" }
+  | { kind: "field-missing"; app: unknown; field: string }
+  | { kind: "bad-platform"; platform: string };
+
+/** Validate the parsed config shape; reports the first issue found. */
+export function validateTargets(raw: unknown): { targets: AppTarget[] } | { issue: ConfigIssue } {
+  const apps = (raw as { apps?: unknown } | null)?.apps;
   if (!Array.isArray(apps) || apps.length === 0) {
-    throw new Error(`${CONFIG_FILE} must contain a non-empty "apps" array`);
+    return { issue: { kind: "apps-missing" } };
   }
   for (const app of apps) {
     for (const field of ["key", "name", "platform", "storeId"]) {
-      if (typeof app[field] !== "string" || app[field] === "") {
-        throw new Error(`${CONFIG_FILE}: app entry ${JSON.stringify(app)} is missing "${field}"`);
+      if (typeof app?.[field] !== "string" || app[field] === "") {
+        return { issue: { kind: "field-missing", app, field } };
       }
     }
     if (app.platform !== "ios" && app.platform !== "android") {
-      throw new Error(`${CONFIG_FILE}: platform must be "ios" or "android", got "${app.platform}"`);
+      return { issue: { kind: "bad-platform", platform: app.platform } };
     }
   }
-  return apps;
+  return { targets: apps as AppTarget[] };
+}
+
+function parseTargets(configPath: string): AppTarget[] {
+  const raw = JSON.parse(readFileSync(configPath, "utf8"));
+  const result = validateTargets(raw);
+  if ("issue" in result) throw new Error(configIssueMessage(result.issue));
+  return result.targets;
+}
+
+function configIssueMessage(issue: ConfigIssue): string {
+  switch (issue.kind) {
+    case "apps-missing":
+      return `${CONFIG_FILE} must contain a non-empty "apps" array`;
+    case "field-missing":
+      return `${CONFIG_FILE}: app entry ${JSON.stringify(issue.app)} is missing "${issue.field}"`;
+    case "bad-platform":
+      return `${CONFIG_FILE}: platform must be "ios" or "android", got "${issue.platform}"`;
+  }
 }
 
 function ascCredentialsFromEnv() {

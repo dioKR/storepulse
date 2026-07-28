@@ -1,6 +1,11 @@
+import { generateKeyPairSync } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AppTarget } from "../types.js";
-import { GooglePlayConnector } from "./google-play.js";
+import {
+  createPlayAccessToken,
+  GooglePlayConnector,
+  PlayTokenExchangeError,
+} from "./google-play.js";
 
 const target: AppTarget = {
   key: "app-android",
@@ -171,5 +176,43 @@ describe("GooglePlayConnector releaseNotes", () => {
       expect(status.error).toBeUndefined();
       expect(status.channels[0].releaseNotes).toBeUndefined();
     }
+  });
+});
+
+describe("createPlayAccessToken (exported for storepulse doctor, #6)", () => {
+  const pem = generateKeyPairSync("rsa", { modulusLength: 2048 }).privateKey.export({
+    type: "pkcs8",
+    format: "pem",
+  }) as string;
+  const creds = { clientEmail: "sa@project.iam.gserviceaccount.com", privateKey: pem };
+
+  it("exchanges a signed assertion for the access token", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ access_token: "play-token" }),
+      text: async () => "",
+    })) as unknown as typeof fetch;
+
+    await expect(createPlayAccessToken(creds, fetchImpl)).resolves.toBe("play-token");
+    const [url, init] = (fetchImpl as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(String(url)).toBe("https://oauth2.googleapis.com/token");
+    expect(init.method).toBe("POST");
+    expect(String(init.body)).toContain("assertion=");
+  });
+
+  it("throws PlayTokenExchangeError carrying status + body on a non-2xx answer", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: false,
+      status: 400,
+      json: async () => ({}),
+      text: async () => '{"error":"invalid_grant","error_description":"Invalid grant"}',
+    })) as unknown as typeof fetch;
+
+    const err = await createPlayAccessToken(creds, fetchImpl).catch((e) => e);
+    expect(err).toBeInstanceOf(PlayTokenExchangeError);
+    expect(err.status).toBe(400);
+    expect(err.body).toContain("invalid_grant");
+    expect(err.message).toBe("Google OAuth token exchange failed (400)");
   });
 });
