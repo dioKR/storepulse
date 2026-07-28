@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!specs"]
+    "includes": ["**", "!specs", "!packages/dashboard/src/i18n.js"]
   },
   "formatter": {
     "enabled": true,
