@@ -64,6 +64,15 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_XXXXXXXXXX.p8
 # permissions; storepulse doesn't need them.
 PLAY_SERVICE_ACCOUNT_PATH=./service-account.json
 # PLAY_SERVICE_ACCOUNT_BASE64=
+
+# ── Expo (EAS) — optional ─────────────────────────────────────────
+# Links store versions to the EAS build (commit / profile / build id) that
+# produced them. Only used when an app in storepulse.config.json has an
+# "easProjectId" (app.json → extra.eas.projectId).
+# Access token: https://expo.dev/settings/access-tokens
+# For organizations, prefer a "View Only" robot token — storepulse only
+# reads builds and submissions, never triggers them.
+# EAS_TOKEN=
 `;
 
 /**

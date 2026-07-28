@@ -272,6 +272,31 @@ function kvPair(dl, label, value, valueClass) {
   dl.append(el("dt", null, label), el("dd", valueClass || null, value));
 }
 
+/** "8c1f37ab90d2…" → "8c1f37a" — enough to paste into `git show`. */
+function shortCommit(hash) {
+  return hash.length > 7 ? hash.slice(0, 7) : hash;
+}
+
+/**
+ * EAS build block — only when the snapshot has `eas` on this entry
+ * (EasEnricher matched a build, or demo fixtures). Answers "which
+ * commit/profile/build is this store version?" right in the detail panel.
+ */
+function easBlock(eas) {
+  const box = el("div", "eas");
+  box.append(el("div", "eas-title", t("dash.easTitle")));
+  const dl = el("dl", "kv");
+  if (eas.profile) kvPair(dl, t("dash.kvEasProfile"), eas.profile);
+  if (eas.commit) {
+    kvPair(dl, t("dash.kvEasCommit"), shortCommit(eas.commit));
+    dl.lastChild.title = eas.commit; // full hash on hover, still textContent-only
+  }
+  if (eas.completedAt) kvPair(dl, t("dash.kvEasCompleted"), localDateTime(eas.completedAt));
+  if (eas.submissionStatus) kvPair(dl, t("dash.kvEasSubmission"), eas.submissionStatus);
+  box.append(dl);
+  return box;
+}
+
 function detailEntry(entry, channelLabel) {
   const box = el("div", "detail-entry");
 
@@ -291,6 +316,8 @@ function detailEntry(entry, channelLabel) {
     kvPair(dl, t("dash.kvRollout"), `${entry.rolloutPercent}%`);
   }
   box.append(dl);
+
+  if (entry.eas && typeof entry.eas === "object") box.append(easBlock(entry.eas));
 
   // Full release notes, line breaks preserved via CSS white-space: pre-wrap.
   const notes = el("div", "notes");

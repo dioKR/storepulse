@@ -3,6 +3,8 @@ import { resolve } from "node:path";
 import {
   type AppTarget,
   AscConnector,
+  EasEnricher,
+  type Enricher,
   GooglePlayConnector,
   type StoreConnector,
 } from "@storepulse/core";
@@ -12,6 +14,8 @@ export const CONFIG_FILE = "storepulse.config.json";
 export interface CliConfig {
   targets: AppTarget[];
   connectors: StoreConnector[];
+  /** Post-fetch stages (EAS, …) — empty when nothing is configured for them */
+  enrichers: Enricher[];
 }
 
 /**
@@ -38,7 +42,15 @@ export function loadConfig(cwd = process.cwd()): CliConfig {
     connectors.push(new GooglePlayConnector(playCredentialsFromEnv()));
   }
 
-  return { targets, connectors };
+  // EAS is optional enrichment: it runs only when BOTH sides are present —
+  // a token in the environment and at least one target with an easProjectId.
+  const enrichers: Enricher[] = [];
+  const easToken = process.env.EAS_TOKEN;
+  if (easToken && targets.some((t) => t.easProjectId)) {
+    enrichers.push(new EasEnricher({ token: easToken }));
+  }
+
+  return { targets, connectors, enrichers };
 }
 
 /**
@@ -48,7 +60,8 @@ export function loadConfig(cwd = process.cwd()): CliConfig {
 export type ConfigIssue =
   | { kind: "apps-missing" }
   | { kind: "field-missing"; app: unknown; field: string }
-  | { kind: "bad-platform"; platform: string };
+  | { kind: "bad-platform"; platform: string }
+  | { kind: "bad-eas-project-id"; app: unknown };
 
 /** Validate the parsed config shape; reports the first issue found. */
 export function validateTargets(raw: unknown): { targets: AppTarget[] } | { issue: ConfigIssue } {
@@ -64,6 +77,13 @@ export function validateTargets(raw: unknown): { targets: AppTarget[] } | { issu
     }
     if (app.platform !== "ios" && app.platform !== "android") {
       return { issue: { kind: "bad-platform", platform: app.platform } };
+    }
+    // Optional field, but when present it must be a usable project id.
+    if (
+      app.easProjectId !== undefined &&
+      (typeof app.easProjectId !== "string" || app.easProjectId === "")
+    ) {
+      return { issue: { kind: "bad-eas-project-id", app } };
     }
   }
   return { targets: apps as AppTarget[] };
@@ -84,6 +104,8 @@ function configIssueMessage(issue: ConfigIssue): string {
       return `${CONFIG_FILE}: app entry ${JSON.stringify(issue.app)} is missing "${issue.field}"`;
     case "bad-platform":
       return `${CONFIG_FILE}: platform must be "ios" or "android", got "${issue.platform}"`;
+    case "bad-eas-project-id":
+      return `${CONFIG_FILE}: app entry ${JSON.stringify(issue.app)} has a non-string or empty "easProjectId"`;
   }
 }
 

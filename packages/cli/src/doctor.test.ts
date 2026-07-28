@@ -447,6 +447,203 @@ describe("doctor — Google Play chain", () => {
   });
 });
 
+// ── [5] Expo (EAS) chain ─────────────────────────────────────────────
+
+const EAS_URL = "https://api.expo.dev/graphql";
+const easApp = { ...iosApp, easProjectId: "11111111-aaaa-bbbb-cccc-222222222222" };
+
+/**
+ * EAS calls all POST the same GraphQL URL — route them by operation name in
+ * the request body instead. Non-EAS urls fall through to `other`.
+ */
+function mockEasFetch(
+  easRoutes: (operation: string) => { status?: number; payload?: unknown },
+  other: () => { status: number; body?: unknown } = () => ({ status: 200, body: { data: [] } }),
+) {
+  const easCalls: { operation: string; variables: Record<string, unknown> }[] = [];
+  const fn = vi.fn(async (url: unknown, init?: { method?: string; body?: unknown }) => {
+    if (String(url) !== EAS_URL) {
+      const r = other();
+      return {
+        ok: r.status >= 200 && r.status < 300,
+        status: r.status,
+        json: async () => r.body ?? {},
+        text: async () => JSON.stringify(r.body ?? {}),
+      };
+    }
+    const body = JSON.parse(String(init?.body));
+    const operation = body.query.includes("CurrentUser") ? "CurrentUser" : "AppByIdQuery";
+    easCalls.push({ operation, variables: body.variables });
+    const r = easRoutes(operation);
+    const status = r.status ?? 200;
+    return {
+      ok: status >= 200 && status < 300,
+      status,
+      json: async () => r.payload ?? { data: null },
+      text: async () => JSON.stringify(r.payload ?? {}),
+    };
+  });
+  return { fn: fn as unknown as typeof fetch, easCalls };
+}
+
+const easViewerPayload = {
+  data: { meActor: { __typename: "Robot", id: "actor-1", firstName: "ci-bot" } },
+};
+const easProjectPayload = {
+  data: {
+    app: {
+      byId: {
+        id: easApp.easProjectId,
+        name: "MyApp",
+        slug: "myapp",
+        ownerAccount: { id: "acc-1", name: "acme" },
+      },
+    },
+  },
+};
+
+describe("doctor — Expo (EAS) chain", () => {
+  it("skips the whole section when neither EAS_TOKEN nor easProjectId exist", async () => {
+    const { fn } = mockFetch(() => ({ status: 200, body: { data: [] } }));
+    const report = await runDoctorChecks({
+      cwd: makeDir([iosApp]),
+      env: ascEnv,
+      fetchImpl: fn,
+      lang: "en",
+    });
+
+    expect(byId(report, "eas.chain").status).toBe("skip");
+    expect(byId(report, "eas.chain").label).toBe(en("doctor.skip.noEas"));
+    expect(report.ok).toBe(true); // opting out of EAS is not a failure
+  });
+
+  it("easProjectId configured but EAS_TOKEN missing → token fails, rest skips", async () => {
+    const { fn, easCalls } = mockEasFetch(() => ({ payload: easViewerPayload }));
+    const report = await runDoctorChecks({
+      cwd: makeDir([easApp]),
+      env: ascEnv,
+      fetchImpl: fn,
+      lang: "en",
+    });
+
+    const token = byId(report, "eas.token");
+    expect(token.status).toBe("fail");
+    expect(token.detail).toBe(en("doctor.env.missing"));
+    expect(token.fix).toBe(en("doctor.fix.envEas"));
+    expect(byId(report, "eas.viewer").status).toBe("skip");
+    expect(byId(report, `eas.project:${easApp.easProjectId}`).status).toBe("skip");
+    expect(easCalls).toHaveLength(0);
+    expect(report.ok).toBe(false);
+  });
+
+  it("rejected token → CurrentUser diagnosis, project checks skip", async () => {
+    const { fn } = mockEasFetch((op) =>
+      op === "CurrentUser"
+        ? { payload: { data: null, errors: [{ message: "UNAUTHORIZED: token invalid" }] } }
+        : { payload: easProjectPayload },
+    );
+    const report = await runDoctorChecks({
+      cwd: makeDir([easApp]),
+      env: { ...ascEnv, EAS_TOKEN: "revoked-token" },
+      fetchImpl: fn,
+      lang: "en",
+    });
+
+    expect(byId(report, "eas.token").status).toBe("pass");
+    const viewer = byId(report, "eas.viewer");
+    expect(viewer.status).toBe("fail");
+    expect(viewer.detail).toContain("UNAUTHORIZED: token invalid");
+    expect(viewer.fix).toBe(en("doctor.fix.easToken"));
+    expect(byId(report, `eas.project:${easApp.easProjectId}`).status).toBe("skip");
+  });
+
+  it("valid token but inaccessible project → per-project diagnosis", async () => {
+    const { fn } = mockEasFetch((op) =>
+      op === "CurrentUser"
+        ? { payload: easViewerPayload }
+        : { payload: { data: null, errors: [{ message: "Entity not authorized" }] } },
+    );
+    const report = await runDoctorChecks({
+      cwd: makeDir([easApp]),
+      env: { ...ascEnv, EAS_TOKEN: "good-token" },
+      fetchImpl: fn,
+      lang: "en",
+    });
+
+    expect(byId(report, "eas.viewer").status).toBe("pass");
+    const project = byId(report, `eas.project:${easApp.easProjectId}`);
+    expect(project.status).toBe("fail");
+    expect(project.detail).toContain("Entity not authorized");
+    expect(project.fix).toBe(en("doctor.fix.easProject"));
+    expect(report.ok).toBe(false);
+  });
+
+  it("healthy chain: viewer named, project resolved to @account/slug, one query each", async () => {
+    const { fn, easCalls } = mockEasFetch((op) =>
+      op === "CurrentUser" ? { payload: easViewerPayload } : { payload: easProjectPayload },
+    );
+    const report = await runDoctorChecks({
+      cwd: makeDir([easApp]),
+      env: { ...ascEnv, EAS_TOKEN: "good-token" },
+      fetchImpl: fn,
+      lang: "en",
+    });
+
+    expect(byId(report, "eas.token").status).toBe("pass");
+    const viewer = byId(report, "eas.viewer");
+    expect(viewer.status).toBe("pass");
+    expect(viewer.detail).toContain("ci-bot");
+    const project = byId(report, `eas.project:${easApp.easProjectId}`);
+    expect(project.status).toBe("pass");
+    expect(project.detail).toBe("@acme/myapp");
+    expect(easCalls.map((c) => c.operation)).toEqual(["CurrentUser", "AppByIdQuery"]);
+    expect(easCalls[1].variables.appId).toBe(easApp.easProjectId);
+    expect(report.ok).toBe(true);
+  });
+
+  it("EAS_TOKEN set without any easProjectId → viewer checked, projects noted as absent", async () => {
+    const { fn } = mockEasFetch(() => ({ payload: easViewerPayload }));
+    const report = await runDoctorChecks({
+      cwd: makeDir([iosApp]),
+      env: { ...ascEnv, EAS_TOKEN: "good-token" },
+      fetchImpl: fn,
+      lang: "en",
+    });
+
+    expect(byId(report, "eas.viewer").status).toBe("pass");
+    expect(byId(report, "eas.projects").status).toBe("skip");
+    expect(byId(report, "eas.projects").label).toBe(en("doctor.skip.noEasProjects"));
+    expect(report.ok).toBe(true);
+  });
+
+  it("placeholder EAS_TOKEN from templates is flagged before any network call", async () => {
+    const { fn, easCalls } = mockEasFetch(() => ({ payload: easViewerPayload }));
+    const report = await runDoctorChecks({
+      cwd: makeDir([easApp]),
+      env: { ...ascEnv, EAS_TOKEN: "XXXXXXXXXX" },
+      fetchImpl: fn,
+      lang: "en",
+    });
+
+    expect(byId(report, "eas.token").status).toBe("fail");
+    expect(byId(report, "eas.token").detail).toBe(en("doctor.env.placeholder"));
+    expect(easCalls).toHaveLength(0);
+  });
+
+  it("config validation: non-string easProjectId fails the config check", async () => {
+    const report = await runDoctorChecks({
+      cwd: makeDir([{ ...iosApp, easProjectId: 42 }]),
+      env: {},
+      fetchImpl: neverFetch,
+      lang: "en",
+    });
+
+    const fields = byId(report, "config.fields");
+    expect(fields.status).toBe("fail");
+    expect(fields.detail).toContain("easProjectId");
+  });
+});
+
 // ── rendering + i18n ─────────────────────────────────────────────────
 
 // biome-ignore lint/suspicious/noControlCharactersInRegex: stripping ANSI escapes is the point
@@ -462,7 +659,7 @@ describe("doctor — report rendering", () => {
     const text = stripAnsi(renderDoctorReport(report, "en"));
 
     expect(text).toContain("[1] "); // config
-    expect(text).toContain("[5] summary");
+    expect(text).toContain("[6] summary");
     expect(text).toContain("✗");
     expect(text).toContain("–");
     expect(text).toContain("run `storepulse init`");
@@ -474,7 +671,7 @@ describe("doctor — report rendering", () => {
     const text = stripAnsi(renderDoctorReport(report, "ko"));
 
     expect(text).toContain("크리덴셜·권한 진단");
-    expect(text).toContain("[5] 요약");
+    expect(text).toContain("[6] 요약");
     expect(text).toContain("https://diokr.github.io/storepulse/ko/tutorial/");
     expect(text).not.toContain("summary");
   });

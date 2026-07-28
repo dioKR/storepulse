@@ -1,13 +1,25 @@
 import { type AppTarget, type ChannelStatus, MockConnector } from "@storepulse/core";
 
+// Aurora is an Expo app — its ios/android targets share one EAS projectId,
+// so the demo shows the EAS block in the dashboard detail panel.
+const AURORA_EAS_PROJECT_ID = "5b2fb1e0-6c2a-4b8e-9d3f-4a1c2e8f7a90";
+
 export const demoTargets: AppTarget[] = [
-  { key: "aurora-ios", name: "Aurora", group: "prod", platform: "ios", storeId: "1" },
+  {
+    key: "aurora-ios",
+    name: "Aurora",
+    group: "prod",
+    platform: "ios",
+    storeId: "1",
+    easProjectId: AURORA_EAS_PROJECT_ID,
+  },
   {
     key: "aurora-android",
     name: "Aurora",
     group: "prod",
     platform: "android",
     storeId: "com.example.aurora",
+    easProjectId: AURORA_EAS_PROJECT_ID,
   },
   { key: "aurora-dev-ios", name: "Aurora Dev", group: "dev", platform: "ios", storeId: "2" },
   {
@@ -59,6 +71,15 @@ const fixtures: Record<string, ChannelStatus[]> = {
       rawState: "IN_REVIEW",
       date: daysFromNow(-2),
       releaseNotes: "· 위젯 지원 추가\n· 알림 설정 화면 개편",
+      // Same EAS build as the TestFlight row below: on iOS the reviewed
+      // binary IS the beta build — that is exactly what the eas block answers.
+      eas: {
+        profile: "production",
+        commit: "8c1f37ab90d24e5f6a7b8c9d0e1f2a3b4c5d6e7f",
+        buildId: "3f6b9d21-84a5-4c7e-b0d2-5e8f1a3c6b90",
+        completedAt: daysFromNow(-3),
+        submissionStatus: "FINISHED",
+      },
     },
     {
       channel: "beta",
@@ -69,6 +90,13 @@ const fixtures: Record<string, ChannelStatus[]> = {
       date: daysFromNow(-6),
       expiresAt: daysFromNow(84),
       releaseNotes: "위젯 베타 빌드 — 홈 화면에 추가 후 피드백 부탁드립니다.",
+      eas: {
+        profile: "production",
+        commit: "8c1f37ab90d24e5f6a7b8c9d0e1f2a3b4c5d6e7f",
+        buildId: "3f6b9d21-84a5-4c7e-b0d2-5e8f1a3c6b90",
+        completedAt: daysFromNow(-6),
+        submissionStatus: "FINISHED",
+      },
     },
   ],
   "aurora-android": [
@@ -88,6 +116,14 @@ const fixtures: Record<string, ChannelStatus[]> = {
       state: "live",
       rawState: "beta/completed",
       releaseNotes: "위젯 지원을 먼저 만나보세요.",
+      // Same commit as the iOS 2.5.0 rows, different (android) EAS build.
+      eas: {
+        profile: "production",
+        commit: "8c1f37ab90d24e5f6a7b8c9d0e1f2a3b4c5d6e7f",
+        buildId: "a1c4e7f0-2b5d-48a1-9c3e-6f0b2d4a8e17",
+        completedAt: daysFromNow(-7),
+        submissionStatus: "FINISHED",
+      },
     },
     {
       channel: "internal",
