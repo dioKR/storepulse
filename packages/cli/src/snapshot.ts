@@ -1,7 +1,14 @@
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { type AppStatus, createSnapshot, fetchAll } from "@storepulse/core";
+import {
+  type AppStatus,
+  createSnapshot,
+  DEFAULT_LANG,
+  fetchAll,
+  type Lang,
+  uiString,
+} from "@storepulse/core";
 import { loadConfig } from "./config.js";
 import { demoConnector, demoTargets } from "./demo.js";
 
@@ -21,7 +28,7 @@ export function renderSnapshotJson(apps: AppStatus[]): string {
 }
 
 /** `storepulse snapshot [--demo] [--out <file>]` */
-export async function runSnapshot(argv: string[]): Promise<void> {
+export async function runSnapshot(argv: string[], lang: Lang = DEFAULT_LANG): Promise<void> {
   const { values } = parseArgs({
     args: argv,
     options: {
@@ -34,7 +41,7 @@ export async function runSnapshot(argv: string[]): Promise<void> {
   if (values.out) {
     const outPath = resolve(values.out);
     writeFileSync(outPath, json);
-    console.error(`storepulse: snapshot written to ${outPath}`);
+    console.error(`storepulse: ${uiString("snapshot.written", lang, { path: outPath })}`);
   } else {
     process.stdout.write(json);
   }

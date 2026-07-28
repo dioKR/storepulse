@@ -1,7 +1,18 @@
-import type { AppStatus, Channel, ChannelStatus } from "@storepulse/core";
+import {
+  type AppStatus,
+  type BadgeColor,
+  type Channel,
+  type ChannelStatus,
+  DEFAULT_LANG,
+  type Lang,
+  type ReleaseState,
+  STATE_EXPLANATIONS,
+  uiString,
+} from "@storepulse/core";
 import pc from "picocolors";
 
 const CHANNELS: Channel[] = ["production", "beta", "internal"];
+// Column headers stay English on purpose — fixed terms keep the column widths stable.
 const HEADERS = ["APP", "OS", "PRODUCTION", "BETA / TESTFLIGHT", "INTERNAL"];
 
 // biome-ignore lint/suspicious/noControlCharactersInRegex: stripping ANSI escapes is the point
@@ -9,31 +20,37 @@ const ANSI_PATTERN = /\u001b\[[0-9;]*m/g;
 const visibleLength = (s: string) => s.replace(ANSI_PATTERN, "").length;
 const pad = (s: string, width: number) => s + " ".repeat(width - visibleLength(s));
 
+/** ANSI paint per dictionary badge color ("gray" = the inverse UNKNOWN look). */
+const BADGE_PAINT: Record<BadgeColor, (s: string) => string> = {
+  green: pc.green,
+  cyan: pc.cyan,
+  yellow: pc.yellow,
+  blue: pc.blue,
+  red: pc.red,
+  dim: pc.dim,
+  gray: (s) => pc.inverse(pc.gray(s)),
+};
+
+/** Badge text + color for a known state, exactly as the board prints it. */
+export function coloredBadge(state: ReleaseState, text?: string): string {
+  const info = STATE_EXPLANATIONS[state];
+  const label = text ?? (state === "unknown" ? ` ${info.badge} ` : info.badge);
+  return BADGE_PAINT[info.color](label);
+}
+
 function badge(c: ChannelStatus): string {
   const version = c.version ?? "?";
   const build = c.build ? pc.dim(` (${c.build})`) : "";
-  switch (c.state) {
-    case "live":
-      return `${version} ${pc.green("LIVE")}${build}`;
-    case "rollout":
-      return `${version} ${pc.cyan(`${c.rolloutPercent ?? "?"}%`)}${build}`;
-    case "in-review":
-      return `${version} ${pc.yellow("REVIEW")}${build}`;
-    case "pending":
-      return `${version} ${pc.blue("PENDING")}${build}`;
-    case "rejected":
-      return `${version} ${pc.red("REJECTED")}${build}`;
-    case "halted":
-      return `${version} ${pc.red("HALTED")}${build}`;
-    case "draft":
-      return `${version} ${pc.dim("draft")}${build}`;
-    default: {
-      // Unmapped store state (upstream API change?) — make it stand out instead
-      // of blending in: gray UNKNOWN badge with the raw store state next to it.
-      const raw = c.rawState ? ` ${pc.dim(`(${c.rawState})`)}` : "";
-      return `${version} ${pc.inverse(pc.gray(" UNKNOWN "))}${raw}${build}`;
-    }
+  if (c.state === "rollout") {
+    return `${version} ${coloredBadge("rollout", `${c.rolloutPercent ?? "?"}%`)}${build}`;
   }
+  if (Object.hasOwn(STATE_EXPLANATIONS, c.state) && c.state !== "unknown") {
+    return `${version} ${coloredBadge(c.state)}${build}`;
+  }
+  // Unmapped store state (upstream API change?) — make it stand out instead
+  // of blending in: gray UNKNOWN badge with the raw store state next to it.
+  const raw = c.rawState ? ` ${pc.dim(`(${c.rawState})`)}` : "";
+  return `${version} ${coloredBadge("unknown")}${raw}${build}`;
 }
 
 function cell(status: AppStatus, channel: Channel): string {
@@ -42,7 +59,7 @@ function cell(status: AppStatus, channel: Channel): string {
   return entries.map(badge).join(pc.dim("  ·  "));
 }
 
-export function renderBoard(statuses: AppStatus[]): string {
+export function renderBoard(statuses: AppStatus[], lang: Lang = DEFAULT_LANG): string {
   const rows = statuses.map((s) => {
     const app = s.target.group
       ? `${s.target.name} ${pc.dim(`[${s.target.group}]`)}`
@@ -78,6 +95,8 @@ export function renderBoard(statuses: AppStatus[]): string {
     else prevApp = appCell;
     out.push(line(table[i]));
   }
+  out.push("");
+  out.push(`  ${pc.dim(uiString("cli.hint.explain", lang))}`);
   out.push("");
   return out.join("\n");
 }

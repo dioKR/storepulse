@@ -3,7 +3,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
-import { createSnapshot } from "@storepulse/core";
+import { createSnapshot, DEFAULT_LANG, type Lang, uiString } from "@storepulse/core";
 import { loadConfig } from "./config.js";
 import { collectStatuses } from "./snapshot.js";
 
@@ -152,24 +152,19 @@ export function createDashboardServer(opts: ServeOptions, dashboardRoot: string)
   });
 }
 
-export async function runServe(argv: string[]): Promise<void> {
+export async function runServe(argv: string[], lang: Lang = DEFAULT_LANG): Promise<void> {
   const opts = parseServeArgs(argv);
 
   const dashboardRoot = findDashboardRoot();
   if (!dashboardRoot) {
-    throw new Error(
-      "dashboard assets not found — in the monorepo run `pnpm build` first " +
-        "(they are bundled with the published storepulse package)",
-    );
+    throw new Error(uiString("serve.dashboardMissing", lang));
   }
 
   // Fail fast on missing config/credentials instead of 500-ing the first request.
   if (!opts.demo) loadConfig();
 
   if (opts.host !== "127.0.0.1" && opts.host !== "localhost" && opts.host !== "::1") {
-    console.error(
-      `storepulse: warning — binding to ${opts.host} exposes your release board beyond this machine`,
-    );
+    console.error(`storepulse: ${uiString("serve.bindWarning", lang, { host: opts.host })}`);
   }
 
   const server = createDashboardServer(opts, dashboardRoot);
@@ -181,9 +176,14 @@ export async function runServe(argv: string[]): Promise<void> {
   const address = server.address();
   const port = typeof address === "object" && address ? address.port : opts.port;
   const displayHost = opts.host.includes(":") ? `[${opts.host}]` : opts.host;
+  const mode = opts.demo
+    ? uiString("serve.modeDemo", lang)
+    : uiString("serve.modeRefresh", lang, { seconds: opts.refreshSeconds });
   console.error(
-    `\nstorepulse: dashboard on http://${displayHost}:${port}  ` +
-      `(api: /api/status, ${opts.demo ? "demo data" : `refresh <= ${opts.refreshSeconds}s`})\n`,
+    `\nstorepulse: ${uiString("serve.started", lang, {
+      url: `http://${displayHost}:${port}`,
+      mode,
+    })}\n`,
   );
 
   const shutdown = () => {
