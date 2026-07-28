@@ -149,9 +149,7 @@ cp storepulse.config.example.json storepulse.config.json
 
 **Where do I find the iOS numeric ID?** App Store Connect → your app →
 **App Information** → General Information → **Apple ID** (a number like
-`1234567890`):
-
-![Where to find the Apple ID](docs/images/asc-app-id.png)
+`1234567890`).
 
 ### Step 2 — Add credentials
 
@@ -182,7 +180,8 @@ ASC_ISSUER_ID=xxxxxxxx-...     # "Issuer ID" shown at the top of the page
 ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8
 ```
 
-![Creating an App Store Connect API key](docs/images/asc-key.png)
+Console menus move around from time to time — if they have, follow Apple's
+official guide: [Creating API Keys for App Store Connect API](https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api).
 
 #### Google — Play service account
 
@@ -202,7 +201,8 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8
 PLAY_SERVICE_ACCOUNT_PATH=./service-account.json
 ```
 
-![Inviting the service account in Play Console](docs/images/play-invite.png)
+If the console layout has changed, Google's official guide covers the same
+steps: [Getting started with the Google Play Developer API](https://developers.google.com/android-publisher/getting_started).
 
 > **CI tip**: both secrets also accept a `*_BASE64` variant
 > (`ASC_PRIVATE_KEY_BASE64`, `PLAY_SERVICE_ACCOUNT_BASE64`) so you can store

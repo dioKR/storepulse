@@ -153,9 +153,7 @@ cp storepulse.config.example.json storepulse.config.json
 
 **iOS の数字 ID はどこにある?** App Store Connect → 対象のアプリ →
 **App 情報(App Information)** → 一般情報 → **Apple ID**(`1234567890` の
-ような数字です):
-
-![Apple ID の場所](docs/images/asc-app-id.png)
+ような数字です)。
 
 ### ステップ 2 — 認証情報を入力
 
@@ -189,7 +187,8 @@ ASC_ISSUER_ID=xxxxxxxx-...     # ページ上部の "Issuer ID"
 ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8
 ```
 
-![App Store Connect API キーの作成画面](docs/images/asc-key.png)
+コンソールの画面はときどき変わります — メニューの場所が違うときは、Apple の
+公式ガイド [Creating API Keys for App Store Connect API](https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api) に従ってください。
 
 #### Google — Play サービスアカウント
 
@@ -210,7 +209,8 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8
 PLAY_SERVICE_ACCOUNT_PATH=./service-account.json
 ```
 
-![Play Console でサービスアカウントを招待する画面](docs/images/play-invite.png)
+コンソールの画面構成が変わっていたら、Google の公式ガイド
+[Google Play Developer API スタートガイド](https://developers.google.com/android-publisher/getting_started)で同じ手順を確認できます。
 
 > **CI のヒント**: どちらのシークレットも `*_BASE64` 形式
 > (`ASC_PRIVATE_KEY_BASE64`, `PLAY_SERVICE_ACCOUNT_BASE64`)に対応して

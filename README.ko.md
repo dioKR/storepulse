@@ -150,9 +150,7 @@ cp storepulse.config.example.json storepulse.config.json
 | `storeId` | **iOS**: 앱의 숫자 Apple ID · **Android**: 패키지명 |
 
 **iOS 숫자 ID는 어디서 찾나요?** App Store Connect → 해당 앱 →
-**앱 정보(App Information)** → 일반 정보 → **Apple ID** (`1234567890` 같은 숫자예요):
-
-![Apple ID 찾는 위치](docs/images/asc-app-id.png)
+**앱 정보(App Information)** → 일반 정보 → **Apple ID** (`1234567890` 같은 숫자예요).
 
 ### 2단계 — 크리덴셜 입력
 
@@ -184,7 +182,8 @@ ASC_ISSUER_ID=xxxxxxxx-...     # 페이지 상단의 "Issuer ID"
 ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8
 ```
 
-![App Store Connect API 키 생성 화면](docs/images/asc-key.png)
+콘솔 화면은 종종 바뀌어요 — 메뉴 위치가 다르면 Apple 공식 가이드
+[Creating API Keys for App Store Connect API](https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api)를 따라가면 돼요.
 
 #### Google — Play 서비스 계정
 
@@ -204,7 +203,8 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8
 PLAY_SERVICE_ACCOUNT_PATH=./service-account.json
 ```
 
-![Play Console 서비스 계정 초대 화면](docs/images/play-invite.png)
+콘솔 화면 구성이 달라졌다면 Google 공식
+[Google Play Developer API 시작 가이드](https://developers.google.com/android-publisher/getting_started)에서 같은 단계를 확인할 수 있어요.
 
 > **CI 팁**: 두 시크릿 모두 `*_BASE64` 변형(`ASC_PRIVATE_KEY_BASE64`,
 > `PLAY_SERVICE_ACCOUNT_BASE64`)을 지원해서, 파일 없이 CI 시크릿으로 넣을 수
