@@ -120,3 +120,56 @@ describe("GooglePlayConnector defensive parsing", () => {
     ]);
   });
 });
+
+describe("GooglePlayConnector releaseNotes", () => {
+  const releaseWith = (releaseNotes: unknown) => ({
+    tracks: [
+      {
+        track: "production",
+        releases: [{ name: "1.2.3", status: "completed", versionCodes: ["123"], releaseNotes }],
+      },
+    ],
+  });
+
+  it("prefers the ko-KR release notes", async () => {
+    const connector = connectorWith(
+      releaseWith([
+        { language: "en-US", text: "Bug fixes." },
+        { language: "ko-KR", text: "버그 수정\n안정성 개선" },
+      ]),
+    );
+
+    const status = await connector.fetchAppStatus(target);
+    expect(status.channels[0].releaseNotes).toBe("버그 수정\n안정성 개선");
+  });
+
+  it("falls back ko-KR → en-US → first entry with text", async () => {
+    const enFallback = connectorWith(
+      releaseWith([
+        { language: "ja-JP", text: "バグ修正" },
+        { language: "en-US", text: "Bug fixes." },
+      ]),
+    );
+    expect((await enFallback.fetchAppStatus(target)).channels[0].releaseNotes).toBe("Bug fixes.");
+
+    const firstFallback = connectorWith(
+      releaseWith([
+        { language: "ko-KR", text: "" }, // empty text never wins
+        { language: "fr-FR", text: "Corrections de bugs" },
+        { language: "de-DE", text: "Fehlerbehebungen" },
+      ]),
+    );
+    expect((await firstFallback.fetchAppStatus(target)).channels[0].releaseNotes).toBe(
+      "Corrections de bugs",
+    );
+  });
+
+  it("omits releaseNotes when the field is missing or reshaped", async () => {
+    for (const notes of [undefined, "gone", [], [{ language: "ko-KR" }], [{ text: 42 }]]) {
+      const connector = connectorWith(releaseWith(notes));
+      const status = await connector.fetchAppStatus(target);
+      expect(status.error).toBeUndefined();
+      expect(status.channels[0].releaseNotes).toBeUndefined();
+    }
+  });
+});

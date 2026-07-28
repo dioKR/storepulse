@@ -44,6 +44,12 @@ export interface ChannelStatus {
   rawState?: string;
   /** 0-100, present while state is "rollout" */
   rolloutPercent?: number;
+  /** Release notes ("What's New" / Play release notes) for this release */
+  releaseNotes?: string;
+  /** ISO date. iOS: appStoreVersion createdDate / TestFlight build uploadedDate */
+  date?: string;
+  /** ISO date. TestFlight build expirationDate only */
+  expiresAt?: string;
 }
 
 export interface AppStatus {

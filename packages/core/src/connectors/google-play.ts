@@ -28,6 +28,18 @@ function trackToChannel(track: string): Channel {
   return "beta";
 }
 
+/** Text from `release.releaseNotes[]` — locale priority ko-KR → en-US → first with text. */
+function pickReleaseNotes(releaseNotes: unknown): string | undefined {
+  const localized = (asArray(releaseNotes) as any[])
+    .map((n) => ({ language: asString(n?.language), text: asString(n?.text) }))
+    .filter((n) => n.text !== undefined);
+  const pick =
+    localized.find((n) => n.language === "ko-KR") ??
+    localized.find((n) => n.language === "en-US") ??
+    localized[0];
+  return pick?.text;
+}
+
 export class GooglePlayConnector implements StoreConnector {
   readonly id = "google-play";
 
@@ -67,6 +79,7 @@ export class GooglePlayConnector implements StoreConnector {
           if (autoName) version = autoName[2];
           const lastVersionCode = asArray(release?.versionCodes).at(-1);
           const userFraction = asNumber(release?.userFraction);
+          const releaseNotes = pickReleaseNotes(release?.releaseNotes);
           channels.push({
             channel: trackToChannel(trackName ?? ""),
             version,
@@ -76,6 +89,7 @@ export class GooglePlayConnector implements StoreConnector {
             ...(userFraction !== undefined && {
               rolloutPercent: Math.round(userFraction * 100),
             }),
+            ...(releaseNotes !== undefined && { releaseNotes }),
           });
         }
       }

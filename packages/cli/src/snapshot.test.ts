@@ -18,6 +18,20 @@ describe("renderSnapshotJson", () => {
     }
   });
 
+  it("passes the optional detail fields (releaseNotes/date/expiresAt) through untouched", async () => {
+    const apps = await fetchAll([demoConnector], demoTargets);
+    const parsed = JSON.parse(renderSnapshotJson(apps));
+    const channels = parsed.apps.flatMap((app: { channels: unknown[] }) => app.channels);
+
+    const beta = channels.find(
+      (c: Record<string, unknown>) => c.expiresAt !== undefined && c.releaseNotes !== undefined,
+    );
+    expect(beta).toBeDefined();
+    expect(typeof beta.releaseNotes).toBe("string");
+    expect(new Date(beta.date).toISOString()).toBe(beta.date);
+    expect(new Date(beta.expiresAt).toISOString()).toBe(beta.expiresAt);
+  });
+
   it("never includes credential-shaped fields", async () => {
     const apps = await fetchAll([demoConnector], demoTargets);
     const json = renderSnapshotJson(apps).toLowerCase();

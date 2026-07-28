@@ -113,3 +113,122 @@ describe("AscConnector defensive parsing", () => {
     ]);
   });
 });
+
+describe("AscConnector release details (releaseNotes / date / expiresAt)", () => {
+  it("maps createdDate → date and picks the ko localization first", async () => {
+    const connector = connectorWith({
+      "/appStoreVersions": {
+        data: [
+          {
+            id: "v1",
+            attributes: {
+              versionString: "2.4.1",
+              appStoreState: "READY_FOR_SALE",
+              createdDate: "2026-07-01T09:00:00Z",
+            },
+          },
+        ],
+      },
+      "/appStoreVersions/v1/appStoreVersionLocalizations": {
+        data: [
+          { attributes: { locale: "en-US", whatsNew: "Bug fixes." } },
+          { attributes: { locale: "ko", whatsNew: "버그 수정 및 안정성 개선" } },
+        ],
+      },
+      "/builds": { data: [] },
+    });
+
+    const status = await connector.fetchAppStatus(target);
+    expect(status.channels[0]).toMatchObject({
+      channel: "production",
+      version: "2.4.1",
+      date: "2026-07-01T09:00:00Z",
+      releaseNotes: "버그 수정 및 안정성 개선",
+    });
+  });
+
+  it("falls back ko → en-US → first localization with text", async () => {
+    const connector = connectorWith({
+      "/appStoreVersions": {
+        data: [
+          { id: "v1", attributes: { versionString: "2.5.0", appStoreState: "IN_REVIEW" } },
+          { id: "v2", attributes: { versionString: "2.4.1", appStoreState: "READY_FOR_SALE" } },
+        ],
+      },
+      // v1 has no ko localization → en-US wins
+      "/appStoreVersions/v1/appStoreVersionLocalizations": {
+        data: [
+          { attributes: { locale: "ja", whatsNew: "バグ修正" } },
+          { attributes: { locale: "en-US", whatsNew: "Bug fixes." } },
+        ],
+      },
+      // v2 has neither ko nor en-US, and the ko entry has empty whatsNew → first with text
+      "/appStoreVersions/v2/appStoreVersionLocalizations": {
+        data: [
+          { attributes: { locale: "ko", whatsNew: "" } },
+          { attributes: { locale: "fr-FR", whatsNew: "Corrections de bugs" } },
+          { attributes: { locale: "de-DE", whatsNew: "Fehlerbehebungen" } },
+        ],
+      },
+      "/builds": { data: [] },
+    });
+
+    const status = await connector.fetchAppStatus(target);
+    expect(status.channels[0].releaseNotes).toBe("Bug fixes.");
+    expect(status.channels[1].releaseNotes).toBe("Corrections de bugs");
+  });
+
+  it("omits releaseNotes/date when localizations fail or fields are missing", async () => {
+    const connector = connectorWith({
+      "/appStoreVersions": {
+        data: [{ id: "v1", attributes: { versionString: "2.4.1", appStoreState: "IN_REVIEW" } }],
+      },
+      // No localization stub → 404 → notes silently omitted, row survives
+      "/builds": { data: [] },
+    });
+
+    const status = await connector.fetchAppStatus(target);
+    expect(status.error).toBeUndefined();
+    expect(status.channels[0].releaseNotes).toBeUndefined();
+    expect(status.channels[0].date).toBeUndefined();
+  });
+
+  it("maps TestFlight uploadedDate/expirationDate → date/expiresAt", async () => {
+    const connector = connectorWith({
+      "/appStoreVersions": { data: [] },
+      "/builds": {
+        data: [
+          {
+            id: "b1",
+            attributes: {
+              version: "108",
+              processingState: "VALID",
+              uploadedDate: "2026-07-20T10:00:00Z",
+              expirationDate: "2026-10-18T10:00:00Z",
+            },
+          },
+        ],
+        included: [{ type: "preReleaseVersions", attributes: { version: "2.5.0" } }],
+      },
+    });
+
+    const status = await connector.fetchAppStatus(target);
+    expect(status.channels[0]).toMatchObject({
+      channel: "beta",
+      build: "108",
+      date: "2026-07-20T10:00:00Z",
+      expiresAt: "2026-10-18T10:00:00Z",
+    });
+  });
+
+  it("leaves date/expiresAt undefined when the build has no dates", async () => {
+    const connector = connectorWith({
+      "/appStoreVersions": { data: [] },
+      "/builds": { data: [{ id: "b1", attributes: { version: "42", processingState: "VALID" } }] },
+    });
+
+    const status = await connector.fetchAppStatus(target);
+    expect(status.channels[0].date).toBeUndefined();
+    expect(status.channels[0].expiresAt).toBeUndefined();
+  });
+});
