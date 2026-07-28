@@ -114,6 +114,13 @@ body {
   font-size: 0.82rem;
 }
 
+/* EN/KO switcher — chip style, pinned to the right of the header */
+.lang-switch {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
 .board-foot {
   margin-top: 14px;
 }
@@ -332,6 +339,25 @@ button.chip.on {
   font-weight: 700;
 }
 
+/* badge as a button: click = term explanation (row click = detail panel) */
+button.badge-btn {
+  font: inherit;
+  font-weight: 700;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+button.badge-btn:hover {
+  text-decoration: underline dotted;
+}
+
+button.badge-btn:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .st-live {
   color: var(--green);
 }
@@ -359,7 +385,8 @@ button.chip.on {
 }
 
 /* unmapped store state — stand out instead of blending in (mirrors the CLI) */
-.st-unknown {
+.st-unknown,
+button.badge-btn.st-unknown {
   background: var(--gray);
   color: #121014;
   padding: 0 0.4em;
@@ -399,4 +426,93 @@ button.chip.on {
 .notice.warn {
   border-left-color: var(--yellow);
   margin-bottom: 14px;
+}
+
+/* ── badge explanation overlay ───────────── */
+.explain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.explain-overlay[hidden] {
+  display: none;
+}
+
+.explain-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 8, 12, 0.7);
+}
+
+.explain-panel {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--accent);
+  padding: 16px 20px 20px;
+}
+
+.explain-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 10px;
+}
+
+.explain-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+button.explain-close {
+  font: inherit;
+  font-size: 0.82rem;
+  color: var(--muted);
+  background: var(--panel-2);
+  border: 1px solid var(--line-strong);
+  padding: 0 8px;
+  cursor: pointer;
+}
+
+button.explain-close:hover {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+
+button.explain-close:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.explain-section {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 16px 0 4px;
+}
+
+.explain-panel p {
+  margin: 4px 0;
+  font-size: 0.9rem;
+}
+
+.explain-detail {
+  color: var(--muted);
+}
+
+.explain-panel dl.kv {
+  margin-top: 2px;
 }

@@ -1,7 +1,9 @@
 #!/usr/bin/env node
-import { fetchAll } from "@storepulse/core";
+import { fetchAll, type Lang, uiString } from "@storepulse/core";
 import { loadConfig } from "./config.js";
 import { demoConnector, demoTargets } from "./demo.js";
+import { runExplain } from "./explain.js";
+import { extractLangFlag, resolveLang } from "./lang.js";
 import { renderBoard } from "./render.js";
 import { runServe } from "./serve.js";
 import { runSnapshot } from "./snapshot.js";
@@ -12,26 +14,37 @@ try {
   // no .env in cwd — fine, real credentials may come from the environment
 }
 
-const [command, ...rest] = process.argv.slice(2);
+// `--lang ko|en` works on every command; env/OS locale are the fallbacks (#4).
+const { flag, rest: argvRest } = extractLangFlag(process.argv.slice(2));
+const lang = resolveLang(flag);
+const [command, ...rest] = argvRest;
+
+function usage(unknownCommand: string, l: Lang): string {
+  return (
+    `\n${uiString("cli.error.unknownCommand", l, { command: unknownCommand })}\n\n` +
+    `  storepulse           ${uiString("cli.help.default", l)}\n` +
+    `  storepulse demo      ${uiString("cli.help.demo", l)}\n` +
+    `  storepulse snapshot  ${uiString("cli.help.snapshot", l)}\n` +
+    `  storepulse serve     ${uiString("cli.help.serve", l)}\n` +
+    `  storepulse explain   ${uiString("cli.help.explain", l)}\n\n` +
+    `  --lang ko|en         ${uiString("cli.help.lang", l)}\n`
+  );
+}
 
 try {
   if (command === "demo") {
-    console.log(renderBoard(await fetchAll([demoConnector], demoTargets)));
+    console.log(renderBoard(await fetchAll([demoConnector], demoTargets), lang));
   } else if (command === "snapshot") {
-    await runSnapshot(rest);
+    await runSnapshot(rest, lang);
   } else if (command === "serve") {
-    await runServe(rest);
+    await runServe(rest, lang);
+  } else if (command === "explain") {
+    runExplain(rest, lang);
   } else if (command === undefined) {
     const { connectors, targets } = loadConfig();
-    console.log(renderBoard(await fetchAll(connectors, targets)));
+    console.log(renderBoard(await fetchAll(connectors, targets), lang));
   } else {
-    console.error(
-      `\nUnknown command "${command}".\n\n` +
-        `  storepulse           show the release board for storepulse.config.json\n` +
-        `  storepulse demo      show the board with sample data (no credentials needed)\n` +
-        `  storepulse snapshot  print the board as JSON (--demo, --out <file>)\n` +
-        `  storepulse serve     local web dashboard (--demo, --port, --host, --refresh)\n`,
-    );
+    console.error(usage(command, lang));
     process.exit(1);
   }
 } catch (err) {

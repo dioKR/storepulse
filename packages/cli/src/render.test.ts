@@ -95,4 +95,22 @@ describe("renderBoard", () => {
     expect(out).toContain("REVIEW");
     expect(out).toContain("Aurora");
   });
+
+  it("ends with the explain hint in the requested language, badges staying English", () => {
+    const statuses: AppStatus[] = [
+      {
+        target: target("aurora-ios"),
+        channels: [{ channel: "production", version: "2.4.1", state: "live" }],
+        fetchedAt: new Date().toISOString(),
+      },
+    ];
+
+    const en = stripAnsi(renderBoard(statuses));
+    expect(en).toContain("state meanings: storepulse explain");
+
+    const ko = stripAnsi(renderBoard(statuses, "ko"));
+    expect(ko).toContain("상태 의미 설명: storepulse explain");
+    expect(ko).toContain("LIVE"); // badge text is language-invariant
+    expect(ko).toContain("PRODUCTION"); // column headers stay English
+  });
 });

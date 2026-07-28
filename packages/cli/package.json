@@ -24,7 +24,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc --build && node ../../scripts/copy-dashboard.mjs"
+    "build": "tsc --build && node ../../scripts/gen-dashboard-i18n.mjs && node ../../scripts/copy-dashboard.mjs"
   },
   "dependencies": {
     "@storepulse/core": "workspace:*",
