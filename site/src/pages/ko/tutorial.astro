@@ -69,6 +69,11 @@ import Base from "../../layouts/Base.astro";
       <pre class="code">ASC_KEY_ID=ABC123DEFG          <span class="cmt"># 키의 "Key ID" 열</span>
 ASC_ISSUER_ID=xxxxxxxx-...     <span class="cmt"># 페이지 상단의 "Issuer ID"</span>
 ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
+      <p>
+        콘솔 화면은 종종 바뀌어요 — 메뉴 위치가 다르면 Apple 공식 가이드
+        <a href="https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api">Creating API Keys for App Store Connect API</a>를
+        따라가면 돼요.
+      </p>
     </section>
 
     <section>
@@ -93,6 +98,11 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
         <li><code>.env</code>가 그 JSON을 가리키게 해요:</li>
       </ol>
       <pre class="code">PLAY_SERVICE_ACCOUNT_PATH=./service-account.json</pre>
+      <p>
+        콘솔 화면 구성이 달라졌다면 Google 공식
+        <a href="https://developers.google.com/android-publisher/getting_started">Google Play Developer API 시작 가이드</a>에서
+        같은 단계를 확인할 수 있어요.
+      </p>
       <div class="note">
         <b>CI 팁</b> — 두 시크릿 모두 <code>*_BASE64</code> 변형
         (<code>ASC_PRIVATE_KEY_BASE64</code>,

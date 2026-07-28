@@ -67,6 +67,11 @@ import Base from "../layouts/Base.astro";
       <pre class="code">ASC_KEY_ID=ABC123DEFG          <span class="cmt"># "Key ID" column of your key</span>
 ASC_ISSUER_ID=xxxxxxxx-...     <span class="cmt"># "Issuer ID" at the top of the page</span>
 ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
+      <p>
+        Console menus move around from time to time — if they have, follow
+        Apple's official guide:
+        <a href="https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api">Creating API Keys for App Store Connect API</a>.
+      </p>
     </section>
 
     <section>
@@ -91,6 +96,11 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
         <li>Point <code>.env</code> at the JSON:</li>
       </ol>
       <pre class="code">PLAY_SERVICE_ACCOUNT_PATH=./service-account.json</pre>
+      <p>
+        If the console layout has changed, Google's official guide covers the
+        same steps:
+        <a href="https://developers.google.com/android-publisher/getting_started">Getting started with the Google Play Developer API</a>.
+      </p>
       <div class="note">
         <b>CI tip</b> — both secrets accept a <code>*_BASE64</code> variant
         (<code>ASC_PRIVATE_KEY_BASE64</code>,

@@ -71,6 +71,12 @@ import Base from "../../layouts/Base.astro";
       <pre class="code">ASC_KEY_ID=ABC123DEFG          <span class="cmt"># キーの "Key ID" 列</span>
 ASC_ISSUER_ID=xxxxxxxx-...     <span class="cmt"># ページ上部の "Issuer ID"</span>
 ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
+      <p>
+        コンソールの画面はときどき変わります — メニューの場所が違うときは、
+        Apple の公式ガイド
+        <a href="https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api">Creating API Keys for App Store Connect API</a>
+        に従ってください。
+      </p>
     </section>
 
     <section>
@@ -96,6 +102,11 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
         <li><code>.env</code> にその JSON を指定します:</li>
       </ol>
       <pre class="code">PLAY_SERVICE_ACCOUNT_PATH=./service-account.json</pre>
+      <p>
+        コンソールの画面構成が変わっていたら、Google の公式ガイド
+        <a href="https://developers.google.com/android-publisher/getting_started">Google Play Developer API スタートガイド</a>で
+        同じ手順を確認できます。
+      </p>
       <div class="note">
         <b>CI のヒント</b> — どちらのシークレットも <code>*_BASE64</code> 形式
         (<code>ASC_PRIVATE_KEY_BASE64</code>,
