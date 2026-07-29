@@ -88,12 +88,16 @@ npx storepulse serve --demo     # 本機 Web 儀表板 → http://127.0.0.1:4780
 npx storepulse snapshot --demo  # 把看板輸出成 JSON
 ```
 
-![storepulse Web 儀表板 —— 上方是篩選標籤,展開的列裡有版本說明、日期和 TestFlight 到期倒數](docs/images/dashboard-details.png)
+![storepulse Web 儀表板 —— 全寬版面,每列帶 Latest 摘要,每個通道前有 ✓/▲ 傳播標記](docs/images/dashboard-propagation.png)
 
 - **`storepulse serve`** 會啟動一個本機 Web 儀表板 —— 同一塊看板、同樣的
   設計,還會自動重新整理。點選任一列就會展開詳細面板:版本說明全文、
   送審/上傳日期,TestFlight 有效期限剩不到 7 天時還會亮出倒數警告。上方的
   篩選標籤可以依 OS(iOS/Android)與群組(`prod`/`dev`)組合過濾看板。
+  每列還帶著最新建置的摘要(`Latest: 2.5.0 (108)`),每個通道前有一個傳播
+  標記 —— 已經拿到最新建置顯示 ✓,落後了則顯示 ▲(游標移上去可對照目前 vs
+  最新;Android 以 versionCode 判斷)——「最新建置到底發到了哪些環境」
+  一眼就能看清。
   頂欄的 EN/KO 切換器可以切換儀表板語言(選擇會記在瀏覽器裡),點一下
   狀態徽章(而不是整列)會跳出解釋該狀態意義的術語對話方塊。
   選項:`--port`、`--host`、`--refresh <秒>`。預設
@@ -219,6 +223,37 @@ npx storepulse
 你的真實看板就會出現(在儲存庫的 clone 裡,`pnpm status` 效果相同)。
 憑證有問題的列只會在原位顯示錯誤,不會遮住看板的其餘部分。
 
+### 選用 —— 串接 Expo(EAS)建置
+
+用 Expo 出版本嗎?再加兩樣東西,商店裡的每個版本就能一路追溯到產出它的
+EAS 建置。先把存取權杖放進 `.env`(在
+[expo.dev → Access tokens](https://expo.dev/settings/access-tokens) 建立;
+組織帳號建議用 **View Only** 機器人權杖 —— storepulse 只讀取建置和送審,
+絕不會觸發它們):
+
+```ini
+EAS_TOKEN=...
+```
+
+接著為 `storepulse.config.json` 裡的 Expo App 項目加上 `easProjectId`
+(`app.json` → `extra.eas.projectId`;同一個 App 的 ios·android 項目共用
+同一個值):
+
+```jsonc
+{ "key": "myapp-ios", "platform": "ios", "storeId": "1234567890",
+  "easProjectId": "5b2fb1e0-6c2a-4b8e-9d3f-4a1c2e8f7a90" }
+```
+
+就這樣 —— 看板、`snapshot` 和 Web 儀表板會為每個版本補上它背後的 EAS
+建置資訊:git commit、建置設定檔(profile)、送審狀態。儀表板詳細面板會
+多出 **EAS BUILD** 區塊,`npx storepulse doctor` 也會在 `[5] Expo (EAS)`
+一節逐步檢查整條鏈路。快照只新增選用欄位 `eas` / `easProjectId` /
+`easAppIdentifier` —— `schemaVersion` 維持為 1
+([詳情](docs/snapshot-schema.md))。如果一個 EAS 專案為同一平台建置多種
+變體,用 `easAppIdentifier` 收斂比對範圍(Android 預設使用 `storeId`)。
+
+![詳細面板裡的 EAS BUILD 區塊 —— 商店版本旁邊是建置設定檔、git commit、建置日期和送審狀態](docs/images/dashboard-eas.png)
+
 ---
 
 ## 疑難排解
@@ -258,7 +293,7 @@ ESLint + Prettier。編輯器裝上 Biome 擴充功能,就會自動讀取 `biome
 
 ## 路線圖
 
-- [ ] EAS 連接器 —— 把商店狀態與 Expo 的建置·送審串起來
+- [x] EAS 連接器 —— 把商店狀態與 Expo 的建置·送審串起來
 - [ ] 狀態變化時的 Slack/Discord 通知(「2.5.0 審查通過 🎉」)
 - [x] Web 儀表板(`storepulse serve`)
 - [x] 發布到 npm(`npx storepulse`)

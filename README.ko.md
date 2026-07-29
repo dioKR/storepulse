@@ -92,13 +92,17 @@ npx storepulse serve --demo     # 로컬 웹 대시보드 → http://127.0.0.1:4
 npx storepulse snapshot --demo  # 보드를 JSON으로 출력
 ```
 
-![상단 필터 칩과 릴리즈 노트·날짜·TestFlight 만료가 보이는 storepulse 웹 대시보드](docs/images/dashboard-details.png)
+![행마다 Latest 요약, 채널마다 ✓/▲ 전파 마크가 붙은 전폭 storepulse 웹 대시보드](docs/images/dashboard-propagation.png)
 
 - **`storepulse serve`**는 같은 보드를 같은 디자인으로 보여주는 로컬 웹
   대시보드를 띄워요. 자동으로 새로고침되고요. 행을 클릭하면 상세 패널이
   열려요 — 릴리즈 노트 전문, 제출/업로드 날짜, 그리고 TestFlight 만료가
   7일 이하로 남으면 D-day 경고까지 보여줘요. 상단 칩으로 OS(iOS/Android)와
-  그룹(`prod`/`dev`)을 조합해 보드를 좁혀볼 수도 있고요. 헤더의 EN/KO
+  그룹(`prod`/`dev`)을 조합해 보드를 좁혀볼 수도 있고요. 행마다 최신 번들
+  요약(`Latest: 2.5.0 (108)`)이 붙고, 각 채널 앞에는 전파 마크가 표시돼요 —
+  최신 번들이 이미 반영됐으면 ✓, 뒤처져 있으면 ▲(마우스를 올리면 현재 vs
+  최신을 비교해줘요. Android는 versionCode 기준이에요). "최신 빌드가 어느
+  환경까지 나갔나"가 한눈에 들어와요. 헤더의 EN/KO
   스위처로 대시보드 언어를 바꿀 수 있고(선택은 브라우저가 기억해요), 행이
   아니라 상태 배지를 클릭하면 그 상태가 무슨 뜻인지 알려주는 용어 설명
   다이얼로그가 열려요. 옵션은 `--port`,
@@ -229,6 +233,39 @@ npx storepulse
 크리덴셜에 문제가 있는 행은 보드 전체를 가리는 대신 그 자리에만 에러를
 보여줘요.
 
+### 선택 — Expo(EAS) 빌드 연결하기
+
+Expo로 배포하고 있나요? 두 가지만 더하면 스토어의 각 버전이 어느 EAS
+빌드에서 나왔는지까지 이어져요. 먼저 `.env`에 액세스 토큰을 넣어요
+([expo.dev → Access tokens](https://expo.dev/settings/access-tokens)에서
+만들 수 있어요. 조직이라면 **View Only** 로봇 토큰을 권장해요 —
+storepulse는 빌드와 제출을 읽기만 하지, 실행하지 않거든요):
+
+```ini
+EAS_TOKEN=...
+```
+
+그다음 `storepulse.config.json`의 Expo 앱 항목에 `easProjectId`를 적어요
+(`app.json` → `extra.eas.projectId`. 한 앱의 ios·android 항목은 같은 값을
+써요):
+
+```jsonc
+{ "key": "myapp-ios", "platform": "ios", "storeId": "1234567890",
+  "easProjectId": "5b2fb1e0-6c2a-4b8e-9d3f-4a1c2e8f7a90" }
+```
+
+이게 다예요 — 이제 보드, `snapshot`, 대시보드가 각 버전을 그 뒤의 EAS
+빌드로 보강해줘요: git 커밋, 빌드 프로필, 제출 상태까지요. 대시보드 상세
+패널에는 **EAS BUILD** 블록이 생기고, `npx storepulse doctor`는
+`[5] Expo (EAS) 체인` 섹션에서 전체 연결을 점검해줘요. 스냅샷에는 선택
+필드 `eas` / `easProjectId` / `easAppIdentifier`만 늘어나요 —
+`schemaVersion`은 1 그대로예요 ([자세히](docs/snapshot-schema.md)).
+하나의 EAS 프로젝트가 같은 플랫폼의 변형을 여러 개 빌드한다면
+`easAppIdentifier`로 매칭 범위를 좁혀요 (Android는 기본으로 `storeId`를
+써요).
+
+![상세 패널의 EAS BUILD 블록 — 스토어 버전 옆에 빌드 프로필, git 커밋, 빌드 날짜, 제출 상태가 보여요](docs/images/dashboard-eas.png)
+
 ---
 
 ## 문제 해결
@@ -270,7 +307,7 @@ Prettier를 대신하는 단일 도구예요. 에디터는 Biome 확장만 설�
 
 ## 로드맵
 
-- [ ] EAS 커넥터 — 스토어 상태를 Expo 빌드·제출과 연결
+- [x] EAS 커넥터 — 스토어 상태를 Expo 빌드·제출과 연결
 - [ ] 상태가 바뀌면 Slack/Discord 알림 ("2.5.0 심사 통과 🎉")
 - [x] 웹 대시보드 (`storepulse serve`)
 - [x] npm 배포 (`npx storepulse`)

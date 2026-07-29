@@ -138,7 +138,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
           <div class="k">expo-friendly</div>
           <div class="v">
             Works with any iOS/Android app, but built by an Expo team for Expo
-            teams — an EAS connector is on the roadmap.
+            teams — set an <code>EAS_TOKEN</code> and a per-app
+            <code>easProjectId</code>, and every store version links back to
+            the EAS build that produced it: commit, build profile, submission
+            status.
           </div>
         </div>
       </div>
@@ -191,7 +194,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
       <div class="roadmap">
         <span class="done">core + connectors</span>
         <span class="done">cli with demo mode</span>
-        <span>eas connector</span>
+        <span class="done">eas connector</span>
         <span>slack / discord alerts</span>
         <span class="done">web dashboard</span>
         <span class="done">npx storepulse</span>

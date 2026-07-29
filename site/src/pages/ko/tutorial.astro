@@ -152,6 +152,27 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
     </section>
 
     <section>
+      <p class="sec-label">7단계 — 선택</p>
+      <h2>Expo(EAS) 빌드 연결하기</h2>
+      <p>
+        Expo로 배포하고 있나요? <code>.env</code>에 액세스 토큰을 넣고
+        (<a href="https://expo.dev/settings/access-tokens">expo.dev → Access
+        tokens</a>에서 만들어요. 조직이라면 <b>View Only</b> 로봇 토큰을
+        권장해요 — storepulse는 빌드와 제출을 읽기만 하거든요),
+        <code>storepulse.config.json</code>의 Expo 앱 항목에
+        <code>easProjectId</code>(<code>app.json</code> →
+        <code>extra.eas.projectId</code>)를 적어요:
+      </p>
+      <pre class="code">EAS_TOKEN=...</pre>
+      <p>
+        이제 보드·스냅샷·대시보드가 스토어의 각 버전이 어느 EAS 빌드에서
+        나왔는지 보여줘요 — 커밋, 빌드 프로필, 제출 상태까지요.
+        <code>npx storepulse doctor</code>의 <code>[5]</code> 섹션이 EAS
+        체인 전체를 점검해주고요.
+      </p>
+    </section>
+
+    <section>
       <p class="sec-label">문제 해결</p>
       <h2>뭔가 어긋났을 때</h2>
       <p>

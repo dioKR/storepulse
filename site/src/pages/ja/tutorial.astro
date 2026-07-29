@@ -159,6 +159,27 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
     </section>
 
     <section>
+      <p class="sec-label">ステップ 7 — 任意</p>
+      <h2>Expo(EAS)ビルドをつなぐ</h2>
+      <p>
+        Expo でリリースしていますか? <code>.env</code> にアクセストークンを
+        追加し(<a href="https://expo.dev/settings/access-tokens">expo.dev →
+        Access tokens</a> で作成できます。組織なら <b>View Only</b> の
+        ロボットトークンを推奨します — storepulse はビルドと提出を読むだけ
+        です)、<code>storepulse.config.json</code> の Expo アプリの項目に
+        <code>easProjectId</code>(<code>app.json</code> →
+        <code>extra.eas.projectId</code>)を書きます:
+      </p>
+      <pre class="code">EAS_TOKEN=...</pre>
+      <p>
+        これで、ボード・スナップショット・ダッシュボードが、ストアの各バージョンが
+        どの EAS ビルドから生まれたのかを表示します — コミット、ビルド
+        プロファイル、提出ステータスまで。<code>npx storepulse doctor</code> の
+        <code>[5]</code> セクションが EAS チェーン全体を点検します。
+      </p>
+    </section>
+
+    <section>
       <p class="sec-label">トラブルシューティング</p>
       <h2>何かがおかしいとき</h2>
       <p>
