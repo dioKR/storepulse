@@ -144,3 +144,42 @@ describe("formatBundle", () => {
     expect(formatBundle({ version: "2.5.0", build: null })).toBe("2.5.0");
   });
 });
+
+describe("android — versionCode-first ordering (custom release names)", () => {
+  const { latestBundle, channelPropagation } = propagation;
+
+  it("orders by versionCode even when versions are arbitrary release names", () => {
+    const entries = [
+      { channel: "production", version: "0.1.16", build: "30", state: "live" },
+      { channel: "internal", version: "여름 이벤트 릴리즈", build: "33", state: "live" },
+    ];
+    expect(latestBundle(entries, "android")).toEqual({
+      version: "여름 이벤트 릴리즈",
+      build: "33",
+    });
+  });
+
+  it("matches by versionCode identity even when release names differ per channel", () => {
+    const latest = { version: "여름 이벤트 릴리즈", build: "33" };
+    const prod = [{ channel: "production", version: "안정화 배포", build: "33", state: "live" }];
+    expect(channelPropagation(prod, latest, "android")).toEqual({ status: "latest" });
+  });
+
+  it("flags behind by versionCode, reporting the channel's own newest entry", () => {
+    const latest = { version: "0.1.18", build: "33" };
+    const prod = [{ channel: "production", version: "0.1.16", build: "30", state: "live" }];
+    expect(channelPropagation(prod, latest, "android")).toEqual({
+      status: "behind",
+      version: "0.1.16",
+      build: "30",
+    });
+  });
+
+  it("ios keeps version-first ordering (build numbers may restart per version)", () => {
+    const entries = [
+      { channel: "production", version: "0.1.17", build: null, state: "live" },
+      { channel: "beta", version: "0.1.16", build: "99", state: "live" },
+    ];
+    expect(latestBundle(entries, "ios")).toEqual({ version: "0.1.17", build: null });
+  });
+});

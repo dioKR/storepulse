@@ -11,6 +11,12 @@
  * Builds only break version ties, and a missing build never disqualifies a
  * match — ASC production releases carry no build number, so an iOS production
  * entry is judged by version alone.
+ *
+ * Platform rule: on Android the `version` field may hold an arbitrary custom
+ * Play release name, while `build` (versionCode) is monotonic per app — so
+ * Android entries order and match by build first, version only as fallback.
+ * iOS is the opposite (build numbers may restart per version) and keeps the
+ * version-first ordering above.
  */
 
 const NUM_RE = /^\d+$/;
@@ -53,11 +59,24 @@ function hasVersion(entry) {
 }
 
 /**
- * Order two channel entries as "latest bundle" candidates: version first, then
- * build. On a version tie an entry WITH a build outranks a build-less one, so
- * the Latest summary can show a build number when any channel provides it.
+ * Order two channel entries as "latest bundle" candidates.
+ * iOS (default): version first, then build. On a version tie an entry WITH a
+ * build outranks a build-less one, so the Latest summary can show a build
+ * number when any channel provides it.
+ * Android: build (versionCode, monotonic) first — custom Play release names
+ * make the version field lexicographically meaningless there.
  */
-function compareEntries(a, b) {
+function compareEntries(a, b, platform) {
+  if (platform === "android") {
+    const androidA = a.build ?? null;
+    const androidB = b.build ?? null;
+    if (androidA !== null && androidB !== null) {
+      const byBuild = compareBuilds(androidA, androidB);
+      if (byBuild !== 0) return byBuild;
+      return compareVersions(a.version, b.version);
+    }
+    // one side has no versionCode (defensive) — fall through to version-first
+  }
   const byVersion = compareVersions(a.version, b.version);
   if (byVersion !== 0) return byVersion;
   const ab = a.build ?? null;
@@ -73,11 +92,11 @@ function compareEntries(a, b) {
  * `build: null` when the winning entry has none — or null when no entry has a
  * version (version-less entries cannot be compared, so they are skipped).
  */
-export function latestBundle(entries) {
+export function latestBundle(entries, platform) {
   let best = null;
   for (const entry of entries ?? []) {
     if (!hasVersion(entry)) continue;
-    if (best === null || compareEntries(entry, best) > 0) best = entry;
+    if (best === null || compareEntries(entry, best, platform) > 0) best = entry;
   }
   return best === null ? null : { version: best.version, build: best.build ?? null };
 }
@@ -92,10 +111,15 @@ export function formatBundle(bundle) {
  * when BOTH sides have one — ASC production has no build number, so an iOS
  * production entry matches on version alone (the issue-#32 caveat).
  */
-function isLatest(entry, latest) {
-  if (compareVersions(entry.version, latest.version) !== 0) return false;
+function isLatest(entry, latest, platform) {
   const eb = entry.build ?? null;
   const lb = latest.build ?? null;
+  // Android: versionCode equality IS identity — the version field may be a
+  // custom release name that differs between channels for the same binary.
+  if (platform === "android" && eb !== null && lb !== null) {
+    return compareBuilds(eb, lb) === 0;
+  }
+  if (compareVersions(entry.version, latest.version) !== 0) return false;
   return eb === null || lb === null || compareBuilds(eb, lb) === 0;
 }
 
@@ -107,13 +131,13 @@ function isLatest(entry, latest) {
  *  - { status: "behind", version, build } — every entry is older → amber ▲;
  *    version/build describe the channel's own newest entry
  */
-export function channelPropagation(entries, latest) {
+export function channelPropagation(entries, latest, platform) {
   if (!latest) return null;
   let best = null;
   for (const entry of entries ?? []) {
     if (!hasVersion(entry)) continue;
-    if (isLatest(entry, latest)) return { status: "latest" };
-    if (best === null || compareEntries(entry, best) > 0) best = entry;
+    if (isLatest(entry, latest, platform)) return { status: "latest" };
+    if (best === null || compareEntries(entry, best, platform) > 0) best = entry;
   }
   if (best === null) return null;
   return { status: "behind", version: best.version, build: best.build ?? null };

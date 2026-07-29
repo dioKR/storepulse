@@ -177,7 +177,7 @@ function channelCell(app, channelId, latest) {
     td.append(el("span", "dim", "—"));
     return td;
   }
-  const prop = channelPropagation(entries, latest);
+  const prop = channelPropagation(entries, latest, app.target?.platform);
   if (prop) td.append(propMark(prop, latest), " ");
   entries.forEach((entry, i) => {
     if (i > 0) td.append(el("span", "dim", " · "));
@@ -397,7 +397,7 @@ function buildTable(apps) {
     const hasDetails = !app.error && (app.channels ?? []).length > 0;
     // Latest bundle across ALL channels of this target — computed from the raw
     // snapshot, so chip filters (which only hide whole rows) cannot skew it.
-    const latest = app.error ? null : latestBundle(app.channels ?? []);
+    const latest = app.error ? null : latestBundle(app.channels ?? [], app.target?.platform);
     const detailId = `detail-${encodeURIComponent(key)}`;
     const open = expandedKeys.has(key);
 
