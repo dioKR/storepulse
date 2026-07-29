@@ -221,11 +221,27 @@ function parseBuild(raw: any): EasBuild {
 }
 
 /**
+ * Among same-version builds without a store build number to disambiguate,
+ * never guess by recency alone: prefer the binary the store actually received
+ * (a FINISHED submission, then any submission attempt), and otherwise match
+ * only when a single candidate exists. Retried or preview builds of the same
+ * version therefore stay unmatched instead of masquerading as the live one.
+ */
+function pickBySubmission(candidates: EasBuild[]): EasBuild | undefined {
+  const delivered = candidates.filter((b) => b.submissionStatus === "FINISHED");
+  if (delivered.length > 0) return delivered[0];
+  const attempted = candidates.filter((b) => b.submissionStatus !== undefined);
+  if (attempted.length > 0) return attempted[0];
+  return candidates.length === 1 ? candidates[0] : undefined;
+}
+
+/**
  * Match a channel entry to an EAS build:
  * - marketing version must equal `appVersion`;
  * - when the channel knows its build number (iOS build number / Android
  *   versionCode), it must equal `appBuildVersion` too;
- * - without a build number, the newest finished build of that version wins.
+ * - without a build number, the submission relationship decides
+ *   (see pickBySubmission) — recency alone never does.
  * When no build carries the channel's version string (custom Play release
  * names put an arbitrary name in `version`), the build number alone decides —
  * but only if it identifies exactly one build: Android versionCodes are unique
@@ -242,7 +258,7 @@ export function matchEasBuild(
     if (channel.build != null) {
       return sameVersion.find((b) => b.appBuildVersion === channel.build);
     }
-    return sameVersion[0];
+    return pickBySubmission(sameVersion);
   }
   if (channel.build != null) {
     const sameBuild = builds.filter((b) => b.appBuildVersion === channel.build);

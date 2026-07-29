@@ -116,8 +116,9 @@ describe("EasEnricher — matching", () => {
     expect(input[0].channels[0].eas).toBeUndefined();
   });
 
-  it("matches on version alone (newest build wins) when the channel has no build number", async () => {
+  it("matches on version alone via the store-delivered build when the channel has no build number", async () => {
     // API order scrambled on purpose — the enricher re-sorts by completedAt.
+    // build108 is the one with a FINISHED submission; build107 was never submitted.
     const { fn } = gqlFetch(() => ({ payload: buildsPayload([build107, build108]) }));
     const enricher = new EasEnricher({ token: TOKEN }, fn);
 
@@ -268,6 +269,32 @@ describe("matchEasBuild", () => {
 
   it("build number narrows within the same version", () => {
     expect(matchEasBuild({ version: "2.5.0", build: "107" }, builds)?.buildId).toBe("b107");
+  });
+
+  it("without a build number, the store-delivered binary wins over newer builds", () => {
+    const retried = [
+      { appVersion: "3.0.0", appBuildVersion: "12", buildId: "b12-preview" },
+      {
+        appVersion: "3.0.0",
+        appBuildVersion: "11",
+        buildId: "b11-store",
+        submissionStatus: "FINISHED",
+      },
+    ];
+    expect(matchEasBuild({ version: "3.0.0" }, retried)?.buildId).toBe("b11-store");
+  });
+
+  it("without a build number and no submissions, multiple candidates stay unmatched", () => {
+    const twins = [
+      { appVersion: "3.0.0", appBuildVersion: "12", buildId: "b12" },
+      { appVersion: "3.0.0", appBuildVersion: "11", buildId: "b11" },
+    ];
+    expect(matchEasBuild({ version: "3.0.0" }, twins)).toBeUndefined();
+  });
+
+  it("without a build number, a single candidate still matches", () => {
+    const solo = [{ appVersion: "2.4.0", buildId: "solo" }];
+    expect(matchEasBuild({ version: "2.4.0" }, solo)?.buildId).toBe("solo");
   });
 
   it("custom release names fall back to a unique build number", () => {
