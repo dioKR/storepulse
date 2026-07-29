@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { fetchAll, type Lang, uiString } from "@storepulse/core";
-import { loadConfig } from "./config.js";
 import { demoConnector, demoTargets } from "./demo.js";
 import { runDoctor } from "./doctor.js";
 import { runExplain } from "./explain.js";
@@ -8,7 +7,7 @@ import { runInit } from "./init.js";
 import { extractLangFlag, resolveLang } from "./lang.js";
 import { renderBoard } from "./render.js";
 import { runServe } from "./serve.js";
-import { runSnapshot } from "./snapshot.js";
+import { collectStatuses, runSnapshot } from "./snapshot.js";
 
 try {
   process.loadEnvFile();
@@ -49,8 +48,7 @@ try {
   } else if (command === "doctor") {
     await runDoctor(lang);
   } else if (command === undefined) {
-    const { connectors, targets } = loadConfig();
-    console.log(renderBoard(await fetchAll(connectors, targets), lang));
+    console.log(renderBoard(await collectStatuses(false), lang));
   } else {
     console.error(usage(command, lang));
     process.exit(1);

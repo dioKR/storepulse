@@ -264,6 +264,21 @@ dd.exp-over {
   font-weight: 700;
 }
 
+/* EAS build block — present only when the snapshot entry carries `eas` */
+.eas {
+  margin-top: 10px;
+  border-top: 1px dashed var(--line);
+  padding-top: 8px;
+}
+
+.eas-title {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
 .notes {
   margin-top: 8px;
   font-size: 0.86rem;

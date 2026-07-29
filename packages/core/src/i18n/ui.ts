@@ -110,6 +110,10 @@ export const UI_STRINGS = {
     en: "Google Play chain",
     ko: "Google Play 체인",
   },
+  "doctor.section.eas": {
+    en: "Expo (EAS) chain — optional",
+    ko: "Expo (EAS) 체인 — 선택",
+  },
   "doctor.section.summary": { en: "summary", ko: "요약" },
 
   // [1] config
@@ -139,6 +143,14 @@ export const UI_STRINGS = {
   "doctor.config.badPlatform": {
     en: 'platform must be "ios" or "android", got "{platform}"',
     ko: 'platform은 "ios" 또는 "android"여야 합니다 (현재 "{platform}")',
+  },
+  "doctor.config.badEasProjectId": {
+    en: 'app entry {app} has a non-string or empty "easProjectId"',
+    ko: '앱 항목 {app}의 "easProjectId"가 문자열이 아니거나 비어 있습니다',
+  },
+  "doctor.config.badEasAppIdentifier": {
+    en: 'app entry {app} has a non-string or empty "easAppIdentifier"',
+    ko: '앱 항목 {app}의 "easAppIdentifier"가 문자열이 아니거나 비어 있습니다',
   },
   "doctor.fix.init": {
     en: "run `storepulse init` to scaffold the config + .env templates",
@@ -290,6 +302,62 @@ export const UI_STRINGS = {
     ko: "Play API가 {status}을(를) 반환했습니다",
   },
 
+  // [5] Expo (EAS) chain — optional enrichment
+  "doctor.skip.noEas": {
+    en: "skipped — no easProjectId in the config and EAS_TOKEN not set (EAS is optional)",
+    ko: "건너뜀 — 설정에 easProjectId가 없고 EAS_TOKEN도 설정되지 않았습니다 (EAS는 선택입니다)",
+  },
+  "doctor.skip.noEasProjects": {
+    en: "no easProjectId in the config — nothing to enrich",
+    ko: "설정에 easProjectId가 없습니다 — 보강할 대상이 없습니다",
+  },
+  "doctor.skip.easTokenFirst": {
+    en: "skipped — set EAS_TOKEN first",
+    ko: "건너뜀 — 먼저 EAS_TOKEN을 설정하세요",
+  },
+  "doctor.fix.envEas": {
+    en:
+      "create an access token at https://expo.dev/settings/access-tokens and set EAS_TOKEN in .env " +
+      "(for organizations, prefer a View Only robot token)",
+    ko:
+      "https://expo.dev/settings/access-tokens 에서 액세스 토큰을 만들어 .env의 EAS_TOKEN에 넣으세요 " +
+      "(조직은 View Only 로봇 토큰 권장)",
+  },
+  "doctor.eas.viewer": {
+    en: "token accepted by the EAS GraphQL API (CurrentUser)",
+    ko: "EAS GraphQL API 토큰 인증 (CurrentUser)",
+  },
+  "doctor.eas.viewerAs": { en: "authenticated as {name}", ko: "{name}(으)로 인증됨" },
+  "doctor.eas.viewerFail": {
+    en: "EAS rejected the token: {message}",
+    ko: "EAS가 토큰을 거부했습니다: {message}",
+  },
+  "doctor.fix.easToken": {
+    en: "the token is invalid or revoked — issue a new one at https://expo.dev/settings/access-tokens",
+    ko: "토큰이 유효하지 않거나 폐기되었습니다 — https://expo.dev/settings/access-tokens 에서 새로 발급하세요",
+  },
+  "doctor.eas.transient": {
+    en: "EAS service error: {message}",
+    ko: "EAS 서비스 오류: {message}",
+  },
+  "doctor.fix.easTransient": {
+    en: "EAS looks temporarily unavailable (rate limit or server error) — retry shortly; the token itself may be fine",
+    ko: "EAS가 일시적으로 불안정합니다(요청 제한 또는 서버 오류) — 잠시 후 다시 시도하세요. 토큰 문제가 아닐 수 있습니다",
+  },
+  "doctor.check.easProject": { en: "project {projectId}", ko: "프로젝트 {projectId}" },
+  "doctor.eas.projectFail": {
+    en: "cannot access this project: {message}",
+    ko: "이 프로젝트에 접근할 수 없습니다: {message}",
+  },
+  "doctor.fix.easProject": {
+    en:
+      "easProjectId must be the EAS project ID (app.json → extra.eas.projectId), " +
+      "and the token's account needs access to that project",
+    ko:
+      "easProjectId는 EAS 프로젝트 ID(app.json → extra.eas.projectId)여야 하며, " +
+      "토큰 계정이 해당 프로젝트에 접근할 수 있어야 합니다",
+  },
+
   // shared
   "doctor.fail.network": {
     en: "network error: {message}",
@@ -403,6 +471,11 @@ export const UI_STRINGS = {
   "dash.kvBuild": { en: "build", ko: "빌드" },
   "dash.kvState": { en: "state", ko: "상태" },
   "dash.kvRollout": { en: "rollout", ko: "롤아웃" },
+  "dash.easTitle": { en: "EAS build", ko: "EAS 빌드" },
+  "dash.kvEasProfile": { en: "profile", ko: "프로필" },
+  "dash.kvEasCommit": { en: "commit", ko: "커밋" },
+  "dash.kvEasCompleted": { en: "built", ko: "빌드 완료" },
+  "dash.kvEasSubmission": { en: "submission", ko: "제출 상태" },
   "dash.langLabel": { en: "language", ko: "언어" },
   "dash.explainBadge": { en: "explain {badge}", ko: "{badge} 설명" },
   "dash.explainClose": { en: "close", ko: "닫기" },
