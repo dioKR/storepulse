@@ -42,7 +42,9 @@ body {
 }
 
 .wrap {
-  max-width: 1060px;
+  /* Wide board: use the screen, capped so ultra-wide monitors stay readable.
+     Channel cells wrap per entry (below) instead of horizontal scrolling. */
+  max-width: min(96vw, 1760px);
   margin: 0 auto;
   padding: 40px 20px 60px;
 }
@@ -152,6 +154,16 @@ table.board td {
   border-bottom: 1px solid var(--line);
   padding: 9px 18px 9px 0;
   vertical-align: top;
+}
+
+/* Channel cells wrap between entries (never inside one) — the board fits
+   the viewport without an inner horizontal scrollbar. */
+table.board td.channel-cell {
+  white-space: normal;
+}
+
+table.board td.channel-cell .entry {
+  white-space: nowrap;
 }
 
 table.board tr:last-child td {

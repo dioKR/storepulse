@@ -171,7 +171,7 @@ function propMark(prop, latest) {
 }
 
 function channelCell(app, channelId, latest) {
-  const td = el("td");
+  const td = el("td", "channel-cell");
   const entries = (app.channels ?? []).filter((c) => c.channel === channelId);
   if (entries.length === 0) {
     td.append(el("span", "dim", "—"));
@@ -180,8 +180,11 @@ function channelCell(app, channelId, latest) {
   const prop = channelPropagation(entries, latest);
   if (prop) td.append(propMark(prop, latest), " ");
   entries.forEach((entry, i) => {
-    if (i > 0) td.append(el("span", "dim", "  ·  "));
-    td.append(badge(entry));
+    if (i > 0) td.append(el("span", "dim", " · "));
+    // Wrapping unit: entries may move to the next line, but never break inside
+    const chunk = el("span", "entry");
+    chunk.append(badge(entry));
+    td.append(chunk);
   });
   return td;
 }
