@@ -82,6 +82,7 @@ const VIEW_BUILDS_QUERY = `
           buildProfile
           appVersion
           appBuildVersion
+          appIdentifier
           gitCommitHash
           completedAt
           submissions {
@@ -191,6 +192,7 @@ interface EasBuild {
   buildId?: string;
   appVersion?: string;
   appBuildVersion?: string;
+  appIdentifier?: string;
   profile?: string;
   commit?: string;
   completedAt?: string;
@@ -205,6 +207,7 @@ function parseBuild(raw: any): EasBuild {
   const buildId = asString(raw?.id);
   const appVersion = asString(raw?.appVersion);
   const appBuildVersion = asString(raw?.appBuildVersion);
+  const appIdentifier = asString(raw?.appIdentifier);
   const profile = asString(raw?.buildProfile);
   const commit = asString(raw?.gitCommitHash);
   const completedAt = asString(raw?.completedAt);
@@ -213,11 +216,30 @@ function parseBuild(raw: any): EasBuild {
     ...(buildId !== undefined && { buildId }),
     ...(appVersion !== undefined && { appVersion }),
     ...(appBuildVersion !== undefined && { appBuildVersion }),
+    ...(appIdentifier !== undefined && { appIdentifier }),
     ...(profile !== undefined && { profile }),
     ...(commit !== undefined && { commit }),
     ...(completedAt !== undefined && { completedAt }),
     ...(submissionStatus !== undefined && { submissionStatus }),
   };
+}
+
+/**
+ * Restrict a project's builds to the ones that belong to this store app.
+ * One EAS project can build several variants of the same platform (prod +
+ * dev bundle/package IDs); version/build numbers often coincide across them,
+ * so matching against the whole list could attach the wrong variant's build.
+ * With an expected identifier (Android: storeId is the package name; iOS:
+ * opt-in `easAppIdentifier`), only exact-identifier builds survive. Without
+ * one, builds are used only when they all carry a single identifier —
+ * multiple variants with no way to tell them apart skip enrichment entirely.
+ */
+function scopeBuilds(builds: EasBuild[], expected: string | undefined): EasBuild[] {
+  if (expected !== undefined) {
+    return builds.filter((b) => b.appIdentifier === expected);
+  }
+  const identifiers = new Set(builds.map((b) => b.appIdentifier).filter((v) => v !== undefined));
+  return identifiers.size <= 1 ? builds : [];
 }
 
 /**
@@ -320,7 +342,12 @@ export class EasEnricher implements Enricher {
       if (!projectId) return status;
       const builds = buildsByKey.get(`${projectId} ${status.target.platform}`);
       if (!builds || builds.length === 0) return status;
-      return { ...status, channels: status.channels.map((c) => withEasInfo(c, builds)) };
+      const expected =
+        status.target.easAppIdentifier ??
+        (status.target.platform === "android" ? status.target.storeId : undefined);
+      const scoped = scopeBuilds(builds, expected);
+      if (scoped.length === 0) return status;
+      return { ...status, channels: status.channels.map((c) => withEasInfo(c, scoped)) };
     });
   }
 

@@ -148,6 +148,10 @@ export const UI_STRINGS = {
     en: 'app entry {app} has a non-string or empty "easProjectId"',
     ko: '앱 항목 {app}의 "easProjectId"가 문자열이 아니거나 비어 있습니다',
   },
+  "doctor.config.badEasAppIdentifier": {
+    en: 'app entry {app} has a non-string or empty "easAppIdentifier"',
+    ko: '앱 항목 {app}의 "easAppIdentifier"가 문자열이 아니거나 비어 있습니다',
+  },
   "doctor.fix.init": {
     en: "run `storepulse init` to scaffold the config + .env templates",
     ko: "`storepulse init`으로 설정 파일 + .env 템플릿을 생성하세요",

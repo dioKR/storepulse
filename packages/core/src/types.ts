@@ -37,6 +37,14 @@ export interface AppTarget {
    * happens in the EAS build query, not here.
    */
   easProjectId?: string;
+  /**
+   * App identifier the EAS builds of this target carry (iOS bundle ID /
+   * Android package name). Scopes EAS matching when one EAS project builds
+   * multiple variants of the same platform (e.g. prod + dev bundle IDs).
+   * Android defaults to `storeId` (already the package name); iOS has no
+   * bundle ID elsewhere in the config, so set this to enable scoping there.
+   */
+  easAppIdentifier?: string;
 }
 
 /**

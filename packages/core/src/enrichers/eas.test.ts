@@ -159,6 +159,80 @@ describe("EasEnricher — matching", () => {
   });
 });
 
+describe("EasEnricher — variant scoping (appIdentifier)", () => {
+  const prodBuild = {
+    ...build108,
+    id: "b-prod",
+    platform: "ANDROID",
+    appIdentifier: "com.example.aurora",
+  };
+  const devBuild = {
+    ...build108,
+    id: "b-dev",
+    platform: "ANDROID",
+    appIdentifier: "com.example.aurora.dev",
+  };
+
+  it("android: only builds whose appIdentifier equals storeId can match", async () => {
+    const { fn } = gqlFetch(() => ({ payload: buildsPayload([devBuild, prodBuild]) }));
+    const enricher = new EasEnricher({ token: TOKEN }, fn);
+
+    const [enriched] = await enricher.enrich([
+      status(target("aurora-android", "android", PROJECT), [
+        { channel: "production", version: "2.5.0", build: "108", state: "live" },
+      ]),
+    ]);
+
+    expect(enriched.channels[0].eas?.buildId).toBe("b-prod");
+  });
+
+  it("ios: multiple variants without easAppIdentifier skip enrichment entirely", async () => {
+    const iosProd = { ...build108, id: "i-prod", appIdentifier: "com.example.aurora" };
+    const iosDev = { ...build108, id: "i-dev", appIdentifier: "com.example.aurora.dev" };
+    const { fn } = gqlFetch(() => ({ payload: buildsPayload([iosProd, iosDev]) }));
+    const enricher = new EasEnricher({ token: TOKEN }, fn);
+
+    const [enriched] = await enricher.enrich([
+      status(target("aurora-ios", "ios", PROJECT), [
+        { channel: "beta", version: "2.5.0", build: "108", state: "live" },
+      ]),
+    ]);
+
+    expect(enriched.channels[0].eas).toBeUndefined();
+  });
+
+  it("ios: easAppIdentifier scopes matching to the chosen variant", async () => {
+    const iosProd = { ...build108, id: "i-prod", appIdentifier: "com.example.aurora" };
+    const iosDev = { ...build108, id: "i-dev", appIdentifier: "com.example.aurora.dev" };
+    const { fn } = gqlFetch(() => ({ payload: buildsPayload([iosDev, iosProd]) }));
+    const enricher = new EasEnricher({ token: TOKEN }, fn);
+
+    const withIdentifier = {
+      ...target("aurora-ios", "ios", PROJECT),
+      easAppIdentifier: "com.example.aurora",
+    };
+    const [enriched] = await enricher.enrich([
+      status(withIdentifier, [{ channel: "beta", version: "2.5.0", build: "108", state: "live" }]),
+    ]);
+
+    expect(enriched.channels[0].eas?.buildId).toBe("i-prod");
+  });
+
+  it("single-variant projects keep enriching without any identifier config", async () => {
+    const only = { ...build108, id: "solo", appIdentifier: "com.example.aurora" };
+    const { fn } = gqlFetch(() => ({ payload: buildsPayload([only]) }));
+    const enricher = new EasEnricher({ token: TOKEN }, fn);
+
+    const [enriched] = await enricher.enrich([
+      status(target("aurora-ios", "ios", PROJECT), [
+        { channel: "beta", version: "2.5.0", build: "108", state: "live" },
+      ]),
+    ]);
+
+    expect(enriched.channels[0].eas?.buildId).toBe("solo");
+  });
+});
+
 describe("EasEnricher — queries", () => {
   it("sends ViewBuildsOnApp per project × platform with the platform/status filter and bearer token", async () => {
     const { fn, calls } = gqlFetch(() => ({ payload: buildsPayload([]) }));

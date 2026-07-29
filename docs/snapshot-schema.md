@@ -59,6 +59,7 @@ Current version: **1**.
 | `storeId` | string | ASC numeric app ID (ios) or package name (android) |
 | `group` | string? | Optional display grouping, e.g. `"prod"` / `"dev"` |
 | `easProjectId` | string? | EAS project ID (`app.json` → `extra.eas.projectId`). The ios and android targets of one app share the same value — the platform split happens in the EAS build query. |
+| `easAppIdentifier` | string? | App identifier the target's EAS builds carry (iOS bundle ID / Android package name). Scopes EAS matching when one EAS project builds several variants of a platform. Android defaults to `storeId`; set it explicitly to enable scoping on iOS. |
 
 ## `ChannelStatus`
 
@@ -75,7 +76,8 @@ Current version: **1**.
 | `expiresAt` | string? | ISO 8601. TestFlight builds only: `expirationDate` of the beta build |
 | `eas` | `EasBuildInfo`? | EAS build matched to this release (see below). Present only when the EAS enricher is configured **and** a build matched this entry's `version`/`build`. |
 
-`releaseNotes`, `date`, `expiresAt`, `eas`, and `AppTarget.easProjectId` were
+`releaseNotes`, `date`, `expiresAt`, `eas`, `AppTarget.easProjectId`, and
+`AppTarget.easAppIdentifier` were
 added as **optional** fields after the initial release. Per the versioning rule
 above — *"Adding new optional fields does **not** bump it"* — `schemaVersion`
 remains **1**; consumers that ignore them keep working unchanged.

@@ -61,7 +61,8 @@ export type ConfigIssue =
   | { kind: "apps-missing" }
   | { kind: "field-missing"; app: unknown; field: string }
   | { kind: "bad-platform"; platform: string }
-  | { kind: "bad-eas-project-id"; app: unknown };
+  | { kind: "bad-eas-project-id"; app: unknown }
+  | { kind: "bad-eas-app-identifier"; app: unknown };
 
 /** Validate the parsed config shape; reports the first issue found. */
 export function validateTargets(raw: unknown): { targets: AppTarget[] } | { issue: ConfigIssue } {
@@ -85,6 +86,14 @@ export function validateTargets(raw: unknown): { targets: AppTarget[] } | { issu
     ) {
       return { issue: { kind: "bad-eas-project-id", app } };
     }
+    // Optional too — scopes EAS matching to one app variant (iOS bundle ID
+    // / Android package name) when a project builds several.
+    if (
+      app.easAppIdentifier !== undefined &&
+      (typeof app.easAppIdentifier !== "string" || app.easAppIdentifier === "")
+    ) {
+      return { issue: { kind: "bad-eas-app-identifier", app } };
+    }
   }
   return { targets: apps as AppTarget[] };
 }
@@ -106,6 +115,8 @@ function configIssueMessage(issue: ConfigIssue): string {
       return `${CONFIG_FILE}: platform must be "ios" or "android", got "${issue.platform}"`;
     case "bad-eas-project-id":
       return `${CONFIG_FILE}: app entry ${JSON.stringify(issue.app)} has a non-string or empty "easProjectId"`;
+    case "bad-eas-app-identifier":
+      return `${CONFIG_FILE}: app entry ${JSON.stringify(issue.app)} has a non-string or empty "easAppIdentifier"`;
   }
 }
 
