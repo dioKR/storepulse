@@ -88,12 +88,15 @@ npx storepulse serve --demo     # 本地 Web 看板 → http://127.0.0.1:4780
 npx storepulse snapshot --demo  # 把看板输出成 JSON
 ```
 
-![storepulse Web 看板 —— 顶部筛选标签,展开的行里是发布说明、日期和 TestFlight 到期倒计时](docs/images/dashboard-details.png)
+![storepulse Web 看板 —— 全宽布局,每行带 Latest 摘要,每个有版本的渠道前有 ✓/▲ 传播标记](docs/images/dashboard-propagation.png)
 
 - **`storepulse serve`** 启动一个本地 Web 看板 —— 同一块看板,同样的设计,
   还会自动刷新。点击任意一行即可展开详情面板:发布说明全文、提交/上传日期,
   TestFlight 剩余有效期不足 7 天时还会亮出倒计时警告。顶部的筛选标签可以按
-  OS(iOS/Android)和分组(`prod`/`dev`)组合过滤看板。顶栏的 EN/KO
+  OS(iOS/Android)和分组(`prod`/`dev`)组合过滤看板。每行还带着最新构建的
+  摘要(`Latest: 2.5.0 (108)`),每个有版本的渠道前有一个传播标记 —— 已经拿到最新
+  构建显示 ✓,落后了则显示 ▲(悬停可对比当前 vs 最新;Android 按
+  versionCode 判断)——"最新构建到底发到了哪些环境"一眼就能看清。顶栏的 EN/KO
   切换器可以切换看板语言(选择会记在浏览器里),点击状态徽标(而不是整行)
   会弹出解释该状态含义的术语对话框。选项:`--port`、
   `--host`、`--refresh <秒>`。默认只绑定
@@ -219,6 +222,38 @@ npx storepulse
 你的真实看板就出现了(在仓库克隆里,`pnpm status` 效果相同)。
 凭据有问题的行只在原地显示错误,不会遮住看板的其余部分。
 
+### 可选 —— 关联 Expo(EAS)构建
+
+在用 Expo 发版?再加两样东西,商店里的每个版本就能一路追溯到产出它的
+EAS 构建。先把访问令牌放进 `.env`(在
+[expo.dev → Access tokens](https://expo.dev/settings/access-tokens) 创建;
+组织账号建议用 **View Only** 机器人令牌 —— storepulse 只读取构建和提交,
+绝不触发它们):
+
+```ini
+EAS_TOKEN=...
+```
+
+然后给 `storepulse.config.json` 里的 Expo 应用条目加上 `easProjectId`
+(`app.json` → `extra.eas.projectId`;同一应用的 ios·android 条目共用
+同一个值):
+
+```jsonc
+{ "key": "myapp-ios", "platform": "ios", "storeId": "1234567890",
+  "easProjectId": "5b2fb1e0-6c2a-4b8e-9d3f-4a1c2e8f7a90" }
+```
+
+就这些 —— `snapshot` 和 Web 看板会把每个版本补上它背后的 EAS 构建
+信息:git 提交、构建配置文件(profile)、提交状态(终端看板有意保持
+单行摘要)。看板详情面板会多出
+**EAS BUILD** 区块,`npx storepulse doctor` 也会在 `[5] Expo (EAS)`
+一节里逐步检查整条链路。快照只新增可选字段 `eas` / `easProjectId` /
+`easAppIdentifier` —— `schemaVersion` 保持为 1
+([详情](docs/snapshot-schema.md))。如果一个 EAS 项目为同一平台构建多个
+变体,用 `easAppIdentifier` 收窄匹配范围(Android 默认使用 `storeId`)。
+
+![详情面板里的 EAS BUILD 区块 —— 商店版本旁边是构建配置文件、git 提交、构建日期和提交状态](docs/images/dashboard-eas.png)
+
 ---
 
 ## 问题排查
@@ -258,7 +293,7 @@ ESLint + Prettier。编辑器装上 Biome 插件,就会自动读取 `biome.json`
 
 ## 路线图
 
-- [ ] EAS 连接器 —— 把商店状态和 Expo 的构建·提交关联起来
+- [x] EAS 连接器 —— 把商店状态和 Expo 的构建·提交关联起来
 - [ ] 状态变化时的 Slack/Discord 通知("2.5.0 审核通过 🎉")
 - [x] Web 看板(`storepulse serve`)
 - [x] 发布到 npm(`npx storepulse`)

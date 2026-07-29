@@ -148,6 +148,26 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
     </section>
 
     <section>
+      <p class="sec-label">第 7 步 —— 可选</p>
+      <h2>关联 Expo(EAS)构建</h2>
+      <p>
+        在用 Expo 发版?往 <code>.env</code> 里加一个访问令牌
+        (在 <a href="https://expo.dev/settings/access-tokens">expo.dev →
+        Access tokens</a> 创建;组织账号建议用 <b>View Only</b> 机器人令牌
+        —— storepulse 只读取构建和提交),再给
+        <code>storepulse.config.json</code> 里的 Expo 应用条目加上
+        <code>easProjectId</code>(<code>app.json</code> →
+        <code>extra.eas.projectId</code>):
+      </p>
+      <pre class="code">EAS_TOKEN=...</pre>
+      <p>
+        快照(JSON)和 Web 看板的详情面板就会显示商店里的每个版本出自哪个
+        EAS 构建 —— git 提交、构建配置文件、提交状态(终端看板保持摘要)。<code>npx storepulse
+        doctor</code> 的 <code>[5]</code> 一节还会逐步检查整条 EAS 链路。
+      </p>
+    </section>
+
+    <section>
       <p class="sec-label">问题排查</p>
       <h2>哪里不对劲时</h2>
       <p>

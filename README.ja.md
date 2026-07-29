@@ -91,14 +91,18 @@ npx storepulse serve --demo     # ローカル Web ダッシュボード → htt
 npx storepulse snapshot --demo  # ボードを JSON で出力
 ```
 
-![フィルターチップと、リリースノート・日付・TestFlight 期限を開いた storepulse の Web ダッシュボード](docs/images/dashboard-details.png)
+![各行に Latest 要約、リリースのあるチャンネルに ✓/▲ の伝播マークが付いた全幅表示の storepulse Web ダッシュボード](docs/images/dashboard-propagation.png)
 
 - **`storepulse serve`** は、同じボードを同じデザインで表示するローカル Web
   ダッシュボードを起動します。自動で更新されます。行をクリックすると
   詳細パネルが開き、リリースノート全文、提出/アップロード日、そして TestFlight
   の有効期限が残り 7 日以下になると D-day 警告を表示します。上部のチップで
   OS(iOS/Android)とグループ(`prod`/`dev`)を組み合わせて絞り込むことも
-  できます。ヘッダーの EN/KO スイッチャーでダッシュボードの言語を
+  できます。各行には最新バンドルの要約(`Latest: 2.5.0 (108)`)が付き、
+  リリースのあるチャンネルの先頭には伝播マークが表示されます — 最新バンドルが反映済みなら
+  ✓、遅れていれば ▲(ホバーで現在 vs 最新を比較。Android は versionCode
+  基準です)。「最新ビルドはどこまで届いたか」がひと目で分かります。
+  ヘッダーの EN/KO スイッチャーでダッシュボードの言語を
   切り替えられ(選択はブラウザに記憶されます)、行ではなく状態バッジを
   クリックすると、その状態の意味を説明する用語ダイアログが開きます。
   オプションは `--port`、
@@ -237,6 +241,41 @@ npx storepulse
 でも同じです)。認証情報に問題のある行は、ボード全体を隠す代わりに、
 その場所にエラーを表示するだけです。
 
+### 任意 — Expo(EAS)ビルドをつなぐ
+
+Expo でリリースしていますか? 2 つ追加するだけで、ストアの各バージョンが
+どの EAS ビルドから生まれたのかまでつながります。まず `.env` にアクセス
+トークンを入れます([expo.dev → Access tokens](https://expo.dev/settings/access-tokens)
+で作成できます。組織なら **View Only** のロボットトークンを推奨します —
+storepulse はビルドと提出を読むだけで、実行は一切しません):
+
+```ini
+EAS_TOKEN=...
+```
+
+続いて `storepulse.config.json` の Expo アプリの項目に `easProjectId` を
+書きます(`app.json` → `extra.eas.projectId`。1 つのアプリの ios・android
+項目は同じ値を共有します):
+
+```jsonc
+{ "key": "myapp-ios", "platform": "ios", "storeId": "1234567890",
+  "easProjectId": "5b2fb1e0-6c2a-4b8e-9d3f-4a1c2e8f7a90" }
+```
+
+これだけです — `snapshot` と Web ダッシュボードが各バージョンを、その
+背後にある EAS ビルドで補強します: git コミット、ビルドプロファイル、
+提出ステータスまで(ターミナルのボードはあえて 1 行の要約のままです)。
+ダッシュボードの詳細パネルには **EAS BUILD** ブロックが
+現れ、`npx storepulse doctor` は `[5] Expo (EAS)` セクションで
+つながり全体を点検します。スナップショットに増えるのは任意フィールド
+`eas` / `easProjectId` / `easAppIdentifier` のみ — `schemaVersion` は 1 の
+ままです([詳細](docs/snapshot-schema.md))。1 つの EAS プロジェクトが同じ
+プラットフォームの複数バリアントをビルドしている場合は、`easAppIdentifier`
+でマッチング範囲を絞ってください(Android はデフォルトで `storeId` を
+使います)。
+
+![詳細パネルの EAS BUILD ブロック — ストアのバージョンの隣にビルドプロファイル、git コミット、ビルド日、提出ステータスが並びます](docs/images/dashboard-eas.png)
+
 ---
 
 ## トラブルシューティング
@@ -278,7 +317,7 @@ ESLint + Prettier を置き換える単一ツールです。エディタは Biom
 
 ## ロードマップ
 
-- [ ] EAS コネクタ — ストアの状態を Expo のビルド・提出と結びつける
+- [x] EAS コネクタ — ストアの状態を Expo のビルド・提出と結びつける
 - [ ] 状態変化時の Slack/Discord 通知(「2.5.0 審査通過 🎉」)
 - [x] Web ダッシュボード(`storepulse serve`)
 - [x] npm 公開(`npx storepulse`)

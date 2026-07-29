@@ -149,6 +149,26 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
     </section>
 
     <section>
+      <p class="sec-label">步驟 7 —— 選用</p>
+      <h2>串接 Expo(EAS)建置</h2>
+      <p>
+        用 Expo 出版本嗎?在 <code>.env</code> 裡加一個存取權杖
+        (到 <a href="https://expo.dev/settings/access-tokens">expo.dev →
+        Access tokens</a> 建立;組織帳號建議用 <b>View Only</b> 機器人權杖
+        —— storepulse 只讀取建置和送審),再為
+        <code>storepulse.config.json</code> 裡的 Expo App 項目加上
+        <code>easProjectId</code>(<code>app.json</code> →
+        <code>extra.eas.projectId</code>):
+      </p>
+      <pre class="code">EAS_TOKEN=...</pre>
+      <p>
+        快照(JSON)和 Web 儀表板的詳細面板就會顯示商店裡的每個版本出自哪個
+        EAS 建置 —— git commit、建置設定檔、送審狀態(終端機看板維持摘要)。<code>npx storepulse
+        doctor</code> 的 <code>[5]</code> 一節還會逐步檢查整條 EAS 鏈路。
+      </p>
+    </section>
+
+    <section>
       <p class="sec-label">疑難排解</p>
       <h2>哪裡不對勁時</h2>
       <p>
