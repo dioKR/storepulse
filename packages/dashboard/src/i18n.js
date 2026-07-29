@@ -725,6 +725,18 @@ export const UI_STRINGS = {
     "en": "rollout",
     "ko": "롤아웃"
   },
+  "dash.latest": {
+    "en": "Latest: {bundle}",
+    "ko": "최신: {bundle}"
+  },
+  "dash.propLatest": {
+    "en": "up to date — the latest bundle {latest} is on this channel",
+    "ko": "최신 반영 — 최신 번들 {latest}이(가) 이 채널에 있습니다"
+  },
+  "dash.propBehind": {
+    "en": "behind — newest here is {current}, the latest bundle is {latest}",
+    "ko": "뒤처짐 — 이 채널의 최신은 {current}, 전체 최신 번들은 {latest}입니다"
+  },
   "dash.easTitle": {
     "en": "EAS build",
     "ko": "EAS 빌드"

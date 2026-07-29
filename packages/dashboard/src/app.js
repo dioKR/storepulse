@@ -14,6 +14,7 @@
  */
 
 import { STATE_EXPLANATIONS, SUPPORTED_LANGS, UI_STRINGS } from "./i18n.js";
+import { channelPropagation, formatBundle, latestBundle } from "./propagation.js";
 
 const DATA_URL = "./status.json";
 const REFRESH_MS = 60_000;
@@ -151,25 +152,53 @@ function badge(entry) {
   return frag;
 }
 
-function channelCell(app, channelId) {
-  const td = el("td");
+/**
+ * Propagation mark for a channel cell (issue #32): green ✓ when the channel
+ * carries the app's latest bundle, amber ▲ when its newest entry is older.
+ * The badges next to it already show the versions, so the mark stays a small
+ * symbol; the precise "newest here vs latest" reading lives in the tooltip.
+ */
+function propMark(prop, latest) {
+  const onLatest = prop.status === "latest";
+  const mark = el("span", onLatest ? "prop prop-ok" : "prop prop-behind", onLatest ? "✓" : "▲");
+  const label = onLatest
+    ? t("dash.propLatest", { latest: formatBundle(latest) })
+    : t("dash.propBehind", { current: formatBundle(prop), latest: formatBundle(latest) });
+  mark.title = label;
+  mark.setAttribute("role", "img");
+  mark.setAttribute("aria-label", label);
+  return mark;
+}
+
+function channelCell(app, channelId, latest) {
+  const td = el("td", "channel-cell");
   const entries = (app.channels ?? []).filter((c) => c.channel === channelId);
   if (entries.length === 0) {
     td.append(el("span", "dim", "—"));
     return td;
   }
+  const prop = channelPropagation(entries, latest, app.target?.platform);
+  if (prop) td.append(propMark(prop, latest), " ");
   entries.forEach((entry, i) => {
-    if (i > 0) td.append(el("span", "dim", "  ·  "));
-    td.append(badge(entry));
+    if (i > 0) td.append(el("span", "dim", " · "));
+    // Wrapping unit: entries may move to the next line, but never break inside
+    const chunk = el("span", "entry");
+    chunk.append(badge(entry));
+    td.append(chunk);
   });
   return td;
 }
 
-function appCell(target, showName) {
+function appCell(target, showName, latest) {
   const td = el("td", "app");
   if (showName) {
     td.append(target.name ?? target.key ?? "?");
     if (target.group) td.append(" ", el("span", "group", `[${target.group}]`));
+  }
+  // Per-target summary on every row — Aurora iOS and Aurora Android share a
+  // name cell but each has its own latest bundle (issue #32).
+  if (latest) {
+    td.append(el("div", "latest", t("dash.latest", { bundle: formatBundle(latest) })));
   }
   return td;
 }
@@ -366,6 +395,9 @@ function buildTable(apps) {
     const row = el("tr", "app-row");
 
     const hasDetails = !app.error && (app.channels ?? []).length > 0;
+    // Latest bundle across ALL channels of this target — computed from the raw
+    // snapshot, so chip filters (which only hide whole rows) cannot skew it.
+    const latest = app.error ? null : latestBundle(app.channels ?? [], app.target?.platform);
     const detailId = `detail-${encodeURIComponent(key)}`;
     const open = expandedKeys.has(key);
 
@@ -386,7 +418,7 @@ function buildTable(apps) {
     }
     row.append(toggleTd);
 
-    row.append(appCell(target, label !== prevApp));
+    row.append(appCell(target, label !== prevApp, latest));
     prevApp = label;
     row.append(el("td", "os", target.platform === "ios" ? "iOS" : "Android"));
 
@@ -395,7 +427,7 @@ function buildTable(apps) {
       errTd.colSpan = CHANNELS.length;
       row.append(errTd);
     } else {
-      for (const ch of CHANNELS) row.append(channelCell(app, ch.id));
+      for (const ch of CHANNELS) row.append(channelCell(app, ch.id, latest));
     }
     tbody.append(row);
 

@@ -42,7 +42,9 @@ body {
 }
 
 .wrap {
-  max-width: 1060px;
+  /* Wide board: use the screen, capped so ultra-wide monitors stay readable.
+     Channel cells wrap per entry (below) instead of horizontal scrolling. */
+  max-width: min(96vw, 1760px);
   margin: 0 auto;
   padding: 40px 20px 60px;
 }
@@ -154,6 +156,16 @@ table.board td {
   vertical-align: top;
 }
 
+/* Channel cells wrap between entries (never inside one) — the board fits
+   the viewport without an inner horizontal scrollbar. */
+table.board td.channel-cell {
+  white-space: normal;
+}
+
+table.board td.channel-cell .entry {
+  white-space: nowrap;
+}
+
 table.board tr:last-child td {
   border-bottom: none;
 }
@@ -165,6 +177,13 @@ td.app {
 td.app .group {
   color: var(--muted);
   font-weight: 400;
+}
+
+/* per-target "Latest: 2.5.0 (108)" summary line (issue #32) */
+td.app .latest {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 0.72rem;
 }
 
 td.os {
@@ -405,6 +424,20 @@ button.badge-btn.st-unknown {
   background: var(--gray);
   color: #121014;
   padding: 0 0.4em;
+}
+
+/* propagation marks — ✓ channel has the latest bundle, ▲ behind (issue #32) */
+.prop {
+  font-size: 0.8em;
+  cursor: help;
+}
+
+.prop-ok {
+  color: var(--green);
+}
+
+.prop-behind {
+  color: var(--yellow);
 }
 
 .dim {
