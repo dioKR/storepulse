@@ -43,15 +43,14 @@ export function compareVersions(a, b) {
   return 0;
 }
 
-/** Build-number compare → -1 / 0 / 1. Numeric when both convert cleanly ("9" < "108"). */
+/**
+ * Build-number compare → -1 / 0 / 1. Same segment-wise numeric rules as
+ * compareVersions: plain numerics compare numerically ("9" < "108") and
+ * dotted iOS CFBundleVersion values compare per segment
+ * ("1.0.0.9" < "1.0.0.10"), never lexicographically.
+ */
 export function compareBuilds(a, b) {
-  const x = String(a);
-  const y = String(b);
-  if (NUM_RE.test(x) && NUM_RE.test(y)) {
-    const diff = Number(x) - Number(y);
-    return diff < 0 ? -1 : diff > 0 ? 1 : 0;
-  }
-  return x < y ? -1 : x > y ? 1 : 0;
+  return compareVersions(a, b);
 }
 
 function hasVersion(entry) {

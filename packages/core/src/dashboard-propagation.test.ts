@@ -41,8 +41,7 @@ describe("compareBuilds", () => {
     expect(compareBuilds("251", "250")).toBe(1);
   });
 
-  it("falls back to string comparison otherwise", () => {
-    expect(compareBuilds("1.0.0.9", "1.0.0.10")).toBe(1); // not a plain number → string
+  it("falls back to string comparison for non-numeric segments", () => {
     expect(compareBuilds("abc", "abd")).toBe(-1);
   });
 });
@@ -181,5 +180,19 @@ describe("android — versionCode-first ordering (custom release names)", () => 
       { channel: "beta", version: "0.1.16", build: "99", state: "live" },
     ];
     expect(latestBundle(entries, "ios")).toEqual({ version: "0.1.17", build: null });
+  });
+});
+
+describe("compareBuilds — dotted iOS build numbers", () => {
+  const { compareBuilds } = propagation;
+
+  it("compares dotted CFBundleVersion values per segment, not lexicographically", () => {
+    expect(compareBuilds("1.0.0.9", "1.0.0.10")).toBe(-1);
+    expect(compareBuilds("1.0.0.10", "1.0.0.9")).toBe(1);
+    expect(compareBuilds("1.0.0.10", "1.0.0.10")).toBe(0);
+  });
+
+  it("keeps plain numeric ordering", () => {
+    expect(compareBuilds("9", "108")).toBe(-1);
   });
 });
