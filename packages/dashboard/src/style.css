@@ -167,6 +167,13 @@ td.app .group {
   font-weight: 400;
 }
 
+/* per-target "Latest: 2.5.0 (108)" summary line (issue #32) */
+td.app .latest {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 0.72rem;
+}
+
 td.os {
   color: var(--muted);
 }
@@ -405,6 +412,20 @@ button.badge-btn.st-unknown {
   background: var(--gray);
   color: #121014;
   padding: 0 0.4em;
+}
+
+/* propagation marks — ✓ channel has the latest bundle, ▲ behind (issue #32) */
+.prop {
+  font-size: 0.8em;
+  cursor: help;
+}
+
+.prop-ok {
+  color: var(--green);
+}
+
+.prop-behind {
+  color: var(--yellow);
 }
 
 .dim {
