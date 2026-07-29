@@ -92,14 +92,14 @@ npx storepulse serve --demo     # 로컬 웹 대시보드 → http://127.0.0.1:4
 npx storepulse snapshot --demo  # 보드를 JSON으로 출력
 ```
 
-![행마다 Latest 요약, 채널마다 ✓/▲ 전파 마크가 붙은 전폭 storepulse 웹 대시보드](docs/images/dashboard-propagation.png)
+![행마다 Latest 요약, 릴리즈가 있는 채널마다 ✓/▲ 전파 마크가 붙은 전폭 storepulse 웹 대시보드](docs/images/dashboard-propagation.png)
 
 - **`storepulse serve`**는 같은 보드를 같은 디자인으로 보여주는 로컬 웹
   대시보드를 띄워요. 자동으로 새로고침되고요. 행을 클릭하면 상세 패널이
   열려요 — 릴리즈 노트 전문, 제출/업로드 날짜, 그리고 TestFlight 만료가
   7일 이하로 남으면 D-day 경고까지 보여줘요. 상단 칩으로 OS(iOS/Android)와
   그룹(`prod`/`dev`)을 조합해 보드를 좁혀볼 수도 있고요. 행마다 최신 번들
-  요약(`Latest: 2.5.0 (108)`)이 붙고, 각 채널 앞에는 전파 마크가 표시돼요 —
+  요약(`Latest: 2.5.0 (108)`)이 붙고, 릴리즈가 있는 채널 앞에는 전파 마크가 표시돼요 —
   최신 번들이 이미 반영됐으면 ✓, 뒤처져 있으면 ▲(마우스를 올리면 현재 vs
   최신을 비교해줘요. Android는 versionCode 기준이에요). "최신 빌드가 어느
   환경까지 나갔나"가 한눈에 들어와요. 헤더의 EN/KO
@@ -254,8 +254,9 @@ EAS_TOKEN=...
   "easProjectId": "5b2fb1e0-6c2a-4b8e-9d3f-4a1c2e8f7a90" }
 ```
 
-이게 다예요 — 이제 보드, `snapshot`, 대시보드가 각 버전을 그 뒤의 EAS
-빌드로 보강해줘요: git 커밋, 빌드 프로필, 제출 상태까지요. 대시보드 상세
+이게 다예요 — 이제 `snapshot`과 웹 대시보드가 각 버전을 그 뒤의 EAS
+빌드로 보강해줘요: git 커밋, 빌드 프로필, 제출 상태까지요 (터미널 보드는
+일부러 한 줄 요약을 유지해요). 대시보드 상세
 패널에는 **EAS BUILD** 블록이 생기고, `npx storepulse doctor`는
 `[5] Expo (EAS) 체인` 섹션에서 전체 연결을 점검해줘요. 스냅샷에는 선택
 필드 `eas` / `easProjectId` / `easAppIdentifier`만 늘어나요 —

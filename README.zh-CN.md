@@ -88,13 +88,13 @@ npx storepulse serve --demo     # 本地 Web 看板 → http://127.0.0.1:4780
 npx storepulse snapshot --demo  # 把看板输出成 JSON
 ```
 
-![storepulse Web 看板 —— 全宽布局,每行带 Latest 摘要,每个渠道前有 ✓/▲ 传播标记](docs/images/dashboard-propagation.png)
+![storepulse Web 看板 —— 全宽布局,每行带 Latest 摘要,每个有版本的渠道前有 ✓/▲ 传播标记](docs/images/dashboard-propagation.png)
 
 - **`storepulse serve`** 启动一个本地 Web 看板 —— 同一块看板,同样的设计,
   还会自动刷新。点击任意一行即可展开详情面板:发布说明全文、提交/上传日期,
   TestFlight 剩余有效期不足 7 天时还会亮出倒计时警告。顶部的筛选标签可以按
   OS(iOS/Android)和分组(`prod`/`dev`)组合过滤看板。每行还带着最新构建的
-  摘要(`Latest: 2.5.0 (108)`),每个渠道前有一个传播标记 —— 已经拿到最新
+  摘要(`Latest: 2.5.0 (108)`),每个有版本的渠道前有一个传播标记 —— 已经拿到最新
   构建显示 ✓,落后了则显示 ▲(悬停可对比当前 vs 最新;Android 按
   versionCode 判断)——"最新构建到底发到了哪些环境"一眼就能看清。顶栏的 EN/KO
   切换器可以切换看板语言(选择会记在浏览器里),点击状态徽标(而不是整行)
@@ -243,8 +243,9 @@ EAS_TOKEN=...
   "easProjectId": "5b2fb1e0-6c2a-4b8e-9d3f-4a1c2e8f7a90" }
 ```
 
-就这些 —— 看板、`snapshot` 和 Web 看板会把每个版本补上它背后的 EAS 构建
-信息:git 提交、构建配置文件(profile)、提交状态。看板详情面板会多出
+就这些 —— `snapshot` 和 Web 看板会把每个版本补上它背后的 EAS 构建
+信息:git 提交、构建配置文件(profile)、提交状态(终端看板有意保持
+单行摘要)。看板详情面板会多出
 **EAS BUILD** 区块,`npx storepulse doctor` 也会在 `[5] Expo (EAS)`
 一节里逐步检查整条链路。快照只新增可选字段 `eas` / `easProjectId` /
 `easAppIdentifier` —— `schemaVersion` 保持为 1

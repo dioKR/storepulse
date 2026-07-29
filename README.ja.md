@@ -91,7 +91,7 @@ npx storepulse serve --demo     # ローカル Web ダッシュボード → htt
 npx storepulse snapshot --demo  # ボードを JSON で出力
 ```
 
-![各行に Latest 要約、各チャンネルに ✓/▲ の伝播マークが付いた全幅表示の storepulse Web ダッシュボード](docs/images/dashboard-propagation.png)
+![各行に Latest 要約、リリースのあるチャンネルに ✓/▲ の伝播マークが付いた全幅表示の storepulse Web ダッシュボード](docs/images/dashboard-propagation.png)
 
 - **`storepulse serve`** は、同じボードを同じデザインで表示するローカル Web
   ダッシュボードを起動します。自動で更新されます。行をクリックすると
@@ -99,7 +99,7 @@ npx storepulse snapshot --demo  # ボードを JSON で出力
   の有効期限が残り 7 日以下になると D-day 警告を表示します。上部のチップで
   OS(iOS/Android)とグループ(`prod`/`dev`)を組み合わせて絞り込むことも
   できます。各行には最新バンドルの要約(`Latest: 2.5.0 (108)`)が付き、
-  各チャンネルの先頭には伝播マークが表示されます — 最新バンドルが反映済みなら
+  リリースのあるチャンネルの先頭には伝播マークが表示されます — 最新バンドルが反映済みなら
   ✓、遅れていれば ▲(ホバーで現在 vs 最新を比較。Android は versionCode
   基準です)。「最新ビルドはどこまで届いたか」がひと目で分かります。
   ヘッダーの EN/KO スイッチャーでダッシュボードの言語を
@@ -262,9 +262,10 @@ EAS_TOKEN=...
   "easProjectId": "5b2fb1e0-6c2a-4b8e-9d3f-4a1c2e8f7a90" }
 ```
 
-これだけです — ボード、`snapshot`、ダッシュボードが各バージョンを、その
+これだけです — `snapshot` と Web ダッシュボードが各バージョンを、その
 背後にある EAS ビルドで補強します: git コミット、ビルドプロファイル、
-提出ステータスまで。ダッシュボードの詳細パネルには **EAS BUILD** ブロックが
+提出ステータスまで(ターミナルのボードはあえて 1 行の要約のままです)。
+ダッシュボードの詳細パネルには **EAS BUILD** ブロックが
 現れ、`npx storepulse doctor` は `[5] Expo (EAS)` セクションで
 つながり全体を点検します。スナップショットに増えるのは任意フィールド
 `eas` / `easProjectId` / `easAppIdentifier` のみ — `schemaVersion` は 1 の

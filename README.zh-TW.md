@@ -88,13 +88,13 @@ npx storepulse serve --demo     # 本機 Web 儀表板 → http://127.0.0.1:4780
 npx storepulse snapshot --demo  # 把看板輸出成 JSON
 ```
 
-![storepulse Web 儀表板 —— 全寬版面,每列帶 Latest 摘要,每個通道前有 ✓/▲ 傳播標記](docs/images/dashboard-propagation.png)
+![storepulse Web 儀表板 —— 全寬版面,每列帶 Latest 摘要,每個有版本的通道前有 ✓/▲ 傳播標記](docs/images/dashboard-propagation.png)
 
 - **`storepulse serve`** 會啟動一個本機 Web 儀表板 —— 同一塊看板、同樣的
   設計,還會自動重新整理。點選任一列就會展開詳細面板:版本說明全文、
   送審/上傳日期,TestFlight 有效期限剩不到 7 天時還會亮出倒數警告。上方的
   篩選標籤可以依 OS(iOS/Android)與群組(`prod`/`dev`)組合過濾看板。
-  每列還帶著最新建置的摘要(`Latest: 2.5.0 (108)`),每個通道前有一個傳播
+  每列還帶著最新建置的摘要(`Latest: 2.5.0 (108)`),每個有版本的通道前有一個傳播
   標記 —— 已經拿到最新建置顯示 ✓,落後了則顯示 ▲(游標移上去可對照目前 vs
   最新;Android 以 versionCode 判斷)——「最新建置到底發到了哪些環境」
   一眼就能看清。
@@ -244,8 +244,9 @@ EAS_TOKEN=...
   "easProjectId": "5b2fb1e0-6c2a-4b8e-9d3f-4a1c2e8f7a90" }
 ```
 
-就這樣 —— 看板、`snapshot` 和 Web 儀表板會為每個版本補上它背後的 EAS
-建置資訊:git commit、建置設定檔(profile)、送審狀態。儀表板詳細面板會
+就這樣 —— `snapshot` 和 Web 儀表板會為每個版本補上它背後的 EAS
+建置資訊:git commit、建置設定檔(profile)、送審狀態(終端機看板刻意
+維持單行摘要)。儀表板詳細面板會
 多出 **EAS BUILD** 區塊,`npx storepulse doctor` 也會在 `[5] Expo (EAS)`
 一節逐步檢查整條鏈路。快照只新增選用欄位 `eas` / `easProjectId` /
 `easAppIdentifier` —— `schemaVersion` 維持為 1

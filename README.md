@@ -89,7 +89,7 @@ npx storepulse serve --demo     # local web dashboard → http://127.0.0.1:4780
 npx storepulse snapshot --demo  # the board as JSON, to stdout
 ```
 
-![storepulse web dashboard — a full-width board with a Latest summary per row and ✓/▲ propagation marks on every channel](docs/images/dashboard-propagation.png)
+![storepulse web dashboard — a full-width board with a Latest summary per row and ✓/▲ propagation marks on channels that have releases](docs/images/dashboard-propagation.png)
 
 - **`storepulse serve`** starts a local, auto-refreshing web dashboard — same
   board, same design. Click any row to open a detail panel: full release
@@ -97,7 +97,7 @@ npx storepulse snapshot --demo  # the board as JSON, to stdout
   turns into a warning at D-7. The chips at the top filter the board by OS
   (iOS/Android) and by group (e.g. `prod` / `dev`), combined together.
   Each row also sums up its latest uploaded bundle (`Latest: 2.5.0 (108)`),
-  and every channel carries a propagation mark — ✓ when it already has that
+  and every channel that has a release carries a propagation mark — ✓ when it already has that
   bundle, ▲ when it lags behind (hover to compare current vs latest; Android
   compares by versionCode) — so "how far did the newest build travel?" is
   answered at a glance.
@@ -253,9 +253,10 @@ share the same value):
   "easProjectId": "5b2fb1e0-6c2a-4b8e-9d3f-4a1c2e8f7a90" }
 ```
 
-That's it — the board, `snapshot`, and the dashboard now enrich each version
+That's it — `snapshot` and the web dashboard now enrich each version
 with the EAS build behind it: git commit, build profile, and submission
-status. The dashboard detail panel gets an **EAS BUILD** block, and
+status (the terminal board keeps its one-line summary on purpose).
+The dashboard detail panel gets an **EAS BUILD** block, and
 `npx storepulse doctor` verifies the whole chain in its `[5] Expo (EAS)`
 section. The snapshot grows optional `eas` / `easProjectId` /
 `easAppIdentifier` fields only — `schemaVersion` stays 1
