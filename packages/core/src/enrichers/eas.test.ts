@@ -269,6 +269,23 @@ describe("matchEasBuild", () => {
   it("build number narrows within the same version", () => {
     expect(matchEasBuild({ version: "2.5.0", build: "107" }, builds)?.buildId).toBe("b107");
   });
+
+  it("custom release names fall back to a unique build number", () => {
+    // Play custom release names land in `version`; versionCode still identifies the build
+    expect(matchEasBuild({ version: "여름 프로모션", build: "108" }, builds)?.buildId).toBe("b108");
+  });
+
+  it("build-number fallback stays off when the number is ambiguous", () => {
+    const reused = [
+      { appVersion: "2.5.0", appBuildVersion: "1", buildId: "b1-new" },
+      { appVersion: "2.4.0", appBuildVersion: "1", buildId: "b1-old" },
+    ];
+    expect(matchEasBuild({ version: "custom name", build: "1" }, reused)).toBeUndefined();
+  });
+
+  it("no fallback when the version matched but the build number did not", () => {
+    expect(matchEasBuild({ version: "2.5.0", build: "999" }, builds)).toBeUndefined();
+  });
 });
 
 describe("doctor probes — fetchEasViewer / fetchEasProject", () => {

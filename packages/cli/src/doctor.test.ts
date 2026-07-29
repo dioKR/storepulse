@@ -557,6 +557,21 @@ describe("doctor — Expo (EAS) chain", () => {
     expect(byId(report, `eas.project:${easApp.easProjectId}`).status).toBe("skip");
   });
 
+  it("EAS 5xx/429 → transient diagnosis, not token-replacement advice", async () => {
+    const { fn } = mockEasFetch(() => ({ status: 503 }));
+    const report = await runDoctorChecks({
+      cwd: makeDir([easApp]),
+      env: { ...ascEnv, EAS_TOKEN: "fine-token" },
+      fetchImpl: fn,
+      lang: "en",
+    });
+
+    const viewer = byId(report, "eas.viewer");
+    expect(viewer.status).toBe("fail");
+    expect(viewer.detail).toBe(en("doctor.eas.transient", { message: "EAS GraphQL HTTP 503" }));
+    expect(viewer.fix).toBe(en("doctor.fix.easTransient"));
+  });
+
   it("valid token but inaccessible project → per-project diagnosis", async () => {
     const { fn } = mockEasFetch((op) =>
       op === "CurrentUser"

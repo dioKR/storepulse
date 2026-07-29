@@ -569,6 +569,10 @@ async function googleChain(
   return checks;
 }
 
+/** 429/5xx = EAS itself is struggling — not a verdict on the token or project. */
+const isEasTransient = (err: EasGraphqlError): boolean =>
+  err.status !== undefined && (err.status === 429 || err.status >= 500);
+
 /**
  * EAS chain: token present → token accepted (CurrentUser, the same viewer
  * query eas-cli runs) → each configured easProjectId visible to that token.
@@ -603,12 +607,19 @@ async function easChain(
     } catch (err) {
       if (err instanceof EasGraphqlError) {
         checks.push(
-          fail(
-            "eas.viewer",
-            t("doctor.eas.viewer"),
-            t("doctor.eas.viewerFail", { message: err.message }),
-            t("doctor.fix.easToken"),
-          ),
+          isEasTransient(err)
+            ? fail(
+                "eas.viewer",
+                t("doctor.eas.viewer"),
+                t("doctor.eas.transient", { message: err.message }),
+                t("doctor.fix.easTransient"),
+              )
+            : fail(
+                "eas.viewer",
+                t("doctor.eas.viewer"),
+                t("doctor.eas.viewerFail", { message: err.message }),
+                t("doctor.fix.easToken"),
+              ),
         );
       } else {
         checks.push(
@@ -642,12 +653,19 @@ async function easChain(
     } catch (err) {
       if (err instanceof EasGraphqlError) {
         checks.push(
-          fail(
-            id,
-            label,
-            t("doctor.eas.projectFail", { message: err.message }),
-            t("doctor.fix.easProject"),
-          ),
+          isEasTransient(err)
+            ? fail(
+                id,
+                label,
+                t("doctor.eas.transient", { message: err.message }),
+                t("doctor.fix.easTransient"),
+              )
+            : fail(
+                id,
+                label,
+                t("doctor.eas.projectFail", { message: err.message }),
+                t("doctor.fix.easProject"),
+              ),
         );
       } else {
         checks.push(

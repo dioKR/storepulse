@@ -529,6 +529,14 @@ export const UI_STRINGS = {
     "en": "the token is invalid or revoked — issue a new one at https://expo.dev/settings/access-tokens",
     "ko": "토큰이 유효하지 않거나 폐기되었습니다 — https://expo.dev/settings/access-tokens 에서 새로 발급하세요"
   },
+  "doctor.eas.transient": {
+    "en": "EAS service error: {message}",
+    "ko": "EAS 서비스 오류: {message}"
+  },
+  "doctor.fix.easTransient": {
+    "en": "EAS looks temporarily unavailable (rate limit or server error) — retry shortly; the token itself may be fine",
+    "ko": "EAS가 일시적으로 불안정합니다(요청 제한 또는 서버 오류) — 잠시 후 다시 시도하세요. 토큰 문제가 아닐 수 있습니다"
+  },
   "doctor.check.easProject": {
     "en": "project {projectId}",
     "ko": "프로젝트 {projectId}"

@@ -226,18 +226,29 @@ function parseBuild(raw: any): EasBuild {
  * - when the channel knows its build number (iOS build number / Android
  *   versionCode), it must equal `appBuildVersion` too;
  * - without a build number, the newest finished build of that version wins.
+ * When no build carries the channel's version string (custom Play release
+ * names put an arbitrary name in `version`), the build number alone decides —
+ * but only if it identifies exactly one build: Android versionCodes are unique
+ * per app, while reused iOS build numbers stay ambiguous and are skipped.
  * No match → undefined, and the channel stays exactly as the store reported it.
  */
 export function matchEasBuild(
   channel: Pick<ChannelStatus, "version" | "build">,
   builds: EasBuild[],
 ): EasBuild | undefined {
-  if (channel.version == null) return undefined;
-  const sameVersion = builds.filter((b) => b.appVersion === channel.version);
-  if (channel.build != null) {
-    return sameVersion.find((b) => b.appBuildVersion === channel.build);
+  const sameVersion =
+    channel.version == null ? [] : builds.filter((b) => b.appVersion === channel.version);
+  if (sameVersion.length > 0) {
+    if (channel.build != null) {
+      return sameVersion.find((b) => b.appBuildVersion === channel.build);
+    }
+    return sameVersion[0];
   }
-  return sameVersion[0];
+  if (channel.build != null) {
+    const sameBuild = builds.filter((b) => b.appBuildVersion === channel.build);
+    if (sameBuild.length === 1) return sameBuild[0];
+  }
+  return undefined;
 }
 
 function withEasInfo(channel: ChannelStatus, builds: EasBuild[]): ChannelStatus {
