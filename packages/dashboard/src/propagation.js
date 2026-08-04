@@ -9,8 +9,8 @@
  * "semver-ish": versions compare segment by segment ("2.10.0" > "2.9.9"),
  * numerically when both segments are plain numbers, as strings otherwise.
  * Builds only break version ties, and a missing build never disqualifies a
- * match — ASC production releases carry no build number, so an iOS production
- * entry is judged by version alone.
+ * match — an iOS production draft can lack an attached build, so that entry
+ * is judged by version alone.
  *
  * Platform rule: on Android the `version` field may hold an arbitrary custom
  * Play release name, while `build` (versionCode) is monotonic per app — so
@@ -107,8 +107,8 @@ export function formatBundle(bundle) {
 
 /**
  * Does this entry count as the latest bundle? Same version, and same build
- * when BOTH sides have one — ASC production has no build number, so an iOS
- * production entry matches on version alone (the issue-#32 caveat).
+ * when BOTH sides have one — a production entry without an attached build
+ * matches on version alone (the issue-#32 caveat).
  */
 function isLatest(entry, latest, platform) {
   const eb = entry.build ?? null;
