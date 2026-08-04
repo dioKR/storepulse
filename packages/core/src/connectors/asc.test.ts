@@ -51,7 +51,9 @@ describe("AscConnector defensive parsing", () => {
       state: "live",
     });
     expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining("include=build&fields[builds]=version"),
+      expect.stringContaining(
+        "fields[appStoreVersions]=versionString,appStoreState,createdDate,build&include=build&fields[builds]=version",
+      ),
       expect.any(Object),
     );
   });
