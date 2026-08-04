@@ -1,5 +1,13 @@
 # storepulse
 
+## 0.7.3
+
+### Patch Changes
+
+- 1957d7e: Publish the expanded JSR README and public API documentation, with verified Deno and Bun runtime compatibility.
+- Updated dependencies [1957d7e]
+  - @storepulse/core@0.7.3
+
 ## 0.7.2
 
 ### Patch Changes
