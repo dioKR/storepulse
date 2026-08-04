@@ -77,7 +77,7 @@ export class AscConnector implements StoreConnector {
 
   private async fetchAppStoreVersions(appId: string): Promise<ChannelStatus[]> {
     const data = await this.get(
-      `/apps/${appId}/appStoreVersions?filter[platform]=IOS&limit=5&fields[appStoreVersions]=versionString,appStoreState,createdDate&include=build&fields[builds]=version`,
+      `/apps/${appId}/appStoreVersions?filter[platform]=IOS&limit=5&fields[appStoreVersions]=versionString,appStoreState,createdDate,build&include=build&fields[builds]=version`,
     );
     // A production App Store version only points at its binary through the
     // `build` relationship; unlike the TestFlight endpoint, its build number
