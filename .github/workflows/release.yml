@@ -34,6 +34,8 @@ jobs:
       - name: Create release PR or publish to npm
         uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
         with:
+          # Changesets가 버전 PR을 만들 때 package.json과 jsr.json의 버전을 함께 갱신한다.
+          version: pnpm version:release
           publish: pnpm release
           commit: "chore: 버전 릴리즈"
           title: "chore: 버전 릴리즈"
