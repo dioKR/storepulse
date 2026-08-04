@@ -19,6 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          # RELEASE_PAT(fine-grained, 이 레포 한정)이 있으면 버전 릴리즈 브랜치
+          # 푸시가 사람 명의가 되어 PR에서 CI가 자동 실행된다. 없으면 기본
+          # 토큰으로 폴백 — 이 경우 버전 PR의 CI는 수동 트리거가 필요하다.
+          token: ${{ secrets.RELEASE_PAT || github.token }}
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -33,5 +38,7 @@ jobs:
           commit: "chore: 버전 릴리즈"
           title: "chore: 버전 릴리즈"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 버전 PR 생성에도 같은 토큰 사용 — GITHUB_TOKEN으로 만든 PR은
+          # GitHub의 재귀 방지 규칙 때문에 CI(pull_request)가 실행되지 않는다.
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PAT || secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
