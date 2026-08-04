@@ -3,10 +3,11 @@ import { readFile, writeFile } from "node:fs/promises";
 const packageJsonPath = new URL("../packages/core/package.json", import.meta.url);
 const jsrJsonPath = new URL("../packages/core/jsr.json", import.meta.url);
 
-const [packageJson, jsrJson] = await Promise.all([
+const [packageJson, jsrJsonSource] = await Promise.all([
   readJson(packageJsonPath),
-  readJson(jsrJsonPath),
+  readFile(jsrJsonPath, "utf8"),
 ]);
+const jsrJson = JSON.parse(jsrJsonSource);
 
 if (packageJson.name !== jsrJson.name) {
   throw new Error(
@@ -17,9 +18,14 @@ if (packageJson.name !== jsrJson.name) {
 if (packageJson.version === jsrJson.version) {
   console.log(`JSR version is already ${packageJson.version}.`);
 } else {
-  jsrJson.version = packageJson.version;
-  await writeFile(jsrJsonPath, `${JSON.stringify(jsrJson, null, 2)}\n`);
+  await writeFile(jsrJsonPath, replaceVersion(jsrJsonSource, packageJson.version));
   console.log(`Synced JSR version to ${packageJson.version}.`);
+}
+
+function replaceVersion(source, version) {
+  const next = source.replace(/^(\s*"version"\s*:\s*)"[^"]*"(?=,?\s*$)/m, `$1"${version}"`);
+  if (next === source) throw new Error("JSR config is missing a top-level version field.");
+  return next;
 }
 
 async function readJson(path) {
