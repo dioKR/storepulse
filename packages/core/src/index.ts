@@ -1,3 +1,14 @@
+/**
+ * Read-only release-status primitives for App Store Connect and Google Play.
+ *
+ * ```ts
+ * import { createSnapshot } from "@storepulse/core";
+ *
+ * const snapshot = createSnapshot([]);
+ * ```
+ *
+ * @module
+ */
 export * from "./connector.js";
 export { AscConnector, type AscCredentials, createAscToken } from "./connectors/asc.js";
 export {

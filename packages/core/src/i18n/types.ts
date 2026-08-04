@@ -9,13 +9,16 @@
  *   (data and documentation stay separate).
  */
 
+/** Languages bundled with Storepulse's CLI and dashboard text. */
 export const SUPPORTED_LANGS = ["en", "ko"] as const;
 
+/** A language code currently supported by Storepulse text. */
 export type Lang = (typeof SUPPORTED_LANGS)[number];
 
 /** A string in every supported language. */
 export type Localized = Record<Lang, string>;
 
+/** Fallback language used when a locale cannot be recognized. */
 export const DEFAULT_LANG: Lang = "en";
 
 /**

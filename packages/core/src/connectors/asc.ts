@@ -5,6 +5,7 @@ import { asArray, asNumber, asString } from "./defensive.js";
 
 const ASC_API = "https://api.appstoreconnect.apple.com/v1";
 
+/** App Store Connect API-key material supplied directly by the caller. */
 export interface AscCredentials {
   keyId: string;
   issuerId: string;
@@ -54,6 +55,7 @@ const BUILD_PROCESSING_STATE: Record<string, ReleaseState> = {
   INVALID: "rejected",
 };
 
+/** Read-only connector for one App Store Connect API key. */
 export class AscConnector implements StoreConnector {
   readonly id = "app-store-connect";
 
