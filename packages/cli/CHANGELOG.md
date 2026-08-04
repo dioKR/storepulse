@@ -1,5 +1,13 @@
 # storepulse
 
+## 0.7.1
+
+### Patch Changes
+
+- da5d93b: Show the build number attached to iOS App Store production versions.
+- Updated dependencies [da5d93b]
+  - @storepulse/core@0.7.1
+
 ## 0.7.0
 
 ### Minor Changes
