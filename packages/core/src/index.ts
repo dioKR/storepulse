@@ -18,6 +18,7 @@ export {
   PlayTokenExchangeError,
 } from "./connectors/google-play.js";
 export { MockConnector } from "./connectors/mock.js";
+export * from "./diff.js";
 export * from "./enricher.js";
 export {
   EAS_GRAPHQL_ENDPOINT,

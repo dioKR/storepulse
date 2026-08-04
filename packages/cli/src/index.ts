@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { fetchAll, type Lang, uiString } from "@storepulse/core";
 import { demoConnector, demoTargets } from "./demo.js";
+import { runDiff } from "./diff.js";
 import { runDoctor } from "./doctor.js";
 import { runExplain } from "./explain.js";
 import { runInit } from "./init.js";
@@ -27,6 +28,7 @@ function usage(unknownCommand: string, l: Lang): string {
     `  storepulse init      ${uiString("cli.help.init", l)}\n` +
     `  storepulse demo      ${uiString("cli.help.demo", l)}\n` +
     `  storepulse snapshot  ${uiString("cli.help.snapshot", l)}\n` +
+    `  storepulse diff      ${uiString("cli.help.diff", l)}\n` +
     `  storepulse serve     ${uiString("cli.help.serve", l)}\n` +
     `  storepulse explain   ${uiString("cli.help.explain", l)}\n` +
     `  storepulse doctor    ${uiString("cli.help.doctor", l)}\n\n` +
@@ -41,6 +43,8 @@ try {
     console.log(renderBoard(await fetchAll([demoConnector], demoTargets), lang));
   } else if (command === "snapshot") {
     await runSnapshot(rest, lang);
+  } else if (command === "diff") {
+    await runDiff(rest, lang);
   } else if (command === "serve") {
     await runServe(rest, lang);
   } else if (command === "explain") {

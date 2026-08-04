@@ -221,6 +221,10 @@ export const UI_STRINGS = {
     "en": "print the board as JSON (--demo, --out <file>)",
     "ko": "보드를 JSON으로 출력 (--demo, --out <file>)"
   },
+  "cli.help.diff": {
+    "en": "compare a snapshot with a file or the current stores",
+    "ko": "스냅샷을 파일 또는 현재 스토어 상태와 비교"
+  },
   "cli.help.serve": {
     "en": "local web dashboard (--demo, --port, --host, --refresh)",
     "ko": "로컬 웹 대시보드 (--demo, --port, --host, --refresh)"
@@ -576,6 +580,54 @@ export const UI_STRINGS = {
   "snapshot.written": {
     "en": "snapshot written to {path}",
     "ko": "스냅샷을 {path}에 저장했습니다"
+  },
+  "diff.usage": {
+    "en": "usage: storepulse diff <before.json> [after.json] [--demo]",
+    "ko": "사용법: storepulse diff <이전.json> [이후.json] [--demo]"
+  },
+  "diff.readFailed": {
+    "en": "could not read snapshot {path}: {reason}",
+    "ko": "스냅샷 {path}을(를) 읽을 수 없습니다: {reason}"
+  },
+  "diff.schemaMismatch": {
+    "en": "snapshot {path} uses schemaVersion {actual}; expected {expected}",
+    "ko": "스냅샷 {path}의 schemaVersion은 {actual}입니다. 필요한 버전: {expected}"
+  },
+  "diff.invalidSnapshot": {
+    "en": "snapshot {path} does not match the status.json schema",
+    "ko": "스냅샷 {path}이(가) status.json 스키마와 일치하지 않습니다"
+  },
+  "diff.noChanges": {
+    "en": "no release status changes",
+    "ko": "릴리즈 상태 변경 없음"
+  },
+  "diff.appAdded": {
+    "en": "app added",
+    "ko": "앱 추가됨"
+  },
+  "diff.appRemoved": {
+    "en": "app removed",
+    "ko": "앱 제거됨"
+  },
+  "diff.appChanged": {
+    "en": "app changed",
+    "ko": "앱 변경됨"
+  },
+  "diff.targetChanged": {
+    "en": "target",
+    "ko": "대상 정보"
+  },
+  "diff.errorChanged": {
+    "en": "fetch error",
+    "ko": "조회 오류"
+  },
+  "diff.fieldsChanged": {
+    "en": "changed: {fields}",
+    "ko": "변경: {fields}"
+  },
+  "diff.noneValue": {
+    "en": "none",
+    "ko": "없음"
   },
   "serve.started": {
     "en": "dashboard on {url}  (api: /api/status, {mode})",
