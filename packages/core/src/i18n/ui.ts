@@ -1,5 +1,6 @@
 import type { Localized } from "./types.js";
 
+/** Key for a localized CLI or dashboard message. */
 export type UiKey =
   | "cli.hint.explain"
   | "cli.error.unknownCommand"
@@ -146,7 +147,7 @@ export type UiKey =
   | "dash.explainClose";
 
 /**
- * UI strings for the CLI and the web dashboard.
+ * Localized UI strings for the CLI and web dashboard.
  * `{name}` placeholders are filled by `uiString()` (CLI) or the dashboard's `t()`.
  * In dashboard strings, `backtick` segments are rendered as <code>.
  *

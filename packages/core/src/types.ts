@@ -1,15 +1,15 @@
+/** Mobile platform whose store release status is being read. */
 export type Platform = "ios" | "android";
 
 /**
  * Unified release channel across both stores.
- * iOS: production = App Store, beta = TestFlight (external), internal = TestFlight (internal)
- * Android: production = production track, beta = open/closed testing, internal = internal testing
+ * iOS: production = App Store, beta = TestFlight (external), internal = TestFlight (internal).
+ * Android: production = production track, beta = open/closed testing, internal = internal testing.
  */
 export type Channel = "production" | "beta" | "internal";
 
 /**
- * Unified release state across both stores.
- * Store-specific raw states are preserved in `rawState` for debugging.
+ * Unified store release state; inspect `ChannelStatus.rawState` for the original API state.
  */
 export type ReleaseState =
   | "live" // READY_FOR_SALE / track release completed

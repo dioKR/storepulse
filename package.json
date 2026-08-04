@@ -3,6 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "description": "Monorepo for storepulse — see packages/core and packages/cli",
+  "workspaces": [
+    "packages/*",
+    "site"
+  ],
   "scripts": {
     "demo": "tsx packages/cli/src/index.ts demo",
     "status": "tsx packages/cli/src/index.ts",

@@ -7,6 +7,7 @@ const PLAY_API = "https://androidpublisher.googleapis.com/androidpublisher/v3";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const SCOPE = "https://www.googleapis.com/auth/androidpublisher";
 
+/** Google Play service-account material supplied directly by the caller. */
 export interface GooglePlayCredentials {
   /** `client_email` from the service account JSON */
   clientEmail: string;
@@ -93,6 +94,7 @@ function pickReleaseNotes(releaseNotes: unknown): string | undefined {
   return pick?.text;
 }
 
+/** Read-only connector for one Google Play service account. */
 export class GooglePlayConnector implements StoreConnector {
   readonly id = "google-play";
 

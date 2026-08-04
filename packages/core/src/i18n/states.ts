@@ -4,6 +4,7 @@ import type { Localized } from "./types.js";
 /** Board badge color — the CLI (ANSI) and the dashboard (CSS) both follow it. */
 export type BadgeColor = "green" | "cyan" | "yellow" | "blue" | "red" | "gray" | "dim";
 
+/** Localized explanation and recommended action for one release state. */
 export interface StateExplanation {
   /** Badge text exactly as the board prints it — language-invariant term identity. */
   badge: string;
