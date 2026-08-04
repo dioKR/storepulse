@@ -1,5 +1,11 @@
 # @storepulse/core
 
+## 0.7.2
+
+### Patch Changes
+
+- 017bc31: Fix iOS production entries missing their App Store build number in the board and dashboard.
+
 ## 0.7.1
 
 ### Patch Changes
