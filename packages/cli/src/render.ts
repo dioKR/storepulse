@@ -38,7 +38,7 @@ export function coloredBadge(state: ReleaseState, text?: string): string {
   return BADGE_PAINT[info.color](label);
 }
 
-function badge(c: ChannelStatus): string {
+export function renderChannelStatus(c: ChannelStatus): string {
   const version = c.version ?? "?";
   const build = c.build ? pc.dim(` (${c.build})`) : "";
   if (c.state === "rollout") {
@@ -56,7 +56,7 @@ function badge(c: ChannelStatus): string {
 function cell(status: AppStatus, channel: Channel): string {
   const entries = status.channels.filter((c) => c.channel === channel);
   if (entries.length === 0) return pc.dim("—");
-  return entries.map(badge).join(pc.dim("  ·  "));
+  return entries.map(renderChannelStatus).join(pc.dim("  ·  "));
 }
 
 export function renderBoard(statuses: AppStatus[], lang: Lang = DEFAULT_LANG): string {
