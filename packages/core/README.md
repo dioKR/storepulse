@@ -11,6 +11,14 @@ Both stores are translated into one model: a `Channel`
 Credentials are **constructor arguments** — this library never reads
 `process.env` or the filesystem.
 
+## Install
+
+```sh
+npm install @storepulse/core
+# or
+npx jsr add @storepulse/core
+```
+
 ```ts
 import { AscConnector, GooglePlayConnector, fetchAll } from "@storepulse/core";
 
