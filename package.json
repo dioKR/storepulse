@@ -12,7 +12,11 @@
     "lint:fix": "biome check --write .",
     "test": "vitest run",
     "changeset": "changeset",
-    "release": "pnpm build && changeset publish"
+    "release": "pnpm build && changeset publish",
+    "version:release": "pnpm changeset version && pnpm jsr:sync-version",
+    "jsr:sync-version": "node scripts/sync-jsr-version.mjs",
+    "jsr:check": "node scripts/check-jsr-config.mjs",
+    "jsr:dry-run": "cd packages/core && pnpm dlx jsr@0.14.3 publish --dry-run"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.5",
