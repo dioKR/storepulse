@@ -27,6 +27,35 @@ afterEach(() => {
 });
 
 describe("AscConnector defensive parsing", () => {
+  it("maps the build attached to a production App Store version", async () => {
+    const connector = connectorWith({
+      "/appStoreVersions": {
+        data: [
+          {
+            id: "v1",
+            attributes: { versionString: "0.1.18", appStoreState: "READY_FOR_SALE" },
+            relationships: { build: { data: { type: "builds", id: "b34" } } },
+          },
+        ],
+        included: [{ type: "builds", id: "b34", attributes: { version: "34" } }],
+      },
+      "/builds": { data: [] },
+    });
+
+    const status = await connector.fetchAppStatus(target);
+
+    expect(status.channels[0]).toMatchObject({
+      channel: "production",
+      version: "0.1.18",
+      build: "34",
+      state: "live",
+    });
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining("include=build&fields[builds]=version"),
+      expect.any(Object),
+    );
+  });
+
   it("maps a brand-new appStoreState to 'unknown' and preserves rawState", async () => {
     const connector = connectorWith({
       "/appStoreVersions": {

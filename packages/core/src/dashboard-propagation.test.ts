@@ -65,7 +65,7 @@ describe("latestBundle", () => {
   });
 
   it("prefers an entry with a build over a build-less tie (iOS production)", () => {
-    // ASC production has no build number — the beta row supplies it.
+    // An unassigned production draft can still lack a build number.
     const latest = latestBundle([
       { channel: "production", version: "1.9.3" },
       { channel: "beta", version: "1.9.3", build: "87" },
@@ -101,7 +101,7 @@ describe("channelPropagation", () => {
   });
 
   it("judges by version alone when either side has no build (iOS production caveat)", () => {
-    // ASC production carries no build number → the version match is enough.
+    // A production entry without an assigned build still compares by version.
     expect(channelPropagation([{ version: "2.5.0" }], latest)).toEqual({ status: "latest" });
     expect(
       channelPropagation([{ version: "2.5.0", build: "108" }], { version: "2.5.0", build: null }),
