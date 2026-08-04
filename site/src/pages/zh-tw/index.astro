@@ -136,7 +136,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
           <div class="k">Expo 友善</div>
           <div class="v">
             任何 iOS/Android App 都能用,但它出自 Expo 團隊之手,
-            也為 Expo 團隊而寫 —— EAS 連接器已排進路線圖。
+            也為 Expo 團隊而寫 —— 設定好 <code>EAS_TOKEN</code> 和每個 App 的
+            <code>easProjectId</code>,商店裡的每個版本就能連回產出它的
+            EAS 建置:git commit、建置設定檔、送審狀態,一項不漏。
           </div>
         </div>
       </div>
@@ -189,7 +191,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
       <div class="roadmap">
         <span class="done">核心 + 連接器</span>
         <span class="done">含展示模式的 CLI</span>
-        <span>EAS 連接器</span>
+        <span class="done">EAS 連接器</span>
         <span>Slack / Discord 通知</span>
         <span class="done">Web 儀表板</span>
         <span class="done">npx storepulse</span>

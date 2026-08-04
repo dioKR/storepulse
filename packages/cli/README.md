@@ -31,9 +31,14 @@ OS locale) to switch CLI messages between English and Korean.
 
 `serve` binds to `127.0.0.1` by default — click a row for release notes,
 dates, and TestFlight expiry, and filter by OS/group with the chips at the
-top. The JSON document written by
+top; each row also sums up its latest bundle (`Latest: 2.5.0 (108)`) and
+marks every channel ✓ (has it) or ▲ (behind). The JSON document written by
 `snapshot` (and served at `/api/status`) is specified in
 [docs/snapshot-schema.md](https://github.com/dioKR/storepulse/blob/main/docs/snapshot-schema.md).
+
+Expo user? Set `EAS_TOKEN` in `.env` and an `easProjectId` per app to link
+every store version to the EAS build (commit · profile · submission status)
+that produced it.
 
 ## Real apps
 

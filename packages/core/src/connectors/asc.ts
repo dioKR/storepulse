@@ -77,8 +77,18 @@ export class AscConnector implements StoreConnector {
 
   private async fetchAppStoreVersions(appId: string): Promise<ChannelStatus[]> {
     const data = await this.get(
-      `/apps/${appId}/appStoreVersions?filter[platform]=IOS&limit=5&fields[appStoreVersions]=versionString,appStoreState,createdDate`,
+      `/apps/${appId}/appStoreVersions?filter[platform]=IOS&limit=5&fields[appStoreVersions]=versionString,appStoreState,createdDate&include=build&fields[builds]=version`,
     );
+    // A production App Store version only points at its binary through the
+    // `build` relationship; unlike the TestFlight endpoint, its build number
+    // is not an attribute of appStoreVersions itself.
+    const buildVersionById = new Map<string, string>();
+    for (const included of asArray(data?.included) as any[]) {
+      if (included?.type !== "builds") continue;
+      const id = asString(included?.id);
+      const build = asString(included?.attributes?.version);
+      if (id !== undefined && build !== undefined) buildVersionById.set(id, build);
+    }
     const entries: { id: string | undefined; channel: ChannelStatus }[] = [];
     for (const version of asArray(data?.data) as any[]) {
       // Field may vanish in a future API version — degrade to "unknown", never crash
@@ -86,6 +96,8 @@ export class AscConnector implements StoreConnector {
       // Superseded versions would only repeat what the live row already says
       if (rawState === "REPLACED_WITH_NEW_VERSION") continue;
       const createdDate = asString(version?.attributes?.createdDate);
+      const buildId = asString(version?.relationships?.build?.data?.id);
+      const build = buildId === undefined ? undefined : buildVersionById.get(buildId);
       entries.push({
         id: asString(version?.id),
         channel: {
@@ -93,6 +105,7 @@ export class AscConnector implements StoreConnector {
           version: asString(version?.attributes?.versionString) ?? null,
           state: (rawState && APP_STORE_STATE[rawState]) || "unknown",
           rawState: rawState ?? "(appStoreState missing)",
+          ...(build !== undefined && { build }),
           ...(createdDate !== undefined && { date: createdDate }),
         },
       });

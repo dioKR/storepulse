@@ -152,6 +152,28 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
     </section>
 
     <section>
+      <p class="sec-label">step 7 — optional</p>
+      <h2>Link Expo (EAS) builds</h2>
+      <p>
+        Ship with Expo? Add an access token to <code>.env</code>
+        (create one at <a href="https://expo.dev/settings/access-tokens">expo.dev
+        → Access tokens</a>; for organizations, prefer a <b>View Only</b> robot
+        token — storepulse only reads builds and submissions) and give each
+        Expo app in <code>storepulse.config.json</code> its
+        <code>easProjectId</code> (<code>app.json</code> →
+        <code>extra.eas.projectId</code>):
+      </p>
+      <pre class="code">EAS_TOKEN=...</pre>
+      <p>
+        The snapshot JSON and the web dashboard's detail panel now show which
+        EAS build each store version came from — commit, build profile,
+        submission status (the terminal board keeps its summary) — and
+        <code>npx storepulse doctor</code> verifies the whole EAS chain in its
+        <code>[5]</code> section.
+      </p>
+    </section>
+
+    <section>
       <p class="sec-label">troubleshooting</p>
       <h2>When something's off</h2>
       <p>

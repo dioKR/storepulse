@@ -1,5 +1,38 @@
 # storepulse
 
+## 0.7.1
+
+### Patch Changes
+
+- da5d93b: Show the build number attached to iOS App Store production versions.
+- Updated dependencies [da5d93b]
+  - @storepulse/core@0.7.1
+
+## 0.7.0
+
+### Minor Changes
+
+- 9d739e4: 대시보드: 앱(타깃)별 "최신 번들"과 채널별 전파(propagation) 표시 (#32)
+
+  - 각 행의 App 칸에 전 채널을 통틀어 가장 높은 버전(+빌드)을 `Latest: 2.5.0 (108)` 형식으로 요약 — iOS/Android 타깃별로 따로 계산합니다.
+  - 각 채널 칸 앞에 전파 마크: ✓(초록) = 최신 번들이 그 채널에 반영됨, ▲(호박색) = 항목은 있으나 최신보다 낮음. 툴팁·aria-label에 채널 최신과 전체 최신을 병기하고, 릴리즈가 없는 채널은 기존처럼 "—"만 표시합니다.
+  - 비교는 semver-ish(숫자 세그먼트는 숫자로, 그 외는 문자열) + 동일 버전이면 빌드번호 보조. ASC production처럼 빌드번호가 없는 항목은 버전만으로 판정합니다.
+  - 스냅샷 데이터만으로 클라이언트에서 계산 — 스키마·서버·CLI 변경 없음. 새 라벨은 en/ko 사전 경유.
+
+- 14a3fad: Expo(EAS) 연동: "심사 중인 그 버전, 어느 커밋·프로필·빌드인가?"를 보드에서 바로 답합니다.
+
+  - core: 커넥터와 별개의 **Enricher 단계** 도입 (`enrichAll`) — fetchAll 결과를 받아 보강하며, 실패한 enricher는 통째로 건너뜁니다(보드는 절대 죽지 않음).
+  - core: `EasEnricher` 추가 — EAS GraphQL API에서 최근 완료 빌드·제출 상태를 조회해 채널 항목의 version/build를 EAS 빌드의 appVersion/appBuildVersion과 매칭, `eas` 필드(profile·commit·buildId·completedAt·submissionStatus)를 덧붙입니다. 프로젝트×플랫폼 단위 실패는 조용히 생략.
+  - 스냅샷: `AppTarget.easProjectId`, `ChannelStatus.eas` **선택 필드** 추가 — 선택 필드 추가 규칙에 따라 schemaVersion은 1 유지 (docs/snapshot-schema.md 문서화).
+  - CLI: `.env`의 `EAS_TOKEN`(선택)과 config의 `easProjectId`가 모두 있으면 board/snapshot/serve 공통 경로에서 자동 보강. `storepulse doctor`에 [5] Expo (EAS) 체인 추가(토큰 → CurrentUser → projectId별 접근, 미사용 시 스킵). init 템플릿·.env.example에 EAS_TOKEN 안내(조직은 View Only 로봇 토큰 권장) 추가.
+  - 대시보드: 상세 패널에 EAS 블록(프로필 · 커밋 해시 축약 · 빌드 완료 시각 · 제출 상태) — `eas` 필드가 있을 때만 표시, en/ko 라벨.
+
+### Patch Changes
+
+- Updated dependencies [9d739e4]
+- Updated dependencies [14a3fad]
+  - @storepulse/core@0.7.0
+
 ## 0.6.0
 
 ### Minor Changes

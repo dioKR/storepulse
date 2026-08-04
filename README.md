@@ -89,13 +89,18 @@ npx storepulse serve --demo     # local web dashboard → http://127.0.0.1:4780
 npx storepulse snapshot --demo  # the board as JSON, to stdout
 ```
 
-![storepulse web dashboard — filter chips on top, an expanded row showing release notes, dates, and TestFlight expiry](docs/images/dashboard-details.png)
+![storepulse web dashboard — a full-width board with a Latest summary per row and ✓/▲ propagation marks on channels that have releases](docs/images/dashboard-propagation.png)
 
 - **`storepulse serve`** starts a local, auto-refreshing web dashboard — same
   board, same design. Click any row to open a detail panel: full release
   notes, submission/upload dates, and a TestFlight expiry countdown that
   turns into a warning at D-7. The chips at the top filter the board by OS
   (iOS/Android) and by group (e.g. `prod` / `dev`), combined together.
+  Each row also sums up its latest uploaded bundle (`Latest: 2.5.0 (108)`),
+  and every channel that has a release carries a propagation mark — ✓ when it already has that
+  bundle, ▲ when it lags behind (hover to compare current vs latest; Android
+  compares by versionCode) — so "how far did the newest build travel?" is
+  answered at a glance.
   The EN/KO switcher in the header flips the dashboard between English and
   Korean (your browser remembers the choice), and clicking a state badge —
   as opposed to the row — opens a glossary dialog explaining that state.
@@ -227,6 +232,40 @@ Your real board appears (in a repo clone, `pnpm status` does the same). Rows
 with credential problems show an inline error instead of hiding the rest of
 the board.
 
+### Optional — link Expo (EAS) builds
+
+Ship with Expo? Two small additions connect every store version to the EAS
+build that produced it. Add an access token to `.env` (create one under
+[expo.dev → Access tokens](https://expo.dev/settings/access-tokens); for
+organizations, prefer a **View Only** robot token — storepulse only reads
+builds and submissions, never triggers them):
+
+```ini
+EAS_TOKEN=...
+```
+
+Then give each Expo app in `storepulse.config.json` its `easProjectId`
+(`app.json` → `extra.eas.projectId`; the ios and android entries of one app
+share the same value):
+
+```jsonc
+{ "key": "myapp-ios", "platform": "ios", "storeId": "1234567890",
+  "easProjectId": "5b2fb1e0-6c2a-4b8e-9d3f-4a1c2e8f7a90" }
+```
+
+That's it — `snapshot` and the web dashboard now enrich each version
+with the EAS build behind it: git commit, build profile, and submission
+status (the terminal board keeps its one-line summary on purpose).
+The dashboard detail panel gets an **EAS BUILD** block, and
+`npx storepulse doctor` verifies the whole chain in its `[5] Expo (EAS)`
+section. The snapshot grows optional `eas` / `easProjectId` /
+`easAppIdentifier` fields only — `schemaVersion` stays 1
+([details](docs/snapshot-schema.md)). If one EAS project builds several
+variants of a platform, scope the matching with `easAppIdentifier`
+(Android defaults to the `storeId`).
+
+![The dashboard detail panel with EAS BUILD blocks — build profile, git commit, build date, and submission status next to each store version](docs/images/dashboard-eas.png)
+
 ---
 
 ## Troubleshooting
@@ -268,7 +307,7 @@ picks up `biome.json` automatically.
 
 ## Roadmap
 
-- [ ] EAS connector — link store status to Expo builds & submissions
+- [x] EAS connector — link store status to Expo builds & submissions
 - [ ] Slack/Discord notifications on state changes ("2.5.0 approved 🎉")
 - [x] Web dashboard (`storepulse serve`)
 - [x] Publish to npm (`npx storepulse`)
