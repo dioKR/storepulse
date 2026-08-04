@@ -96,7 +96,7 @@ sequenceDiagram
     CLI->>Core: fetchAll(connectors, targets)
     par every iOS target
         Core->>ASC: sign ES256 JWT (15 min TTL)
-        Core->>ASC: GET appStoreVersions (+ phased release)
+        Core->>ASC: GET appStoreVersions (+ attached production build, phased release)
         Core->>ASC: GET latest TestFlight build
         ASC-->>Core: raw states
     and every Android target
