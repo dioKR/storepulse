@@ -1,5 +1,11 @@
 # @storepulse/core
 
+## 0.8.0
+
+### Minor Changes
+
+- e47acbd: Add a reusable snapshot diff engine and the `storepulse diff <before.json> [after.json]` command for offline or current-store comparisons.
+
 ## 0.7.3
 
 ### Patch Changes
