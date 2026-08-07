@@ -167,7 +167,9 @@ export function renderCheckText(report: CheckReport, lang: Lang = DEFAULT_LANG):
   }
   for (const e of report.errors) {
     const label = `${pc.bold(e.app)} ${pc.dim(`(${e.key}, ${e.platform})`)}`;
-    out.push(`  ${pc.red("✗")} ${label}  ${pc.red(`error: ${e.error}`)}`);
+    out.push(
+      `  ${pc.red("✗")} ${label}  ${pc.red(`${uiString("cli.errorPrefix", lang)}: ${e.error}`)}`,
+    );
   }
   if (report.violations.length > 0 || report.errors.length > 0) out.push("");
 

@@ -657,6 +657,10 @@ export const UI_STRINGS = {
     "en": "{n} app(s) could not be checked — an unverified store state fails the gate",
     "ko": "앱 {n}개를 조회하지 못했습니다 — 확인되지 않은 스토어 상태는 게이트를 통과할 수 없습니다"
   },
+  "cli.errorPrefix": {
+    "en": "error",
+    "ko": "오류"
+  },
   "serve.started": {
     "en": "dashboard on {url}  (api: /api/status, {mode})",
     "ko": "대시보드 실행 중: {url}  (api: /api/status, {mode})"

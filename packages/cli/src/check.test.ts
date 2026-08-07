@@ -239,6 +239,7 @@ describe("renderCheckText", () => {
     expect(en).toContain("1 app(s) could not be checked");
 
     const ko = renderCheckText(evaluateCheck(statuses, ["rejected"]), "ko");
+    expect(ko).toContain("오류: ASC API returned 401");
     expect(ko).toContain("앱 1개를 조회하지 못했습니다");
   });
 
