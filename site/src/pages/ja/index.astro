@@ -122,8 +122,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <div class="feat-row">
           <div class="k">デモモード</div>
           <div class="v">
-            <code>pnpm demo</code> だけでサンプルデータのボードが丸ごと描かれます —
-            API キーを 1 つも作る前に、じっくり試せます。
+            <code>npx storepulse demo</code> だけでサンプルデータのボードが
+            丸ごと描かれます — API キーを 1 つも作る前に、じっくり試せます。
           </div>
         </div>
         <div class="feat-row">
@@ -158,9 +158,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <div class="step-no">1</div>
         <div>
           <h3>まずはデモから — 認証情報は不要です</h3>
-          <pre class="code"><span class="p">$</span> git clone https://github.com/dioKR/storepulse.git
-<span class="p">$</span> cd storepulse &amp;&amp; pnpm install
-<span class="p">$</span> pnpm demo</pre>
+          <pre class="code"><span class="p">$</span> npx storepulse demo</pre>
+          <p>
+            クローンもインストールも不要 — Node.js 20.12 以上があれば
+            動きます。ブラウザ派なら <code>npx storepulse serve --demo</code>
+            が同じボードを <code>127.0.0.1:4780</code> で開きます。
+          </p>
         </div>
       </div>
       <div class="step">
@@ -197,16 +200,19 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <span class="done">コア + コネクタ</span>
         <span class="done">デモモード付き CLI</span>
         <span class="done">EAS コネクタ</span>
-        <span>Slack / Discord 通知</span>
         <span class="done">Web ダッシュボード</span>
         <span class="done">npx storepulse</span>
         <span class="done">CLI 出力の英語・韓国語対応</span>
+        <span class="done">スナップショット diff</span>
+        <span>CI ポリシーゲート + GitHub Action</span>
+        <span>generic webhook イベント</span>
+        <span>ローカル watch モード</span>
       </div>
     </div>
   </section>
 
   <script>
-    const cmd = "pnpm demo";
+    const cmd = "npx storepulse demo";
     const typed = document.getElementById("typed")!;
     const cursor = document.getElementById("tcur")!;
     const lines = [...document.querySelectorAll("[data-line]")];

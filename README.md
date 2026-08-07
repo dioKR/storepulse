@@ -12,7 +12,18 @@ Which version is live? Which one is stuck in review? What's on TestFlight right
 now? If answering that means clicking through App Store Connect *and* Google
 Play Console app by app — storepulse is for you. One command, one board:
 
-![storepulse demo — pnpm demo renders a live release board](docs/images/demo.svg)
+![storepulse demo — npx storepulse demo renders a live release board](docs/images/demo.svg)
+
+Try it right now — no credentials, no config, no clone. All you need is
+[Node.js](https://nodejs.org) ≥ 20.12:
+
+```sh
+npx storepulse demo           # the release board, in your terminal
+npx storepulse serve --demo   # the same board as a local web dashboard → http://127.0.0.1:4780
+```
+
+The board you see is fake data shaped like a real team: two apps, each with a
+prod and a dev variant, on both platforms.
 
 Built with **Expo / React Native** teams in mind, but it works for any
 iOS/Android app — storepulse only talks to the stores, not to your build
@@ -25,22 +36,25 @@ system.
 
 ---
 
-## Try it first — no credentials needed
+## Is storepulse for you?
 
-You can see exactly what storepulse does in under a minute, using sample data.
+storepulse is **local, read-only, post-submit release observability for small
+Expo / React Native teams** — it watches what happens to your releases *after*
+you hit submit, and nothing more.
 
-**Prerequisites**: [Node.js](https://nodejs.org) ≥ 20.12 and
-[pnpm](https://pnpm.io) ≥ 9.
+**A good fit if you want to:**
 
-```sh
-git clone https://github.com/dioKR/storepulse.git
-cd storepulse
-pnpm install
-pnpm demo
-```
+- see live versions, review states, rollout percentages, and test tracks for
+  every app on one board — terminal, browser, or JSON in CI
+- keep store credentials on your own machine — no account, no hosted server,
+  no telemetry
 
-That's it — the board you see is fake data shaped like a real team: two apps,
-each with a prod and a dev variant, on both platforms.
+**Not what you're looking for if you need:**
+
+- to submit, promote, or roll out releases — storepulse never writes to
+  either store
+- ASO, review/rating analytics, or revenue dashboards
+- a hosted SaaS — storepulse runs where you run it
 
 ## How to read the board
 
@@ -290,6 +304,15 @@ just its first consumer. Read the full picture — diagrams included — in
 
 ## Development
 
+Working on storepulse itself? Clone the repo — this is the only flow that
+needs [pnpm](https://pnpm.io) ≥ 9:
+
+```sh
+git clone https://github.com/dioKR/storepulse.git
+cd storepulse
+pnpm install
+```
+
 ```sh
 pnpm demo              # board with sample data
 pnpm status            # board with your real config
@@ -307,11 +330,20 @@ picks up `biome.json` automatically.
 
 ## Roadmap
 
+Done so far:
+
 - [x] EAS connector — link store status to Expo builds & submissions
-- [ ] Slack/Discord notifications on state changes ("2.5.0 approved 🎉")
 - [x] Web dashboard (`storepulse serve`)
 - [x] Publish to npm (`npx storepulse`)
 - [x] CLI output in English & Korean (`--lang ko`, `storepulse explain`)
+- [x] Snapshot diff engine (`storepulse diff`)
+
+Up next ([full roadmap](https://github.com/dioKR/storepulse/issues/57)):
+
+- [ ] CI policy gate (`storepulse check --fail-on`) and an official GitHub Action
+- [ ] Generic webhook events on release changes — point Slack, Discord, or
+  your own automation at them
+- [ ] Local watch mode
 
 ## License
 

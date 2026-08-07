@@ -120,8 +120,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <div class="feat-row">
           <div class="k">demo mode</div>
           <div class="v">
-            <code>pnpm demo</code> renders the full board with sample data —
-            evaluate the tool before creating a single API key.
+            <code>npx storepulse demo</code> renders the full board with sample
+            data — evaluate the tool before creating a single API key.
           </div>
         </div>
         <div class="feat-row">
@@ -156,9 +156,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <div class="step-no">1</div>
         <div>
           <h3>Try the demo — no credentials needed</h3>
-          <pre class="code"><span class="p">$</span> git clone https://github.com/dioKR/storepulse.git
-<span class="p">$</span> cd storepulse &amp;&amp; pnpm install
-<span class="p">$</span> pnpm demo</pre>
+          <pre class="code"><span class="p">$</span> npx storepulse demo</pre>
+          <p>
+            No clone, no install — Node.js ≥ 20.12 is all it takes. Prefer a
+            browser? <code>npx storepulse serve --demo</code> opens the same
+            board at <code>127.0.0.1:4780</code>.
+          </p>
         </div>
       </div>
       <div class="step">
@@ -195,16 +198,19 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <span class="done">core + connectors</span>
         <span class="done">cli with demo mode</span>
         <span class="done">eas connector</span>
-        <span>slack / discord alerts</span>
         <span class="done">web dashboard</span>
         <span class="done">npx storepulse</span>
         <span class="done">english / korean cli output</span>
+        <span class="done">snapshot diff</span>
+        <span>ci policy gate + github action</span>
+        <span>generic webhook events</span>
+        <span>local watch mode</span>
       </div>
     </div>
   </section>
 
   <script>
-    const cmd = "pnpm demo";
+    const cmd = "npx storepulse demo";
     const typed = document.getElementById("typed")!;
     const cursor = document.getElementById("tcur")!;
     const lines = [...document.querySelectorAll("[data-line]")];

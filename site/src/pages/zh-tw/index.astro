@@ -119,8 +119,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <div class="feat-row">
           <div class="k">展示模式</div>
           <div class="v">
-            一道 <code>pnpm demo</code> 就能用範例資料畫出完整看板 ——
-            連一把 API 金鑰都還沒建立,就能先評估這個工具。
+            一道 <code>npx storepulse demo</code> 就能用範例資料畫出完整看板
+            —— 連一把 API 金鑰都還沒建立,就能先評估這個工具。
           </div>
         </div>
         <div class="feat-row">
@@ -153,9 +153,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <div class="step-no">1</div>
         <div>
           <h3>先跑展示 —— 不需要憑證</h3>
-          <pre class="code"><span class="p">$</span> git clone https://github.com/dioKR/storepulse.git
-<span class="p">$</span> cd storepulse &amp;&amp; pnpm install
-<span class="p">$</span> pnpm demo</pre>
+          <pre class="code"><span class="p">$</span> npx storepulse demo</pre>
+          <p>
+            不用 clone、不用安裝 —— 有 Node.js 20.12 以上就夠了。偏好瀏覽器?
+            <code>npx storepulse serve --demo</code> 會把同一塊看板開在
+            <code>127.0.0.1:4780</code>。
+          </p>
         </div>
       </div>
       <div class="step">
@@ -192,16 +195,19 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <span class="done">核心 + 連接器</span>
         <span class="done">含展示模式的 CLI</span>
         <span class="done">EAS 連接器</span>
-        <span>Slack / Discord 通知</span>
         <span class="done">Web 儀表板</span>
         <span class="done">npx storepulse</span>
         <span class="done">CLI 英文·韓文輸出</span>
+        <span class="done">快照 diff</span>
+        <span>CI 政策關卡 + GitHub Action</span>
+        <span>generic webhook 事件</span>
+        <span>本機 watch 模式</span>
       </div>
     </div>
   </section>
 
   <script>
-    const cmd = "pnpm demo";
+    const cmd = "npx storepulse demo";
     const typed = document.getElementById("typed")!;
     const cursor = document.getElementById("tcur")!;
     const lines = [...document.querySelectorAll("[data-line]")];

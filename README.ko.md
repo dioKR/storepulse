@@ -13,7 +13,18 @@
 번갈아 열고 있다면, storepulse가 그 수고를 덜어드려요. 명령어 하나, 보드 하나면
 끝나요:
 
-![storepulse 데모 — pnpm demo가 릴리즈 보드를 그리는 애니메이션](docs/images/demo.svg)
+![storepulse 데모 — npx storepulse demo가 릴리즈 보드를 그리는 애니메이션](docs/images/demo.svg)
+
+지금 바로 써볼 수 있어요 — 크리덴셜도, 설정도, 클론도 필요 없어요.
+[Node.js](https://nodejs.org) 20.12 이상이면 충분해요:
+
+```sh
+npx storepulse demo           # 터미널에 릴리즈 보드가 떠요
+npx storepulse serve --demo   # 같은 보드를 로컬 웹 대시보드로 → http://127.0.0.1:4780
+```
+
+지금 보이는 보드는 실제 팀 상황을 본뜬 가짜 데이터예요. 앱 두 개, 각각
+prod·dev 변형, 양쪽 플랫폼이요.
 
 **Expo / React Native** 팀을 먼저 생각하며 만들었지만, iOS·Android 앱이라면
 어떤 것이든 잘 맞아요 — storepulse는 빌드 시스템이 아니라 스토어하고만
@@ -27,22 +38,25 @@
 
 ---
 
-## 일단 체험부터 — 크리덴셜 없이
+## storepulse가 나에게 맞을까요?
 
-샘플 데이터만으로 storepulse가 뭘 하는지 1분 안에 볼 수 있어요.
+storepulse는 **소규모 Expo / React Native 팀을 위한 로컬·읽기 전용
+post-submit 릴리즈 관측 도구**예요 — 제출 버튼을 누른 *이후*에 릴리즈가
+어떻게 되어가는지만 지켜봐요. 그 이상은 하지 않아요.
 
-**준비물**: [Node.js](https://nodejs.org) 20.12 이상,
-[pnpm](https://pnpm.io) 9 이상이에요.
+**이럴 때 잘 맞아요:**
 
-```sh
-git clone https://github.com/dioKR/storepulse.git
-cd storepulse
-pnpm install
-pnpm demo
-```
+- 모든 앱의 출시 버전·심사 상태·롤아웃 비율·테스트 트랙을 보드 하나로
+  보고 싶을 때 — 터미널로, 브라우저로, CI에서는 JSON으로요
+- 스토어 크리덴셜을 내 컴퓨터에만 두고 싶을 때 — 계정도, 호스팅 서버도,
+  사용 정보 수집도 없어요
 
-이게 다예요 — 지금 보이는 보드는 실제 팀 상황을 본뜬 가짜 데이터예요.
-앱 두 개, 각각 prod·dev 변형, 양쪽 플랫폼이요.
+**이런 게 필요하다면 다른 도구를 찾으셔야 해요:**
+
+- 릴리즈 제출·승격·롤아웃 조작 — storepulse는 두 스토어에 어떤 쓰기도
+  하지 않아요
+- ASO, 리뷰·평점 분석, 매출 대시보드
+- 호스팅형 SaaS — storepulse는 여러분이 실행하는 곳에서만 돌아가요
 
 ## 보드 읽는 법
 
@@ -291,6 +305,15 @@ EAS_TOKEN=...
 
 ## 개발
 
+storepulse 자체를 개발하고 싶나요? 레포를 클론하세요 — [pnpm](https://pnpm.io)
+9 이상이 필요한 건 이 흐름뿐이에요:
+
+```sh
+git clone https://github.com/dioKR/storepulse.git
+cd storepulse
+pnpm install
+```
+
 ```sh
 pnpm demo              # 샘플 데이터로 보드 표시
 pnpm status            # 실제 설정으로 보드 표시
@@ -308,11 +331,20 @@ Prettier를 대신하는 단일 도구예요. 에디터는 Biome 확장만 설�
 
 ## 로드맵
 
+지금까지 완료한 것:
+
 - [x] EAS 커넥터 — 스토어 상태를 Expo 빌드·제출과 연결
-- [ ] 상태가 바뀌면 Slack/Discord 알림 ("2.5.0 심사 통과 🎉")
 - [x] 웹 대시보드 (`storepulse serve`)
 - [x] npm 배포 (`npx storepulse`)
 - [x] CLI 출력 영어·한국어 지원 (`--lang ko`, `storepulse explain`)
+- [x] 스냅샷 diff 엔진 (`storepulse diff`)
+
+다음 차례 ([전체 로드맵](https://github.com/dioKR/storepulse/issues/57)):
+
+- [ ] CI 정책 게이트 (`storepulse check --fail-on`)와 공식 GitHub Action
+- [ ] 릴리즈 변화를 알리는 generic webhook 이벤트 — Slack, Discord, 자체
+  자동화 어디든 연결할 수 있어요
+- [ ] 로컬 watch 모드
 
 ## 라이선스
 

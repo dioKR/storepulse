@@ -1,5 +1,5 @@
 // Generates docs/images/demo.svg — an animated (SMIL) terminal demo for the README.
-// Typing "pnpm demo" → board lines reveal one by one → hold → loop.
+// Typing "npx storepulse demo" → board lines reveal one by one → hold → loop.
 import { writeFileSync } from "node:fs";
 
 const CHAR_W = 8.4; // 14px monospace advance
@@ -100,7 +100,7 @@ const PROMPT_Y = 68;
 const BOARD_Y = 104;
 const HEIGHT = BOARD_Y + (lines.length - 1) * LINE_H + 36;
 
-const CMD = "pnpm demo";
+const CMD = "npx storepulse demo";
 const CMD_X = X + Math.round(2 * CHAR_W); // after "$ "
 const CMD_LEN = Math.round(CMD.length * CHAR_W);
 
@@ -109,7 +109,7 @@ const steps = CMD.length;
 const clipValues = Array.from({ length: steps + 1 }, (_, i) => Math.round((i * CMD_LEN) / steps));
 const curValues = clipValues.map((v) => CMD_X + v + 2);
 const TYPE_BEGIN = 0.7;
-const TYPE_DUR = 1.1;
+const TYPE_DUR = Math.round(CMD.length * 0.12 * 10) / 10; // ~0.12s per char
 const REVEAL_BEGIN = TYPE_BEGIN + TYPE_DUR + 0.4;
 const STEP = 0.14;
 const LOOP = (REVEAL_BEGIN + lines.length * STEP + 3.2).toFixed(1);
@@ -130,7 +130,7 @@ const boardLines = lines
   .join("\n");
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${WIDTH} ${HEIGHT}" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="14">
-  <title>storepulse demo — pnpm demo renders a release board for every app on both stores</title>
+  <title>storepulse demo — npx storepulse demo renders a release board for every app on both stores</title>
   <rect width="${WIDTH}" height="${HEIGHT}" rx="10" fill="#17161A"/>
   <rect x="0.5" y="0.5" width="${WIDTH - 1}" height="${HEIGHT - 1}" rx="10" fill="none" stroke="#2E2B33"/>
   <line x1="0" y1="38" x2="${WIDTH}" y2="38" stroke="#2E2B33"/>

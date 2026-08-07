@@ -16,18 +16,17 @@ import Base from "../../layouts/Base.astro";
 
     <section>
       <p class="sec-label">步驟 1</p>
-      <h2>安裝並執行展示</h2>
-      <p>前置需求:Node.js 20.12 以上、pnpm 9 以上。</p>
-      <pre class="code"><span class="p">$</span> git clone https://github.com/dioKR/storepulse.git
-<span class="p">$</span> cd storepulse
-<span class="p">$</span> pnpm install
-<span class="p">$</span> pnpm demo</pre>
+      <h2>執行展示</h2>
+      <p>前置需求:Node.js 20.12 以上 —— 不用 clone、不用安裝、不用憑證。</p>
+      <pre class="code"><span class="p">$</span> npx storepulse demo</pre>
       <p>
         展示看板用的是仿照真實團隊的範例資料 —— 兩個 App,各有 prod·dev
         兩種變體,橫跨雙平台。之後會見到的所有徽章都在裡面:
         <span class="g">LIVE</span>、<span class="c">50%</span>(逐步發布)、
         <span class="y">REVIEW</span>、<span class="r">REJECTED</span>、
-        <span class="d">draft</span>。
+        <span class="d">draft</span>。偏好瀏覽器?
+        <code>npx storepulse serve --demo</code> 會把同一塊看板開在
+        <code>127.0.0.1:4780</code>。
       </p>
     </section>
 
