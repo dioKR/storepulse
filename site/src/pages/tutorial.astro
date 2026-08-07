@@ -15,18 +15,19 @@ import Base from "../layouts/Base.astro";
 
     <section>
       <p class="sec-label">step 1</p>
-      <h2>Install &amp; run the demo</h2>
-      <p>Prerequisites: Node.js ≥ 20.12 and pnpm ≥ 9.</p>
-      <pre class="code"><span class="p">$</span> git clone https://github.com/dioKR/storepulse.git
-<span class="p">$</span> cd storepulse
-<span class="p">$</span> pnpm install
-<span class="p">$</span> pnpm demo</pre>
+      <h2>Run the demo</h2>
+      <p>
+        Prerequisite: Node.js ≥ 20.12 — no clone, no install, no credentials.
+      </p>
+      <pre class="code"><span class="p">$</span> npx storepulse demo</pre>
       <p>
         The demo board uses sample data shaped like a real team — two apps, each
         with a prod and dev variant, on both platforms. Every badge you'll ever
         see is in it: <span class="g">LIVE</span>, <span class="c">50%</span>
         (staged rollout), <span class="y">REVIEW</span>,
         <span class="r">REJECTED</span>, <span class="d">draft</span>.
+        Prefer a browser? <code>npx storepulse serve --demo</code> serves the
+        same board at <code>127.0.0.1:4780</code>.
       </p>
     </section>
 

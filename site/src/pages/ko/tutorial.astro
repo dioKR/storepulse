@@ -16,18 +16,17 @@ import Base from "../../layouts/Base.astro";
 
     <section>
       <p class="sec-label">1단계</p>
-      <h2>설치하고 데모 실행하기</h2>
-      <p>준비물: Node.js 20.12 이상, pnpm 9 이상이에요.</p>
-      <pre class="code"><span class="p">$</span> git clone https://github.com/dioKR/storepulse.git
-<span class="p">$</span> cd storepulse
-<span class="p">$</span> pnpm install
-<span class="p">$</span> pnpm demo</pre>
+      <h2>데모 실행하기</h2>
+      <p>준비물: Node.js 20.12 이상 — 클론도, 설치도, 크리덴셜도 필요 없어요.</p>
+      <pre class="code"><span class="p">$</span> npx storepulse demo</pre>
       <p>
         데모 보드는 실제 팀처럼 생긴 샘플 데이터를 써요 — 앱 두 개, 각각
         prod·dev 변형, 양쪽 플랫폼이요. 앞으로 보게 될 배지가 전부 들어
         있어요: <span class="g">LIVE</span>, <span class="c">50%</span>
         (단계적 롤아웃), <span class="y">REVIEW</span>,
         <span class="r">REJECTED</span>, <span class="d">draft</span>.
+        브라우저가 더 편하다면 <code>npx storepulse serve --demo</code>가
+        같은 보드를 <code>127.0.0.1:4780</code>에 띄워줘요.
       </p>
     </section>
 

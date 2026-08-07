@@ -17,19 +17,21 @@ import Base from "../../layouts/Base.astro";
 
     <section>
       <p class="sec-label">ステップ 1</p>
-      <h2>インストールしてデモを実行</h2>
-      <p>前提: Node.js 20.12 以上、pnpm 9 以上。</p>
-      <pre class="code"><span class="p">$</span> git clone https://github.com/dioKR/storepulse.git
-<span class="p">$</span> cd storepulse
-<span class="p">$</span> pnpm install
-<span class="p">$</span> pnpm demo</pre>
+      <h2>デモを実行する</h2>
+      <p>
+        前提: Node.js 20.12 以上 — クローンも、インストールも、認証情報も
+        不要です。
+      </p>
+      <pre class="code"><span class="p">$</span> npx storepulse demo</pre>
       <p>
         デモボードには、実際のチームを模したサンプルデータが入っています —
         アプリ 2 つ、それぞれ prod・dev のバリアント、両プラットフォーム。
         今後目にするバッジがすべて揃っています:
         <span class="g">LIVE</span>, <span class="c">50%</span>(段階的リリース),
         <span class="y">REVIEW</span>, <span class="r">REJECTED</span>,
-        <span class="d">draft</span>。
+        <span class="d">draft</span>。ブラウザで見たい場合は
+        <code>npx storepulse serve --demo</code> が同じボードを
+        <code>127.0.0.1:4780</code> で開きます。
       </p>
     </section>
 

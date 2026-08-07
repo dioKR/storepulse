@@ -13,7 +13,18 @@
 Console をアプリごとに行き来しているなら、storepulse がその手間をなくします。
 コマンドひとつ、ボードひとつです:
 
-![storepulse デモ — pnpm demo がリリースボードを描くアニメーション](docs/images/demo.svg)
+![storepulse デモ — npx storepulse demo がリリースボードを描くアニメーション](docs/images/demo.svg)
+
+いますぐ試せます — 認証情報も、設定も、クローンも不要です。
+必要なのは [Node.js](https://nodejs.org) 20.12 以上だけ:
+
+```sh
+npx storepulse demo           # ターミナルにリリースボードを表示
+npx storepulse serve --demo   # 同じボードをローカル Web ダッシュボードで → http://127.0.0.1:4780
+```
+
+いま表示されたボードは、実際のチームを模したダミーデータです。
+アプリ 2 つ、それぞれ prod・dev のバリアント、両プラットフォーム。
 
 **Expo / React Native** チームを第一に考えて作りましたが、どんな iOS/Android
 アプリでも使えます — storepulse が話す相手はビルドシステムではなく、
@@ -26,22 +37,26 @@ Console をアプリごとに行き来しているなら、storepulse がその�
 
 ---
 
-## まずは体験から — 認証情報は不要
+## storepulse はあなたに合うツール?
 
-サンプルデータだけで、storepulse が何をするのか 1 分で確かめられます。
+storepulse は、**小規模な Expo / React Native チームのための、ローカルで
+読み取り専用の post-submit リリース観測ツール**です — 提出ボタンを押した
+*あと*にリリースがどうなっていくかを見守るだけで、それ以上のことはしません。
 
-**前提**: [Node.js](https://nodejs.org) 20.12 以上、
-[pnpm](https://pnpm.io) 9 以上。
+**こんなときにぴったりです:**
 
-```sh
-git clone https://github.com/dioKR/storepulse.git
-cd storepulse
-pnpm install
-pnpm demo
-```
+- すべてのアプリの公開バージョン・審査状況・段階的リリースの割合・テスト
+  トラックを 1 枚のボードで見たい — ターミナルでも、ブラウザでも、CI では
+  JSON でも
+- ストアの認証情報を自分のマシンだけに置いておきたい — アカウントも、
+  ホスティングサーバーも、テレメトリもありません
 
-これだけです — いま表示されたボードは、実際のチームを模したダミーデータです。
-アプリ 2 つ、それぞれ prod・dev のバリアント、両プラットフォーム。
+**こういうものが必要なら、別のツールをどうぞ:**
+
+- リリースの提出・昇格・段階的リリースの操作 — storepulse は両ストアへの
+  書き込みを一切しません
+- ASO、レビュー・評価の分析、売上ダッシュボード
+- ホスティング型の SaaS — storepulse はあなたが実行した場所でだけ動きます
 
 ## ボードの読み方
 
@@ -300,6 +315,15 @@ EAS_TOKEN=...
 
 ## 開発
 
+storepulse 自体を開発したいですか? リポジトリをクローンしてください —
+[pnpm](https://pnpm.io) 9 以上が必要なのはこのフローだけです:
+
+```sh
+git clone https://github.com/dioKR/storepulse.git
+cd storepulse
+pnpm install
+```
+
 ```sh
 pnpm demo              # サンプルデータでボードを表示
 pnpm status            # 実際の設定でボードを表示
@@ -317,11 +341,20 @@ ESLint + Prettier を置き換える単一ツールです。エディタは Biom
 
 ## ロードマップ
 
+これまでに完了したもの:
+
 - [x] EAS コネクタ — ストアの状態を Expo のビルド・提出と結びつける
-- [ ] 状態変化時の Slack/Discord 通知(「2.5.0 審査通過 🎉」)
 - [x] Web ダッシュボード(`storepulse serve`)
 - [x] npm 公開(`npx storepulse`)
 - [x] CLI 出力の英語・韓国語対応(`--lang ko`、`storepulse explain`)
+- [x] スナップショット diff エンジン(`storepulse diff`)
+
+次にやること([ロードマップ全体](https://github.com/dioKR/storepulse/issues/57)):
+
+- [ ] CI ポリシーゲート(`storepulse check --fail-on`)と公式 GitHub Action
+- [ ] リリースの変化を伝える generic webhook イベント — Slack、Discord、
+  自作の自動化のどれにでもつなげられます
+- [ ] ローカル watch モード
 
 ## ライセンス
 

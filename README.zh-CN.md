@@ -12,7 +12,18 @@
 如果确认这些事还得在 App Store Connect 和 Google Play Console 里一个应用一个
 应用地点,storepulse 就是为你准备的。一条命令,一块看板:
 
-![storepulse 演示 — pnpm demo 渲染实时发布看板](docs/images/demo.svg)
+![storepulse 演示 — npx storepulse demo 渲染实时发布看板](docs/images/demo.svg)
+
+现在就能试 —— 不需要凭据,不需要配置,也不用克隆仓库。
+有 [Node.js](https://nodejs.org) ≥ 20.12 就够了:
+
+```sh
+npx storepulse demo           # 发布看板,直接出现在终端里
+npx storepulse serve --demo   # 同一块看板,变成本地 Web 看板 → http://127.0.0.1:4780
+```
+
+你看到的看板是模拟真实团队的假数据:两个应用,各有 prod·dev 两个变体,
+覆盖双平台。
 
 它是为 **Expo / React Native** 团队优先设计的,但任何 iOS/Android 应用都能用
 —— storepulse 只跟商店打交道,不碰你的构建系统。
@@ -24,22 +35,23 @@
 
 ---
 
-## 先试试看 —— 不需要凭据
+## storepulse 适合你吗?
 
-用示例数据,一分钟内就能看到 storepulse 到底做什么。
+storepulse 是**面向小型 Expo / React Native 团队的本地、只读、提交后
+(post-submit)发布可观测工具** —— 它只盯着你点下"提交"之后发布的去向,
+仅此而已。
 
-**前置要求**:[Node.js](https://nodejs.org) ≥ 20.12,
-[pnpm](https://pnpm.io) ≥ 9。
+**这些情况下它很合适:**
 
-```sh
-git clone https://github.com/dioKR/storepulse.git
-cd storepulse
-pnpm install
-pnpm demo
-```
+- 想在一块看板上看到所有应用的在线版本、审核状态、灰度比例和测试轨道 ——
+  终端、浏览器,或在 CI 里用 JSON
+- 想让商店凭据只留在自己的电脑上 —— 没有账号,没有托管服务器,没有遥测
 
-就这样 —— 你看到的看板是模拟真实团队的假数据:两个应用,各有 prod·dev
-两个变体,覆盖双平台。
+**如果你需要下面这些,请另寻他处:**
+
+- 提交、推进或操控发布的灰度 —— storepulse 从不向任何一家商店写入
+- ASO、评论/评分分析或营收报表
+- 托管的 SaaS —— storepulse 只在你运行它的地方运行
 
 ## 怎么看这块看板
 
@@ -277,6 +289,15 @@ EAS_TOKEN=...
 
 ## 开发
 
+想参与开发 storepulse 本身?克隆仓库即可 —— 只有这条路径需要
+[pnpm](https://pnpm.io) ≥ 9:
+
+```sh
+git clone https://github.com/dioKR/storepulse.git
+cd storepulse
+pnpm install
+```
+
 ```sh
 pnpm demo              # 用示例数据显示看板
 pnpm status            # 用真实配置显示看板
@@ -293,11 +314,20 @@ ESLint + Prettier。编辑器装上 Biome 插件,就会自动读取 `biome.json`
 
 ## 路线图
 
+已经完成的:
+
 - [x] EAS 连接器 —— 把商店状态和 Expo 的构建·提交关联起来
-- [ ] 状态变化时的 Slack/Discord 通知("2.5.0 审核通过 🎉")
 - [x] Web 看板(`storepulse serve`)
 - [x] 发布到 npm(`npx storepulse`)
 - [x] CLI 输出支持英文·韩文(`--lang ko`、`storepulse explain`)
+- [x] 快照 diff 引擎(`storepulse diff`)
+
+接下来要做的([完整路线图](https://github.com/dioKR/storepulse/issues/57)):
+
+- [ ] CI 策略门槛(`storepulse check --fail-on`)和官方 GitHub Action
+- [ ] 发布变化的 generic webhook 事件 —— Slack、Discord 或你自己的自动化
+  都能接入
+- [ ] 本地 watch 模式
 
 ## 许可证
 

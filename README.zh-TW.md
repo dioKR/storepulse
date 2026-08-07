@@ -12,7 +12,18 @@
 如果確認這些事還得在 App Store Connect 和 Google Play Console 裡一個 App
 一個 App 地點來點去,storepulse 就是為你準備的。一道指令,一塊看板:
 
-![storepulse 展示 — pnpm demo 繪製即時發布看板](docs/images/demo.svg)
+![storepulse 展示 — npx storepulse demo 繪製即時發布看板](docs/images/demo.svg)
+
+現在就能試 —— 不需要憑證、不需要設定,也不用 clone 儲存庫。
+有 [Node.js](https://nodejs.org) 20.12 以上就夠了:
+
+```sh
+npx storepulse demo           # 發布看板,直接出現在終端機裡
+npx storepulse serve --demo   # 同一塊看板,變成本機 Web 儀表板 → http://127.0.0.1:4780
+```
+
+你看到的看板是仿照真實團隊的假資料:兩個 App,各有 prod·dev 兩種變體,
+橫跨雙平台。
 
 它以 **Expo / React Native** 團隊為優先設計,但任何 iOS/Android App 都適用
 —— storepulse 只跟商店溝通,不碰你的建置系統。
@@ -24,22 +35,23 @@
 
 ---
 
-## 先試試看 —— 不需要憑證
+## storepulse 適合你嗎?
 
-用範例資料,一分鐘內就能看到 storepulse 到底在做什麼。
+storepulse 是**為小型 Expo / React Native 團隊打造的本機、唯讀、送出後
+(post-submit)發布可觀測工具** —— 它只盯著你按下「送出」之後發布的去向,
+僅此而已。
 
-**前置需求**:[Node.js](https://nodejs.org) 20.12 以上、
-[pnpm](https://pnpm.io) 9 以上。
+**這些情況下它很合適:**
 
-```sh
-git clone https://github.com/dioKR/storepulse.git
-cd storepulse
-pnpm install
-pnpm demo
-```
+- 想在同一塊看板上看到所有 App 的上線版本、審查狀態、逐步發布比例與測試
+  軌道 —— 用終端機、瀏覽器,或在 CI 裡輸出 JSON
+- 想讓商店憑證只留在自己的電腦上 —— 沒有帳號、沒有託管伺服器、沒有遙測
 
-就這樣 —— 你看到的看板是仿照真實團隊的假資料:兩個 App,各有 prod·dev
-兩種變體,橫跨雙平台。
+**如果你需要下面這些,請另尋工具:**
+
+- 送出、推進或操控發布的逐步發布 —— storepulse 從不對任何一家商店寫入
+- ASO、評論/評分分析或營收報表
+- 託管的 SaaS —— storepulse 只在你執行它的地方執行
 
 ## 怎麼看這塊看板
 
@@ -278,6 +290,15 @@ EAS_TOKEN=...
 
 ## 開發
 
+想參與開發 storepulse 本身?clone 儲存庫即可 —— 只有這條路徑需要
+[pnpm](https://pnpm.io) 9 以上:
+
+```sh
+git clone https://github.com/dioKR/storepulse.git
+cd storepulse
+pnpm install
+```
+
 ```sh
 pnpm demo              # 用範例資料顯示看板
 pnpm status            # 用真實設定顯示看板
@@ -294,11 +315,20 @@ ESLint + Prettier。編輯器裝上 Biome 擴充功能,就會自動讀取 `biome
 
 ## 路線圖
 
+已經完成的:
+
 - [x] EAS 連接器 —— 把商店狀態與 Expo 的建置·送審串起來
-- [ ] 狀態變化時的 Slack/Discord 通知(「2.5.0 審查通過 🎉」)
 - [x] Web 儀表板(`storepulse serve`)
 - [x] 發布到 npm(`npx storepulse`)
 - [x] CLI 輸出支援英文·韓文(`--lang ko`、`storepulse explain`)
+- [x] 快照 diff 引擎(`storepulse diff`)
+
+接下來要做的([完整路線圖](https://github.com/dioKR/storepulse/issues/57)):
+
+- [ ] CI 政策關卡(`storepulse check --fail-on`)與官方 GitHub Action
+- [ ] 發布變化的 generic webhook 事件 —— Slack、Discord 或你自己的自動化
+  都能串接
+- [ ] 本機 watch 模式
 
 ## 授權條款
 
