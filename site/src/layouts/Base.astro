@@ -7,10 +7,12 @@ interface Props {
   title: string;
   description: string;
   lang?: Lang;
+  page?: "home" | "tutorial";
 }
 
-const { title, description, lang = "en" } = Astro.props;
+const { title, description, lang = "en", page = "home" } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const site = (Astro.site?.origin ?? "https://diokr.github.io") + base;
 
 const LANGS: Record<
   Lang,
@@ -75,6 +77,30 @@ const cur = LANGS[lang];
 const homeHref = `${base}${cur.path}/`;
 const tutorialHref = `${base}${cur.path}/tutorial/`;
 const others = (Object.keys(LANGS) as Lang[]).filter((l) => l !== lang);
+
+const pageSuffix = page === "tutorial" ? "tutorial/" : "";
+const alternateUrl = (l: Lang) => `${site}${LANGS[l].path}/${pageSuffix}`;
+const canonicalUrl = alternateUrl(lang);
+const ogImageUrl = `${site}/og.png`;
+const ogImageAlt = "storepulse CLI — App Store Connect + Google Play release monitor";
+
+const jsonLd =
+  page === "home"
+    ? {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        name: "storepulse",
+        description:
+          "storepulse CLI — App Store Connect + Google Play release monitor. One terminal board with live versions, review states, rollout percentages and test tracks for every iOS & Android app.",
+        applicationCategory: "DeveloperApplication",
+        operatingSystem: "macOS, Linux, Windows",
+        url: `${site}/`,
+        image: ogImageUrl,
+        license: "https://github.com/dioKR/storepulse/blob/main/LICENSE",
+        offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+        sameAs: ["https://github.com/dioKR/storepulse", "https://www.npmjs.com/package/storepulse"],
+      }
+    : null;
 ---
 
 <!doctype html>
@@ -85,13 +111,27 @@ const others = (Object.keys(LANGS) as Lang[]).filter((l) => l !== lang);
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:site_name" content="storepulse" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content={ogImageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
     {(Object.keys(LANGS) as Lang[]).map((l) => (
-      <link rel="alternate" hreflang={LANGS[l].hreflang} href={`${base}${LANGS[l].path}/`} />
+      <link rel="alternate" hreflang={LANGS[l].hreflang} href={alternateUrl(l)} />
     ))}
-    <link rel="alternate" hreflang="x-default" href={`${base}/`} />
+    <link rel="alternate" hreflang="x-default" href={alternateUrl("en")} />
+    {jsonLd && (
+      <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    )}
   </head>
   <body>
     <div class="topbar">
