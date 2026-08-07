@@ -1,7 +1,7 @@
 {
   "name": "@storepulse/core",
   "version": "0.8.0",
-  "description": "Normalized App Store Connect / Google Play release status — connectors and types. Bring your own credentials.",
+  "description": "Core connectors for the storepulse CLI — normalized App Store Connect + Google Play release status types and API clients. Bring your own credentials.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -37,9 +37,17 @@
   "keywords": [
     "app-store-connect",
     "google-play",
-    "release",
-    "status",
+    "google-play-console",
+    "app-store",
+    "testflight",
+    "release-monitor",
+    "app-release",
+    "release-status",
+    "mobile-devops",
+    "ios",
+    "android",
     "expo",
+    "eas",
     "react-native"
   ]
 }

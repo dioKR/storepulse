@@ -1,7 +1,7 @@
 {
   "name": "storepulse",
   "version": "0.8.0",
-  "description": "One-glance release status for all your iOS & Android apps — App Store Connect + Google Play in a single terminal table.",
+  "description": "storepulse CLI — App Store Connect + Google Play release monitor. Live versions, review states, rollout % and test tracks for all your iOS & Android apps in one terminal board.",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -33,10 +33,18 @@
   "keywords": [
     "app-store-connect",
     "google-play",
-    "release",
-    "dashboard",
+    "google-play-console",
+    "app-store",
+    "testflight",
+    "release-monitor",
+    "app-release",
+    "mobile-devops",
+    "ios",
+    "android",
     "cli",
+    "dashboard",
     "expo",
+    "eas",
     "react-native"
   ]
 }
