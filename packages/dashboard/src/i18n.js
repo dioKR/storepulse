@@ -225,6 +225,10 @@ export const UI_STRINGS = {
     "en": "compare a snapshot with a file or the current stores",
     "ko": "스냅샷을 파일 또는 현재 스토어 상태와 비교"
   },
+  "cli.help.check": {
+    "en": "fail CI on risky states (check --fail-on rejected,halted)",
+    "ko": "위험 상태 시 CI 실패 (check --fail-on rejected,halted)"
+  },
   "cli.help.serve": {
     "en": "local web dashboard (--demo, --port, --host, --refresh)",
     "ko": "로컬 웹 대시보드 (--demo, --port, --host, --refresh)"
@@ -628,6 +632,30 @@ export const UI_STRINGS = {
   "diff.noneValue": {
     "en": "none",
     "ko": "없음"
+  },
+  "check.usage": {
+    "en": "usage: storepulse check --fail-on <state,...> [--demo] [--format text|json]",
+    "ko": "사용법: storepulse check --fail-on <상태,...> [--demo] [--format text|json]"
+  },
+  "check.invalidFailOn": {
+    "en": "invalid --fail-on state \"{value}\" — valid states: {states}",
+    "ko": "\"{value}\"은(는) 유효한 --fail-on 상태가 아닙니다 — 사용 가능한 상태: {states}"
+  },
+  "check.invalidFormat": {
+    "en": "invalid --format \"{value}\" — use \"text\" or \"json\"",
+    "ko": "\"{value}\"은(는) 유효한 --format이 아닙니다 — \"text\" 또는 \"json\"을 사용하세요"
+  },
+  "check.ok": {
+    "en": "no policy violations — {apps} app(s) checked",
+    "ko": "정책 위반 없음 — 앱 {apps}개 검사"
+  },
+  "check.violations": {
+    "en": "{n} policy violation(s) across {apps} app(s)",
+    "ko": "앱 {apps}개 중 정책 위반 {n}건"
+  },
+  "check.errors": {
+    "en": "{n} app(s) could not be checked — an unverified store state fails the gate",
+    "ko": "앱 {n}개를 조회하지 못했습니다 — 확인되지 않은 스토어 상태는 게이트를 통과할 수 없습니다"
   },
   "serve.started": {
     "en": "dashboard on {url}  (api: /api/status, {mode})",
