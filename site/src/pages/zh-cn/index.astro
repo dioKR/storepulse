@@ -141,6 +141,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
             EAS 构建:git 提交、构建配置文件、提交状态,一个不少。
           </div>
         </div>
+        <div class="feat-row">
+          <div class="k">CI 策略门槛</div>
+          <div class="v">
+            <code>storepulse check --fail-on rejected,halted</code> 把商店状态
+            变成 CI 判定。退出码可区分正常、策略违规和采集错误,
+            <code>--format json</code> 可直接接入自动化。
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -199,7 +207,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <span class="done">npx storepulse</span>
         <span class="done">CLI 英文·韩文输出</span>
         <span class="done">快照 diff</span>
-        <span>CI 策略门槛 + GitHub Action</span>
+        <span class="done">CI 策略门槛</span>
+        <span>官方 GitHub Action</span>
         <span>generic webhook 事件</span>
         <span>本地 watch 模式</span>
       </div>

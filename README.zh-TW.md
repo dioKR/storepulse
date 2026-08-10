@@ -126,6 +126,21 @@ npx storepulse snapshot --demo  # 把看板輸出成 JSON
 
 想讓整個團隊在線上看這塊看板?**[部署指南](docs/deploy/README.md)** 涵蓋 AWS、Cloudflare、Vercel、Netlify 與 Google Cloud —— 內建快照定期更新與存取控制。
 
+## 把發布狀態變成 CI 政策關卡
+
+`storepulse check` 會收集同一份商店資料;只要任一通道狀態符合
+`--fail-on` 指定的值,就讓 CI 失敗:
+
+```sh
+npx storepulse check --fail-on rejected,halted
+npx storepulse check --fail-on rejected,halted --format json
+```
+
+支援的狀態有 `live`、`rollout`、`in-review`、`pending`、`rejected`、
+`halted`、`draft` 與 `unknown`。收集成功且無符合項目時結束碼為 `0`,發現
+政策違規時為 `1`,參數錯誤或收集失敗時為 `2`。這樣 CI 就能區分政策違規
+與憑證、設定或商店 API 故障。不用憑證試用時,加上 `--demo` 即可。
+
 ---
 
 ## 接上你的真實 App
@@ -322,10 +337,11 @@ ESLint + Prettier。編輯器裝上 Biome 擴充功能,就會自動讀取 `biome
 - [x] 發布到 npm(`npx storepulse`)
 - [x] CLI 輸出支援英文·韓文(`--lang ko`、`storepulse explain`)
 - [x] 快照 diff 引擎(`storepulse diff`)
+- [x] CI 政策關卡(`storepulse check --fail-on`)
 
 接下來要做的([完整路線圖](https://github.com/dioKR/storepulse/issues/57)):
 
-- [ ] CI 政策關卡(`storepulse check --fail-on`)與官方 GitHub Action
+- [ ] 提供定期檢查與 Job Summary 的官方 GitHub Action
 - [ ] 發布變化的 generic webhook 事件 —— Slack、Discord 或你自己的自動化
   都能串接
 - [ ] 本機 watch 模式

@@ -184,6 +184,21 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
     </section>
 
     <section>
+      <p class="sec-label">CI — 任意</p>
+      <h2>リリース状態でビルドを失敗させる</h2>
+      <pre class="code"><span class="p">$</span> npx storepulse check --fail-on rejected,halted</pre>
+      <p>
+        正規化された状態 <code>live</code>、<code>rollout</code>、
+        <code>in-review</code>、<code>pending</code>、<code>rejected</code>、
+        <code>halted</code>、<code>draft</code>、<code>unknown</code> を指定できます。
+        終了コード <code>0</code> は該当なし、<code>1</code> はポリシー違反、
+        <code>2</code> は不正な引数または収集エラーです。機械可読の出力には
+        <code>--format json</code>、認証情報なしの試用には <code>--demo</code> を
+        追加してください。
+      </p>
+    </section>
+
+    <section>
       <p class="sec-label">トラブルシューティング</p>
       <h2>何かがおかしいとき</h2>
       <p>

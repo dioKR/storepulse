@@ -134,6 +134,22 @@ npx storepulse snapshot --demo  # 보드를 JSON으로 출력
 
 팀 전체가 온라인으로 보게 하고 싶나요? **[배포 가이드](docs/deploy/README.md)**가 AWS, Cloudflare, Vercel, Netlify, Google Cloud를 다뤄요 — 스냅샷 주기 갱신과 접근 제어까지 포함해서요.
 
+## 릴리즈 상태를 CI 정책으로 사용하기
+
+`storepulse check`는 같은 스토어 데이터를 수집한 뒤, 채널 상태가
+`--fail-on`에 지정한 값과 일치하면 CI를 실패시켜요:
+
+```sh
+npx storepulse check --fail-on rejected,halted
+npx storepulse check --fail-on rejected,halted --format json
+```
+
+지원하는 상태는 `live`, `rollout`, `in-review`, `pending`, `rejected`,
+`halted`, `draft`, `unknown`이에요. 수집에 성공하고 위반이 없으면 종료 코드
+`0`, 정책 위반이 있으면 `1`, 잘못된 인자나 수집 오류에는 `2`를 반환해요.
+그래서 CI에서 정책 위반과 크리덴셜·설정·스토어 API 실패를 구분할 수 있어요.
+크리덴셜 없이 시험하려면 `--demo`를 추가하세요.
+
 ---
 
 ## 실제 앱 연결하기
@@ -338,10 +354,11 @@ Prettier를 대신하는 단일 도구예요. 에디터는 Biome 확장만 설�
 - [x] npm 배포 (`npx storepulse`)
 - [x] CLI 출력 영어·한국어 지원 (`--lang ko`, `storepulse explain`)
 - [x] 스냅샷 diff 엔진 (`storepulse diff`)
+- [x] CI 정책 게이트 (`storepulse check --fail-on`)
 
 다음 차례 ([전체 로드맵](https://github.com/dioKR/storepulse/issues/57)):
 
-- [ ] CI 정책 게이트 (`storepulse check --fail-on`)와 공식 GitHub Action
+- [ ] 예약 점검과 Job Summary를 제공하는 공식 GitHub Action
 - [ ] 릴리즈 변화를 알리는 generic webhook 이벤트 — Slack, Discord, 자체
   자동화 어디든 연결할 수 있어요
 - [ ] 로컬 watch 모드

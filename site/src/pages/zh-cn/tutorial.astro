@@ -168,6 +168,20 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
     </section>
 
     <section>
+      <p class="sec-label">CI —— 可选</p>
+      <h2>按发布状态让构建失败</h2>
+      <pre class="code"><span class="p">$</span> npx storepulse check --fail-on rejected,halted</pre>
+      <p>
+        可指定标准化状态 <code>live</code>、<code>rollout</code>、
+        <code>in-review</code>、<code>pending</code>、<code>rejected</code>、
+        <code>halted</code>、<code>draft</code> 或 <code>unknown</code>。
+        退出码 <code>0</code> 表示无匹配,<code>1</code> 表示策略违规,
+        <code>2</code> 表示参数错误或采集失败。需要机器可读输出时加
+        <code>--format json</code>;无需凭据试用时加 <code>--demo</code>。
+      </p>
+    </section>
+
+    <section>
       <p class="sec-label">问题排查</p>
       <h2>哪里不对劲时</h2>
       <p>

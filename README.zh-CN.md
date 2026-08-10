@@ -125,6 +125,21 @@ npx storepulse snapshot --demo  # 把看板输出成 JSON
 
 想让整个团队在线看这块看板?**[部署指南](docs/deploy/README.md)** 覆盖 AWS、Cloudflare、Vercel、Netlify 和 Google Cloud —— 内置快照定时刷新与访问控制。
 
+## 把发布状态变成 CI 策略门槛
+
+`storepulse check` 会采集同一份商店数据;只要任一渠道状态匹配
+`--fail-on` 指定的值,就让 CI 失败:
+
+```sh
+npx storepulse check --fail-on rejected,halted
+npx storepulse check --fail-on rejected,halted --format json
+```
+
+支持的状态有 `live`、`rollout`、`in-review`、`pending`、`rejected`、
+`halted`、`draft` 和 `unknown`。采集成功且无匹配时退出码为 `0`,发现策略
+违规时为 `1`,参数错误或采集失败时为 `2`。这样 CI 就能区分策略违规与
+凭据、配置或商店 API 故障。无需凭据试用时,加上 `--demo` 即可。
+
 ---
 
 ## 接入你的真实应用
@@ -321,10 +336,11 @@ ESLint + Prettier。编辑器装上 Biome 插件,就会自动读取 `biome.json`
 - [x] 发布到 npm(`npx storepulse`)
 - [x] CLI 输出支持英文·韩文(`--lang ko`、`storepulse explain`)
 - [x] 快照 diff 引擎(`storepulse diff`)
+- [x] CI 策略门槛(`storepulse check --fail-on`)
 
 接下来要做的([完整路线图](https://github.com/dioKR/storepulse/issues/57)):
 
-- [ ] CI 策略门槛(`storepulse check --fail-on`)和官方 GitHub Action
+- [ ] 提供定时检查与 Job Summary 的官方 GitHub Action
 - [ ] 发布变化的 generic webhook 事件 —— Slack、Discord 或你自己的自动化
   都能接入
 - [ ] 本地 watch 模式

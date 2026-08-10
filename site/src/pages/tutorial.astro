@@ -176,6 +176,21 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
     </section>
 
     <section>
+      <p class="sec-label">CI — optional</p>
+      <h2>Fail builds on release states</h2>
+      <pre class="code"><span class="p">$</span> npx storepulse check --fail-on rejected,halted</pre>
+      <p>
+        Use the normalized states <code>live</code>, <code>rollout</code>,
+        <code>in-review</code>, <code>pending</code>, <code>rejected</code>,
+        <code>halted</code>, <code>draft</code>, or <code>unknown</code>.
+        Exit code <code>0</code> means no match, <code>1</code> means a policy
+        violation, and <code>2</code> means invalid arguments or a collection
+        error. Add <code>--format json</code> for machine-readable output or
+        <code>--demo</code> to try it without credentials.
+      </p>
+    </section>
+
+    <section>
       <p class="sec-label">troubleshooting</p>
       <h2>When something's off</h2>
       <p>

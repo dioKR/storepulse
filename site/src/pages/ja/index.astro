@@ -146,6 +146,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
             コミット、ビルドプロファイル、提出ステータスまで。
           </div>
         </div>
+        <div class="feat-row">
+          <div class="k">CI ポリシーゲート</div>
+          <div class="v">
+            <code>storepulse check --fail-on rejected,halted</code> でストアの
+            状態を CI の判定に変えられます。正常・ポリシー違反・収集エラーを
+            終了コードで区別し、<code>--format json</code> で自動化につなげられます。
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -204,7 +212,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <span class="done">npx storepulse</span>
         <span class="done">CLI 出力の英語・韓国語対応</span>
         <span class="done">スナップショット diff</span>
-        <span>CI ポリシーゲート + GitHub Action</span>
+        <span class="done">CI ポリシーゲート</span>
+        <span>公式 GitHub Action</span>
         <span>generic webhook イベント</span>
         <span>ローカル watch モード</span>
       </div>

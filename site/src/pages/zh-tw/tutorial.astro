@@ -169,6 +169,20 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
     </section>
 
     <section>
+      <p class="sec-label">CI —— 選用</p>
+      <h2>依發布狀態讓建置失敗</h2>
+      <pre class="code"><span class="p">$</span> npx storepulse check --fail-on rejected,halted</pre>
+      <p>
+        可指定標準化狀態 <code>live</code>、<code>rollout</code>、
+        <code>in-review</code>、<code>pending</code>、<code>rejected</code>、
+        <code>halted</code>、<code>draft</code> 或 <code>unknown</code>。
+        結束碼 <code>0</code> 代表無符合項目,<code>1</code> 代表政策違規,
+        <code>2</code> 代表參數錯誤或收集失敗。需要機器可讀輸出時加上
+        <code>--format json</code>;不用憑證試用時加上 <code>--demo</code>。
+      </p>
+    </section>
+
+    <section>
       <p class="sec-label">疑難排解</p>
       <h2>哪裡不對勁時</h2>
       <p>
