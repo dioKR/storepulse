@@ -133,6 +133,23 @@ Drop `--demo` and both commands use your real config, set up below.
 
 Want the board online for your whole team? The **[deployment guides](docs/deploy/README.md)** cover AWS, Cloudflare, Vercel, Netlify, and Google Cloud — with scheduled snapshot refresh and access control built in.
 
+## Turn release states into a CI gate
+
+`storepulse check` collects the same store data and fails CI when any channel
+matches the states in `--fail-on`:
+
+```sh
+npx storepulse check --fail-on rejected,halted
+npx storepulse check --fail-on rejected,halted --format json
+```
+
+The supported states are `live`, `rollout`, `in-review`, `pending`, `rejected`,
+`halted`, `draft`, and `unknown`. The exit code is `0` when collection succeeds
+with no match, `1` when the policy finds a match, and `2` for invalid arguments
+or a collection error. That distinction lets CI report a policy violation
+separately from a credential, config, or store API failure. Add `--demo` to try
+the policy without credentials.
+
 ---
 
 ## Connect your real apps
@@ -337,10 +354,11 @@ Done so far:
 - [x] Publish to npm (`npx storepulse`)
 - [x] CLI output in English & Korean (`--lang ko`, `storepulse explain`)
 - [x] Snapshot diff engine (`storepulse diff`)
+- [x] CI policy gate (`storepulse check --fail-on`)
 
 Up next ([full roadmap](https://github.com/dioKR/storepulse/issues/57)):
 
-- [ ] CI policy gate (`storepulse check --fail-on`) and an official GitHub Action
+- [ ] Official GitHub Action for scheduled checks and Job Summary
 - [ ] Generic webhook events on release changes — point Slack, Discord, or
   your own automation at them
 - [ ] Local watch mode

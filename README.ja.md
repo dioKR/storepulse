@@ -137,6 +137,22 @@ npx storepulse snapshot --demo  # ボードを JSON で出力
 
 ボードをチーム全体でオンライン共有したいですか? **[デプロイガイド](docs/deploy/README.md)** が AWS、Cloudflare、Vercel、Netlify、Google Cloud をカバーしています — スナップショットの定期更新とアクセス制御も込みです。
 
+## リリース状態を CI ポリシーにする
+
+`storepulse check` は同じストアデータを収集し、チャンネルの状態が
+`--fail-on` で指定した値に一致すると CI を失敗させます:
+
+```sh
+npx storepulse check --fail-on rejected,halted
+npx storepulse check --fail-on rejected,halted --format json
+```
+
+指定できる状態は `live`、`rollout`、`in-review`、`pending`、`rejected`、
+`halted`、`draft`、`unknown` です。収集に成功して該当なしなら終了コード
+`0`、ポリシー違反があれば `1`、不正な引数や収集エラーなら `2` を返します。
+そのため CI で、ポリシー違反と認証情報・設定・ストア API の障害を区別できます。
+認証情報なしで試すには `--demo` を追加してください。
+
 ---
 
 ## 実際のアプリをつなぐ
@@ -348,10 +364,11 @@ ESLint + Prettier を置き換える単一ツールです。エディタは Biom
 - [x] npm 公開(`npx storepulse`)
 - [x] CLI 出力の英語・韓国語対応(`--lang ko`、`storepulse explain`)
 - [x] スナップショット diff エンジン(`storepulse diff`)
+- [x] CI ポリシーゲート(`storepulse check --fail-on`)
 
 次にやること([ロードマップ全体](https://github.com/dioKR/storepulse/issues/57)):
 
-- [ ] CI ポリシーゲート(`storepulse check --fail-on`)と公式 GitHub Action
+- [ ] 定期チェックと Job Summary を提供する公式 GitHub Action
 - [ ] リリースの変化を伝える generic webhook イベント — Slack、Discord、
   自作の自動化のどれにでもつなげられます
 - [ ] ローカル watch モード

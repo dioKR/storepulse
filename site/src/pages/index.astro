@@ -144,6 +144,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
             status.
           </div>
         </div>
+        <div class="feat-row">
+          <div class="k">CI policy gate</div>
+          <div class="v">
+            <code>storepulse check --fail-on rejected,halted</code> turns store
+            states into a CI decision. Exit codes distinguish a clean run,
+            policy violations, and collection errors; <code>--format json</code>
+            is ready for automation.
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -202,7 +211,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <span class="done">npx storepulse</span>
         <span class="done">english / korean cli output</span>
         <span class="done">snapshot diff</span>
-        <span>ci policy gate + github action</span>
+        <span class="done">ci policy gate</span>
+        <span>official github action</span>
         <span>generic webhook events</span>
         <span>local watch mode</span>
       </div>
