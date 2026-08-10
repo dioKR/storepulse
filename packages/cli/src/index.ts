@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { fetchAll, type Lang, uiString } from "@storepulse/core";
+import { runCheck } from "./check.js";
 import { demoConnector, demoTargets } from "./demo.js";
 import { runDiff } from "./diff.js";
 import { runDoctor } from "./doctor.js";
@@ -29,6 +30,7 @@ function usage(unknownCommand: string, l: Lang): string {
     `  storepulse demo      ${uiString("cli.help.demo", l)}\n` +
     `  storepulse snapshot  ${uiString("cli.help.snapshot", l)}\n` +
     `  storepulse diff      ${uiString("cli.help.diff", l)}\n` +
+    `  storepulse check     ${uiString("cli.help.check", l)}\n` +
     `  storepulse serve     ${uiString("cli.help.serve", l)}\n` +
     `  storepulse explain   ${uiString("cli.help.explain", l)}\n` +
     `  storepulse doctor    ${uiString("cli.help.doctor", l)}\n\n` +
@@ -45,6 +47,8 @@ try {
     await runSnapshot(rest, lang);
   } else if (command === "diff") {
     await runDiff(rest, lang);
+  } else if (command === "check") {
+    process.exitCode = await runCheck(rest, lang);
   } else if (command === "serve") {
     await runServe(rest, lang);
   } else if (command === "explain") {

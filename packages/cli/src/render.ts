@@ -66,7 +66,7 @@ export function renderBoard(statuses: AppStatus[], lang: Lang = DEFAULT_LANG): s
       : s.target.name;
     const os = s.target.platform === "ios" ? "iOS" : "Android";
     if (s.error) {
-      return [app, os, pc.red(`error: ${s.error}`), "", ""];
+      return [app, os, pc.red(`${uiString("cli.errorPrefix", lang)}: ${s.error}`), "", ""];
     }
     return [app, os, ...CHANNELS.map((ch) => cell(s, ch))];
   });
