@@ -4,6 +4,9 @@ This folder holds **product screenshots only** — images of storepulse itself:
 
 - `demo.svg` — the animated README hero. Generated: edit
   `scripts/gen-demo-svg.mjs` and re-run `node scripts/gen-demo-svg.mjs`.
+- `launch-demo.gif` — a 10.3-second external-validation asset that transitions
+  from the animated CLI demo to the local web dashboard. It is composed only
+  from `demo.svg` and `dashboard-demo.png`, so it contains no real app data.
 - `dashboard-*.png` — captures of the web dashboard.
 
 ## No store-console screenshots
