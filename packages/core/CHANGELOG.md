@@ -1,5 +1,11 @@
 # @storepulse/core
 
+## 0.9.0
+
+### Minor Changes
+
+- ef63c84: Add `storepulse check --fail-on <state,...>` — a CI policy gate with a fixed exit-code contract (0 = no violations, 1 = policy violations, 2 = execution error, including any target that could not be fetched), `--format text|json` output and `--demo` support.
+
 ## 0.8.0
 
 ### Minor Changes
