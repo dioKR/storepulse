@@ -48,8 +48,8 @@ Three invariants, no exceptions:
 - **No server of yours.** Only managed static hosting and managed auth.
 - **Sensitive inputs exist only as CI secrets** (`STOREPULSE_CONFIG_BASE64`,
   `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_PRIVATE_KEY_BASE64`,
-  `PLAY_SERVICE_ACCOUNT_BASE64`). They are never uploaded to the hosting
-  provider and never written into the site.
+  `PLAY_SERVICE_ACCOUNT_BASE64`, and optional `EAS_TOKEN`). They are never
+  uploaded to the hosting provider and never written into the site.
 - **The board is never public.** If a provider cannot protect the production
   URL on your plan, the guide says so — pick another provider rather than
   shipping the board open.

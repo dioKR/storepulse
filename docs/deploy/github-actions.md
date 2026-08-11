@@ -53,6 +53,7 @@ platforms in your app list:
 | `ASC_ISSUER_ID` | The issuer ID |
 | `ASC_PRIVATE_KEY_BASE64` | The `.p8` file, base64-encoded |
 | `PLAY_SERVICE_ACCOUNT_BASE64` | The service-account JSON, base64-encoded |
+| `EAS_TOKEN` | Optional Expo access token when any app uses `easProjectId` |
 
 The workflow restores the config inside the ephemeral runner. storepulse reads
 the credential `*_BASE64` variants directly, so no key files ever touch the
@@ -132,6 +133,7 @@ jobs:
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_PRIVATE_KEY_BASE64: ${{ secrets.ASC_PRIVATE_KEY_BASE64 }}
           PLAY_SERVICE_ACCOUNT_BASE64: ${{ secrets.PLAY_SERVICE_ACCOUNT_BASE64 }}
+          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
         run: npx storepulse snapshot --out site/status.json
 
       # ── Upload step: take it from your provider's guide ──────────────

@@ -93,6 +93,7 @@ Add credentials only for the store platforms present in your config:
 | `ASC_ISSUER_ID` | App Store Connect issuer ID |
 | `ASC_PRIVATE_KEY_BASE64` | Base64-encoded App Store Connect `.p8` key |
 | `PLAY_SERVICE_ACCOUNT_BASE64` | Base64-encoded Google Play service-account JSON |
+| `EAS_TOKEN` | Optional Expo access token when any app uses `easProjectId` |
 
 Never put store credentials in `storepulse.config.json`, and never put the real
 config or any secret value in workflow YAML, commits, or logs.

@@ -49,6 +49,7 @@ jobs:
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_PRIVATE_KEY_BASE64: ${{ secrets.ASC_PRIVATE_KEY_BASE64 }}
           PLAY_SERVICE_ACCOUNT_BASE64: ${{ secrets.PLAY_SERVICE_ACCOUNT_BASE64 }}
+          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
         run: npm exec -- storepulse snapshot --out site/status.json
 
       - name: Deploy to Cloudflare Pages
