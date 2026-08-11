@@ -2,5 +2,6 @@ node_modules/
 site/
 .wrangler/
 .env
+storepulse.config.json
 *.p8
 service-account*.json

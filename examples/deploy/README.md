@@ -21,8 +21,10 @@ npm ci
 ```
 
 Edit `storepulse.config.json` with your app IDs. It contains no credentials,
-but it reveals your app portfolio, which is why the repository must stay
-private. The lockfile pins both storepulse and Wrangler for auditable CI runs.
+but it reveals your app portfolio, so `.gitignore` keeps the real file out of
+Git even in a private repository. The workflow reconstructs it from a GitHub
+Actions secret instead. The lockfile pins both storepulse and Wrangler for
+auditable CI runs.
 
 ## 2. Create the Cloudflare Pages project
 
@@ -64,11 +66,22 @@ if any URL remains public. Do not continue until both checks pass.
 
 ## 4. Add GitHub Actions secrets
 
-In **Settings → Secrets and variables → Actions**, add the Cloudflare upload
-credentials:
+Encode the app configuration without printing it or creating another file:
+
+```sh
+# macOS
+base64 -i storepulse.config.json | pbcopy
+
+# Linux
+base64 -w0 storepulse.config.json
+```
+
+In **Settings → Secrets and variables → Actions**, add the encoded config and
+Cloudflare upload credentials:
 
 | Secret | Value |
 |---|---|
+| `STOREPULSE_CONFIG_BASE64` | Base64-encoded `storepulse.config.json` |
 | `CLOUDFLARE_ACCOUNT_ID` | The account that owns `storepulse-board` |
 | `CLOUDFLARE_API_TOKEN` | A custom token scoped to **Account → Cloudflare Pages → Edit** |
 
@@ -81,8 +94,8 @@ Add credentials only for the store platforms present in your config:
 | `ASC_PRIVATE_KEY_BASE64` | Base64-encoded App Store Connect `.p8` key |
 | `PLAY_SERVICE_ACCOUNT_BASE64` | Base64-encoded Google Play service-account JSON |
 
-Never put these values in `storepulse.config.json`, workflow YAML, commits, or
-logs.
+Never put store credentials in `storepulse.config.json`, and never put the real
+config or any secret value in workflow YAML, commits, or logs.
 
 ## 5. Run the first real refresh
 
@@ -100,6 +113,8 @@ in `.github/workflows/cloudflare.yml` if you need a different cadence.
 
 - Keep only `schedule` and `workflow_dispatch` triggers. A fork PR must never
   reach store credentials.
+- Keep the real `storepulse.config.json` out of Git and restore it only from
+  `STOREPULSE_CONFIG_BASE64` in CI.
 - Keep workflow permissions at `contents: read`.
 - Keep third-party actions pinned to full commit SHAs.
 - Keep the production and every preview/custom hostname behind Access.

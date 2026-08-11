@@ -4,7 +4,7 @@
   "private": true,
   "description": "Copy-ready Cloudflare Pages deployment for a private storepulse board",
   "engines": {
-    "node": ">=20.12"
+    "node": ">=22.0.0"
   },
   "scripts": {
     "build:demo": "mkdir -p site && cp -R node_modules/storepulse/dist/dashboard/. site/ && storepulse snapshot --demo --out site/status.json"

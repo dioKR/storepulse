@@ -46,9 +46,10 @@ Every guide in this directory implements the same three-part design:
 Three invariants, no exceptions:
 
 - **No server of yours.** Only managed static hosting and managed auth.
-- **Credentials exist only as CI secrets** (`ASC_KEY_ID`, `ASC_ISSUER_ID`,
-  `ASC_PRIVATE_KEY_BASE64`, `PLAY_SERVICE_ACCOUNT_BASE64`). They are never
-  uploaded to the hosting provider and never written into the site.
+- **Sensitive inputs exist only as CI secrets** (`STOREPULSE_CONFIG_BASE64`,
+  `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_PRIVATE_KEY_BASE64`,
+  `PLAY_SERVICE_ACCOUNT_BASE64`). They are never uploaded to the hosting
+  provider and never written into the site.
 - **The board is never public.** If a provider cannot protect the production
   URL on your plan, the guide says so — pick another provider rather than
   shipping the board open.
@@ -83,8 +84,9 @@ Rules of thumb:
   set up in the [main README](../../README.md#connect-your-real-apps). Run
   `pnpm status` (or `npx storepulse`) locally first; deploy only after the
   board renders your real data.
-- A **private** GitHub repository to hold the workflow and config (the config
-  file alone reveals your app portfolio).
+- A **private** GitHub repository to hold the workflow. The real config reveals
+  your app portfolio, so the workflow reconstructs it from an Actions secret
+  instead of committing it.
 - The shared snapshot workflow from [github-actions.md](github-actions.md).
 
 ## Guides

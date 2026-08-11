@@ -8,9 +8,9 @@ replaces the final step.
 
 ## Prerequisites
 
-- A **private** GitHub repository dedicated to the board deployment (the
-  config file lists your whole app portfolio — keep it private). Your app
-  monorepo works too, but a small separate repo keeps secrets scoped.
+- A **private** GitHub repository dedicated to the board deployment. Your app
+  monorepo works too, but a small separate repo keeps workflows and secrets
+  scoped. The real config stays out of either repository.
 - Working credentials, verified locally first (see the
   [main README](../../README.md#connect-your-real-apps)).
 
@@ -20,7 +20,7 @@ replaces the final step.
 storepulse-board/                      # private repo
 ├── package.json                       # pins the storepulse version
 ├── package-lock.json                  # lockfile → reproducible, auditable CI
-├── storepulse.config.json             # your app list (no secrets in here)
+├── storepulse.config.example.json     # optional shape example, no real app IDs
 └── .github/workflows/
     └── storepulse-snapshot.yml        # the workflow below
 ```
@@ -32,30 +32,40 @@ npm init -y
 npm install --save-dev storepulse
 ```
 
-Copy your working `storepulse.config.json` in (structure only — secrets stay
-in the environment, never in this file).
+Keep your working `storepulse.config.json` only on your machine. It contains no
+store credentials, but the app IDs and names reveal your portfolio. Make sure
+the deploy repository ignores it:
+
+```gitignore
+storepulse.config.json
+```
 
 ## Step 2 — Add the secrets
 
 In the repo: **Settings → Secrets and variables → Actions → New repository
-secret**. Create these four:
+secret**. Create the config secret plus the credentials required by the
+platforms in your app list:
 
 | Secret | Value |
 |---|---|
+| `STOREPULSE_CONFIG_BASE64` | Your complete `storepulse.config.json`, base64-encoded |
 | `ASC_KEY_ID` | The App Store Connect key ID |
 | `ASC_ISSUER_ID` | The issuer ID |
 | `ASC_PRIVATE_KEY_BASE64` | The `.p8` file, base64-encoded |
 | `PLAY_SERVICE_ACCOUNT_BASE64` | The service-account JSON, base64-encoded |
 
-storepulse reads the `*_BASE64` variants directly — no key files ever touch
-the runner's checkout. Encode them locally:
+The workflow restores the config inside the ephemeral runner. storepulse reads
+the credential `*_BASE64` variants directly, so no key files ever touch the
+runner's checkout. Encode them locally:
 
 ```sh
 # macOS
+base64 -i storepulse.config.json | pbcopy
 base64 -i AuthKey_XXXXXXXXXX.p8 | pbcopy
 base64 -i service-account.json | pbcopy
 
 # Linux
+base64 -w0 storepulse.config.json
 base64 -w0 AuthKey_XXXXXXXXXX.p8
 base64 -w0 service-account.json
 ```
@@ -101,6 +111,16 @@ jobs:
       - name: Install storepulse (version pinned by the lockfile)
         run: npm ci
 
+      - name: Restore app configuration
+        env:
+          STOREPULSE_CONFIG_BASE64: ${{ secrets.STOREPULSE_CONFIG_BASE64 }}
+        run: |
+          if [ -z "$STOREPULSE_CONFIG_BASE64" ]; then
+            echo "::error::STOREPULSE_CONFIG_BASE64 is required"
+            exit 1
+          fi
+          printf '%s' "$STOREPULSE_CONFIG_BASE64" | base64 --decode > storepulse.config.json
+
       - name: Assemble the static dashboard
         run: |
           mkdir -p site
@@ -145,6 +165,9 @@ After the run, `site/` contains exactly what the host serves: `index.html`,
 - **Pin `storepulse` itself** via `package-lock.json` + `npm ci` (done above)
   instead of `npx storepulse@latest`, so a compromised registry release can't
   silently enter the job that holds your credentials.
+- **Never commit the real `storepulse.config.json`.** It reveals the app
+  portfolio even though it contains no credentials. Restore it from
+  `STOREPULSE_CONFIG_BASE64` only for the duration of the CI job.
 - **Don't debug with `set -x`** in steps that touch secrets, and never `echo`
   them. GitHub masks known secret values in logs, but derived values (like a
   decoded key) are not masked.
@@ -190,6 +213,7 @@ Notes:
 | `ASC_KEY_ID is required because an ios app is configured` | Secret missing/misnamed — names must match exactly, including `_BASE64` |
 | `ASC API 401` in the run | Base64 value corrupted (re-encode with `-w0` on Linux; no line wraps), or key revoked |
 | `Play API 403` | Service account not invited in Play Console, or Android Developer API disabled — see [main README troubleshooting](../../README.md#troubleshooting) |
-| `storepulse.config.json not found` | The config wasn't committed to the deploy repo, or the job's working directory changed |
+| `STOREPULSE_CONFIG_BASE64 is required` | The config secret is missing or misnamed |
+| `storepulse.config.json` is invalid JSON | Re-encode the local config without line wrapping and replace the secret |
 | Workflow stopped running by itself | Scheduled workflows disabled after repo inactivity — re-enable in the Actions tab |
 | Runs happen minutes late | Normal for GitHub cron; it's best-effort |

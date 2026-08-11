@@ -28,6 +28,16 @@ jobs:
       - name: Install pinned dependencies
         run: npm ci
 
+      - name: Restore app configuration
+        env:
+          STOREPULSE_CONFIG_BASE64: ${{ secrets.STOREPULSE_CONFIG_BASE64 }}
+        run: |
+          if [ -z "$STOREPULSE_CONFIG_BASE64" ]; then
+            echo "::error::STOREPULSE_CONFIG_BASE64 is required"
+            exit 1
+          fi
+          printf '%s' "$STOREPULSE_CONFIG_BASE64" | base64 --decode > storepulse.config.json
+
       - name: Assemble the static dashboard
         run: |
           mkdir -p site
