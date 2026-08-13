@@ -143,8 +143,11 @@ export type UiKey =
   | "dash.filterAll"
   | "dash.filterOs"
   | "dash.filterGroup"
+  | "dash.filterEnvironment"
   | "dash.filterByOs"
   | "dash.filterByGroup"
+  | "dash.filterByEnvironment"
+  | "dash.ungrouped"
   | "dash.targets"
   | "dash.targetsFiltered"
   | "dash.autoRefresh"
@@ -690,8 +693,11 @@ export const UI_STRINGS: Readonly<Record<UiKey, Readonly<Localized>>> = {
   "dash.filterAll": { en: "All", ko: "전체" },
   "dash.filterOs": { en: "os", ko: "OS" },
   "dash.filterGroup": { en: "group", ko: "그룹" },
+  "dash.filterEnvironment": { en: "environment", ko: "환경" },
   "dash.filterByOs": { en: "filter by os", ko: "OS 필터" },
   "dash.filterByGroup": { en: "filter by group", ko: "그룹 필터" },
+  "dash.filterByEnvironment": { en: "select environment", ko: "환경 선택" },
+  "dash.ungrouped": { en: "Ungrouped", ko: "미분류" },
   "dash.targets": { en: "{n} targets", ko: "타깃 {n}개" },
   "dash.targetsFiltered": { en: "{shown}/{total} targets", ko: "타깃 {shown}/{total}개" },
   "dash.autoRefresh": { en: "auto-refresh {seconds}s", ko: "자동 새로고침 {seconds}초" },

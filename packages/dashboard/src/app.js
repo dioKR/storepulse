@@ -14,6 +14,13 @@
  */
 
 import { STATE_EXPLANATIONS, SUPPORTED_LANGS, UI_STRINGS } from "./i18n.js";
+import {
+  environmentId,
+  environmentLabel,
+  environmentsOf,
+  groupAppsByName,
+  UNGROUPED_ENVIRONMENT,
+} from "./layout.js";
 import { channelPropagation, formatBundle, latestBundle } from "./propagation.js";
 
 const DATA_URL = "./status.json";
@@ -42,7 +49,7 @@ const explainEl = document.getElementById("explain");
 // UI state that must survive the 60s auto-refresh re-render.
 const expandedKeys = new Set();
 let osFilter = "all";
-let groupFilter = "all";
+let activeEnvironment = null;
 let lastSnapshot = null;
 let lastError = null;
 
@@ -186,20 +193,6 @@ function channelCell(app, channelId, latest) {
     chunk.append(badge(entry));
     td.append(chunk);
   });
-  return td;
-}
-
-function appCell(target, showName, latest) {
-  const td = el("td", "app");
-  if (showName) {
-    td.append(target.name ?? target.key ?? "?");
-    if (target.group) td.append(" ", el("span", "group", `[${target.group}]`));
-  }
-  // Per-target summary on every row — Aurora iOS and Aurora Android share a
-  // name cell but each has its own latest bundle (issue #32).
-  if (latest) {
-    td.append(el("div", "latest", t("dash.latest", { bundle: formatBundle(latest) })));
-  }
   return td;
 }
 
@@ -374,88 +367,93 @@ function detailRow(app, id, open, columns) {
   return tr;
 }
 
-/* ── board table ─────────────────────────── */
+/* ── environment → app → platform board ─── */
 
-function buildTable(apps) {
-  const columns = 3 + CHANNELS.length; // toggle + App + OS + channels
-  const table = el("table", "board");
+function platformRow(app, columns) {
+  const target = app.target ?? {};
+  const key = String(target.key ?? "");
+  const row = el("tr", "app-row");
+  const hasDetails = !app.error && (app.channels ?? []).length > 0;
+  const latest = app.error ? null : latestBundle(app.channels ?? [], target.platform);
+  const detailId = `detail-${encodeURIComponent(key)}`;
+  const open = expandedKeys.has(key);
+
+  const toggleTd = el("td", "toggle-cell");
+  if (hasDetails) {
+    const btn = el("button", "toggle", open ? "▾" : "▸");
+    btn.type = "button";
+    btn.setAttribute("aria-expanded", String(open));
+    btn.setAttribute("aria-controls", detailId);
+    btn.setAttribute(
+      "aria-label",
+      t("dash.rowDetails", {
+        name: target.name ?? key,
+        os: target.platform === "ios" ? "iOS" : "Android",
+      }),
+    );
+    toggleTd.append(btn);
+  }
+  row.append(toggleTd);
+  row.append(el("td", "platform", target.platform === "ios" ? "iOS" : "Android"));
+  row.append(el("td", "latest-cell", latest ? formatBundle(latest) : "—"));
+
+  if (app.error) {
+    const errTd = el("td", "err", `error: ${app.error}`);
+    errTd.colSpan = CHANNELS.length;
+    row.append(errTd);
+  } else {
+    for (const ch of CHANNELS) row.append(channelCell(app, ch.id, latest));
+  }
+
+  if (!hasDetails) return { row, detail: null };
+
+  row.classList.add("expandable");
+  const detail = detailRow(app, detailId, open, columns);
+  row.addEventListener("click", () => {
+    const nowOpen = detail.hidden;
+    detail.hidden = !nowOpen;
+    if (nowOpen) expandedKeys.add(key);
+    else expandedKeys.delete(key);
+    const btn = row.querySelector(".toggle");
+    if (btn) {
+      btn.textContent = nowOpen ? "▾" : "▸";
+      btn.setAttribute("aria-expanded", String(nowOpen));
+    }
+  });
+  return { row, detail };
+}
+
+function buildAppCard(card) {
+  const columns = 3 + CHANNELS.length; // toggle + Platform + Latest + channels
+  const section = el("section", "app-card");
+  section.append(el("h2", "app-card-title", card.name));
+
+  const table = el("table", "board app-board");
   const head = el("tr");
-  head.append(el("th", "toggle-col"), el("th", null, "App"), el("th", null, "OS"));
+  head.append(el("th", "toggle-col"), el("th", null, "Platform"), el("th", null, "Latest"));
   for (const ch of CHANNELS) head.append(el("th", null, ch.label));
   const thead = el("thead");
   thead.append(head);
   table.append(thead);
 
   const tbody = el("tbody");
-  let prevApp = "";
-  for (const app of apps) {
-    const target = app.target ?? {};
-    const key = String(target.key ?? "");
-    const label = `${target.name ?? target.key ?? "?"}|${target.group ?? ""}`;
-    const row = el("tr", "app-row");
-
-    const hasDetails = !app.error && (app.channels ?? []).length > 0;
-    // Latest bundle across ALL channels of this target — computed from the raw
-    // snapshot, so chip filters (which only hide whole rows) cannot skew it.
-    const latest = app.error ? null : latestBundle(app.channels ?? [], app.target?.platform);
-    const detailId = `detail-${encodeURIComponent(key)}`;
-    const open = expandedKeys.has(key);
-
-    const toggleTd = el("td", "toggle-cell");
-    if (hasDetails) {
-      const btn = el("button", "toggle", open ? "▾" : "▸");
-      btn.type = "button";
-      btn.setAttribute("aria-expanded", String(open));
-      btn.setAttribute("aria-controls", detailId);
-      btn.setAttribute(
-        "aria-label",
-        t("dash.rowDetails", {
-          name: target.name ?? key,
-          os: target.platform === "ios" ? "iOS" : "Android",
-        }),
-      );
-      toggleTd.append(btn);
-    }
-    row.append(toggleTd);
-
-    row.append(appCell(target, label !== prevApp, latest));
-    prevApp = label;
-    row.append(el("td", "os", target.platform === "ios" ? "iOS" : "Android"));
-
-    if (app.error) {
-      const errTd = el("td", "err", `error: ${app.error}`);
-      errTd.colSpan = CHANNELS.length;
-      row.append(errTd);
-    } else {
-      for (const ch of CHANNELS) row.append(channelCell(app, ch.id, latest));
-    }
+  for (const app of card.apps) {
+    const { row, detail } = platformRow(app, columns);
     tbody.append(row);
-
-    if (hasDetails) {
-      row.classList.add("expandable");
-      const detail = detailRow(app, detailId, open, columns);
-      tbody.append(detail);
-      // One handler on the row: clicking anywhere toggles, and Enter/Space on
-      // the button bubbles the same click event — keyboard works for free.
-      // (Badge buttons stopPropagation, so they never reach this handler.)
-      row.addEventListener("click", () => {
-        const nowOpen = detail.hidden;
-        detail.hidden = !nowOpen;
-        if (nowOpen) expandedKeys.add(key);
-        else expandedKeys.delete(key);
-        const btn = row.querySelector(".toggle");
-        if (btn) {
-          btn.textContent = nowOpen ? "▾" : "▸";
-          btn.setAttribute("aria-expanded", String(nowOpen));
-        }
-      });
-    }
+    if (detail) tbody.append(detail);
   }
   table.append(tbody);
 
   const scroll = el("div", "board-scroll");
   scroll.append(table);
-  return scroll;
+  section.append(scroll);
+  return section;
+}
+
+function buildBoard(apps) {
+  const grid = el("div", "app-grid");
+  for (const card of groupAppsByName(apps)) grid.append(buildAppCard(card));
+  return grid;
 }
 
 /* ── filter chips ────────────────────────── */
@@ -486,19 +484,30 @@ function chipRow(label, ariaLabel, options, current, onPick) {
   return row;
 }
 
-/** Unique non-empty target.group values, in snapshot order. */
-function groupsOf(apps) {
-  const groups = [];
-  for (const app of apps) {
-    const g = app.target?.group;
-    if (typeof g === "string" && g !== "" && !groups.includes(g)) groups.push(g);
+function environmentTabs(environments) {
+  const row = el("div", "environment-row");
+  row.setAttribute("role", "group");
+  row.setAttribute("aria-label", t("dash.filterByEnvironment"));
+  row.append(el("span", "environment-label", t("dash.filterEnvironment")));
+  for (const id of environments) {
+    const selected = activeEnvironment === id;
+    const label = environmentLabel(id, t("dash.ungrouped"));
+    const btn = el("button", selected ? "environment-tab on" : "environment-tab", label);
+    btn.type = "button";
+    btn.setAttribute("aria-pressed", String(selected));
+    btn.addEventListener("click", () => {
+      activeEnvironment = id;
+      if (lastSnapshot) render(lastSnapshot);
+      filtersEl.querySelector(".environment-tab.on")?.focus();
+    });
+    row.append(btn);
   }
-  return groups;
+  return row;
 }
 
 function renderFilters(apps) {
-  const groups = groupsOf(apps);
-  if (!groups.includes(groupFilter)) groupFilter = "all";
+  const environments = environmentsOf(apps);
+  if (!environments.includes(activeEnvironment)) activeEnvironment = environments[0] ?? null;
 
   filtersEl.replaceChildren();
   if (apps.length === 0) {
@@ -512,31 +521,22 @@ function renderFilters(apps) {
     { id: "ios", label: "iOS" },
     { id: "android", label: "Android" },
   ];
+  if (environments.length > 1 || environments[0] !== UNGROUPED_ENVIRONMENT) {
+    filtersEl.append(environmentTabs(environments));
+  }
   filtersEl.append(
     chipRow(t("dash.filterOs"), t("dash.filterByOs"), osOptions, osFilter, (id) => {
       osFilter = id;
     }),
   );
-  // No groups in the data → no group filter row at all.
-  if (groups.length > 0) {
-    const options = [
-      { id: "all", label: t("dash.filterAll") },
-      ...groups.map((g) => ({ id: g, label: g })),
-    ];
-    filtersEl.append(
-      chipRow(t("dash.filterGroup"), t("dash.filterByGroup"), options, groupFilter, (id) => {
-        groupFilter = id;
-      }),
-    );
-  }
 }
 
-/** AND of the two chip filters — pure client-side show/hide, no refetch. */
+/** Environment selection + OS chip — pure client-side show/hide, no refetch. */
 function applyFilters(apps) {
   return apps.filter(
     (app) =>
-      (osFilter === "all" || app.target?.platform === osFilter) &&
-      (groupFilter === "all" || app.target?.group === groupFilter),
+      (activeEnvironment === null || environmentId(app.target) === activeEnvironment) &&
+      (osFilter === "all" || app.target?.platform === osFilter),
   );
 }
 
@@ -582,7 +582,7 @@ function render(snapshot) {
   } else if (visible.length === 0) {
     boardEl.append(el("div", "filter-empty", t("dash.filterEmpty")));
   } else {
-    boardEl.append(buildTable(visible));
+    boardEl.append(buildBoard(visible));
   }
 
   const generated = snapshot.generatedAt ? new Date(snapshot.generatedAt) : null;

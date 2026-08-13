@@ -761,6 +761,10 @@ export const UI_STRINGS = {
     "en": "group",
     "ko": "그룹"
   },
+  "dash.filterEnvironment": {
+    "en": "environment",
+    "ko": "환경"
+  },
   "dash.filterByOs": {
     "en": "filter by os",
     "ko": "OS 필터"
@@ -768,6 +772,14 @@ export const UI_STRINGS = {
   "dash.filterByGroup": {
     "en": "filter by group",
     "ko": "그룹 필터"
+  },
+  "dash.filterByEnvironment": {
+    "en": "select environment",
+    "ko": "환경 선택"
+  },
+  "dash.ungrouped": {
+    "en": "Ungrouped",
+    "ko": "미분류"
   },
   "dash.targets": {
     "en": "{n} targets",
