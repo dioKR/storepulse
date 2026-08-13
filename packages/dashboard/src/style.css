@@ -127,7 +127,7 @@ body {
   margin-top: 14px;
 }
 
-/* ── environment → app → platform board ─── */
+/* ── group → app → platform board ───────── */
 .app-grid {
   display: grid;
   gap: 16px;
@@ -332,7 +332,7 @@ dd.exp-over {
   margin-bottom: 18px;
 }
 
-.environment-row {
+.group-row {
   display: flex;
   align-items: stretch;
   gap: 8px;
@@ -340,7 +340,7 @@ dd.exp-over {
   border-bottom: 1px solid var(--line);
 }
 
-.environment-label {
+.group-label {
   align-self: center;
   margin-right: 4px;
   color: var(--muted);
@@ -350,7 +350,7 @@ dd.exp-over {
   letter-spacing: 0.1em;
 }
 
-button.environment-tab {
+button.group-tab {
   min-width: 150px;
   font: inherit;
   color: var(--muted);
@@ -360,17 +360,17 @@ button.environment-tab {
   cursor: pointer;
 }
 
-button.environment-tab:hover {
+button.group-tab:hover {
   color: var(--ink);
   border-color: var(--accent);
 }
 
-button.environment-tab:focus-visible {
+button.group-tab:focus-visible {
   outline: 1px solid var(--accent);
   outline-offset: 2px;
 }
 
-button.environment-tab.on {
+button.group-tab.on {
   color: #121014;
   background: var(--accent);
   border-color: var(--accent);
@@ -436,15 +436,15 @@ button.chip.on {
     padding: 14px 10px 18px;
   }
 
-  .environment-row {
+  .group-row {
     flex-wrap: wrap;
   }
 
-  .environment-label {
+  .group-label {
     width: 100%;
   }
 
-  button.environment-tab {
+  button.group-tab {
     flex: 1 1 140px;
     min-width: 0;
   }

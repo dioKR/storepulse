@@ -15,11 +15,11 @@
 
 import { STATE_EXPLANATIONS, SUPPORTED_LANGS, UI_STRINGS } from "./i18n.js";
 import {
-  environmentId,
-  environmentLabel,
-  environmentsOf,
   groupAppsByName,
-  UNGROUPED_ENVIRONMENT,
+  groupId,
+  groupLabel,
+  groupsOf,
+  shouldShowGroupSelector,
 } from "./layout.js";
 import { channelPropagation, formatBundle, latestBundle } from "./propagation.js";
 
@@ -49,7 +49,7 @@ const explainEl = document.getElementById("explain");
 // UI state that must survive the 60s auto-refresh re-render.
 const expandedKeys = new Set();
 let osFilter = "all";
-let activeEnvironment = null;
+let activeGroup = null;
 let lastSnapshot = null;
 let lastError = null;
 
@@ -367,7 +367,7 @@ function detailRow(app, id, open, columns) {
   return tr;
 }
 
-/* ── environment → app → platform board ─── */
+/* ── group → app → platform board ───────── */
 
 function platformRow(app, columns) {
   const target = app.target ?? {};
@@ -484,21 +484,21 @@ function chipRow(label, ariaLabel, options, current, onPick) {
   return row;
 }
 
-function environmentTabs(environments) {
-  const row = el("div", "environment-row");
+function groupTabs(groups) {
+  const row = el("div", "group-row");
   row.setAttribute("role", "group");
-  row.setAttribute("aria-label", t("dash.filterByEnvironment"));
-  row.append(el("span", "environment-label", t("dash.filterEnvironment")));
-  for (const id of environments) {
-    const selected = activeEnvironment === id;
-    const label = environmentLabel(id, t("dash.ungrouped"));
-    const btn = el("button", selected ? "environment-tab on" : "environment-tab", label);
+  row.setAttribute("aria-label", t("dash.filterByGroup"));
+  row.append(el("span", "group-label", t("dash.filterGroup")));
+  for (const id of groups) {
+    const selected = activeGroup === id;
+    const label = groupLabel(id, t("dash.ungrouped"));
+    const btn = el("button", selected ? "group-tab on" : "group-tab", label);
     btn.type = "button";
     btn.setAttribute("aria-pressed", String(selected));
     btn.addEventListener("click", () => {
-      activeEnvironment = id;
+      activeGroup = id;
       if (lastSnapshot) render(lastSnapshot);
-      filtersEl.querySelector(".environment-tab.on")?.focus();
+      filtersEl.querySelector(".group-tab.on")?.focus();
     });
     row.append(btn);
   }
@@ -506,8 +506,8 @@ function environmentTabs(environments) {
 }
 
 function renderFilters(apps) {
-  const environments = environmentsOf(apps);
-  if (!environments.includes(activeEnvironment)) activeEnvironment = environments[0] ?? null;
+  const groups = groupsOf(apps);
+  if (!groups.includes(activeGroup)) activeGroup = groups[0] ?? null;
 
   filtersEl.replaceChildren();
   if (apps.length === 0) {
@@ -521,8 +521,8 @@ function renderFilters(apps) {
     { id: "ios", label: "iOS" },
     { id: "android", label: "Android" },
   ];
-  if (environments.length > 1 || environments[0] !== UNGROUPED_ENVIRONMENT) {
-    filtersEl.append(environmentTabs(environments));
+  if (shouldShowGroupSelector(groups)) {
+    filtersEl.append(groupTabs(groups));
   }
   filtersEl.append(
     chipRow(t("dash.filterOs"), t("dash.filterByOs"), osOptions, osFilter, (id) => {
@@ -531,11 +531,11 @@ function renderFilters(apps) {
   );
 }
 
-/** Environment selection + OS chip — pure client-side show/hide, no refetch. */
+/** Group selection + OS chip — pure client-side show/hide, no refetch. */
 function applyFilters(apps) {
   return apps.filter(
     (app) =>
-      (activeEnvironment === null || environmentId(app.target) === activeEnvironment) &&
+      (activeGroup === null || groupId(app.target) === activeGroup) &&
       (osFilter === "all" || app.target?.platform === osFilter),
   );
 }
