@@ -4,11 +4,12 @@ import * as layout from "../../dashboard/src/layout.js";
 
 const {
   displayAppName,
-  environmentId,
-  environmentLabel,
-  environmentsOf,
+  groupId,
+  groupLabel,
   groupAppsByName,
-  UNGROUPED_ENVIRONMENT,
+  groupsOf,
+  shouldShowGroupSelector,
+  UNGROUPED_GROUP,
 } = layout;
 
 function app(key: string, name: string, group?: string, platform = "ios") {
@@ -19,15 +20,15 @@ function app(key: string, name: string, group?: string, platform = "ios") {
   };
 }
 
-describe("dashboard environment layout", () => {
-  it("normalizes common environment labels but preserves custom groups", () => {
-    expect(environmentLabel("prod", "Other")).toBe("Production");
-    expect(environmentLabel("DEV", "Other")).toBe("Development");
-    expect(environmentLabel("staging", "Other")).toBe("staging");
-    expect(environmentLabel(UNGROUPED_ENVIRONMENT, "Other")).toBe("Other");
+describe("dashboard group layout", () => {
+  it("normalizes common group labels but preserves custom groups", () => {
+    expect(groupLabel("prod", "Other")).toBe("Production");
+    expect(groupLabel("DEV", "Other")).toBe("Development");
+    expect(groupLabel("staging", "Other")).toBe("staging");
+    expect(groupLabel(UNGROUPED_GROUP, "Other")).toBe("Other");
   });
 
-  it("keeps environments in snapshot order and includes ungrouped targets", () => {
+  it("keeps groups in snapshot order and includes ungrouped targets", () => {
     const apps = [
       app("a-prod", "[Prod]A", "prod"),
       app("a-dev", "[Dev]A", "DEV"),
@@ -35,10 +36,16 @@ describe("dashboard environment layout", () => {
       app("b-dev", "[Development]B", "development"),
       app("other", "Other"),
     ];
-    expect(environmentsOf(apps)).toEqual(["production", "development", UNGROUPED_ENVIRONMENT]);
-    expect(environmentId(apps[0].target)).toBe("production");
-    expect(environmentId(apps[1].target)).toBe("development");
-    expect(environmentId(apps[4].target)).toBe(UNGROUPED_ENVIRONMENT);
+    expect(groupsOf(apps)).toEqual(["production", "development", UNGROUPED_GROUP]);
+    expect(groupId(apps[0].target)).toBe("production");
+    expect(groupId(apps[1].target)).toBe("development");
+    expect(groupId(apps[4].target)).toBe(UNGROUPED_GROUP);
+  });
+
+  it("hides the selector when every target is ungrouped", () => {
+    expect(shouldShowGroupSelector(groupsOf([app("a", "A")]))).toBe(false);
+    expect(shouldShowGroupSelector(["production"])).toBe(true);
+    expect(shouldShowGroupSelector(["production", UNGROUPED_GROUP])).toBe(true);
   });
 });
 
