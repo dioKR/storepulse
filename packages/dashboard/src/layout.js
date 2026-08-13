@@ -8,21 +8,33 @@
 
 export const UNGROUPED_ENVIRONMENT = "__ungrouped__";
 
+const ENVIRONMENT_ALIASES = {
+  prod: "production",
+  production: "production",
+  dev: "development",
+  development: "development",
+};
+
 const ENVIRONMENT_LABELS = {
-  prod: "Production",
   production: "Production",
-  dev: "Development",
   development: "Development",
 };
 
+function canonicalEnvironmentId(group) {
+  const normalized = group.trim();
+  return ENVIRONMENT_ALIASES[normalized.toLowerCase()] ?? normalized;
+}
+
 export function environmentId(target) {
   const group = target?.group;
-  return typeof group === "string" && group !== "" ? group : UNGROUPED_ENVIRONMENT;
+  if (typeof group !== "string" || group.trim() === "") return UNGROUPED_ENVIRONMENT;
+  return canonicalEnvironmentId(group);
 }
 
 export function environmentLabel(id, ungroupedLabel) {
   if (id === UNGROUPED_ENVIRONMENT) return ungroupedLabel;
-  return ENVIRONMENT_LABELS[id.toLowerCase()] ?? id;
+  const canonicalId = canonicalEnvironmentId(id);
+  return ENVIRONMENT_LABELS[canonicalId] ?? canonicalId;
 }
 
 /** Remove a redundant `[group]` prefix while preserving every other name. */

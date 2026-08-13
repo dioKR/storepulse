@@ -30,12 +30,15 @@ describe("dashboard environment layout", () => {
   it("keeps environments in snapshot order and includes ungrouped targets", () => {
     const apps = [
       app("a-prod", "[Prod]A", "prod"),
-      app("a-dev", "[Dev]A", "dev"),
-      app("b-prod", "[Prod]B", "prod"),
+      app("a-dev", "[Dev]A", "DEV"),
+      app("b-prod", "[Production]B", "PRODUCTION"),
+      app("b-dev", "[Development]B", "development"),
       app("other", "Other"),
     ];
-    expect(environmentsOf(apps)).toEqual(["prod", "dev", UNGROUPED_ENVIRONMENT]);
-    expect(environmentId(apps[3].target)).toBe(UNGROUPED_ENVIRONMENT);
+    expect(environmentsOf(apps)).toEqual(["production", "development", UNGROUPED_ENVIRONMENT]);
+    expect(environmentId(apps[0].target)).toBe("production");
+    expect(environmentId(apps[1].target)).toBe("development");
+    expect(environmentId(apps[4].target)).toBe(UNGROUPED_ENVIRONMENT);
   });
 });
 
