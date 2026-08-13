@@ -132,10 +132,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <div class="feat-row">
           <div class="k">웹 대시보드</div>
           <div class="v">
-            <code>storepulse serve</code>로 같은 보드를 브라우저에서 볼 수
-            있어요 — 같은 디자인에, 자동 새로고침까지요. 행을 펼치면 릴리즈
-            노트와 TestFlight 만료 D-day가 보이고, 칩으로 OS·그룹 필터도 걸 수
-            있어요. 기본으로 <code>127.0.0.1</code>에만 바인딩돼요.
+            <code>storepulse serve</code>로 자동 새로고침되는 보드를 브라우저에서
+            볼 수 있어요. 선택적인 그룹은 한 번에 하나만 보여주고, 그룹이 없는
+            설정에서는 선택기를 숨겨요. 앱 카드는 iOS와 Android 행을 나누고 최신
+            번들을 배포 채널 옆에 놓아요. 행을 펼치면 릴리즈 노트와 TestFlight
+            만료 D-day가 보이고, OS 칩은 플랫폼 행을 걸러줘요. 기본으로
+            <code>127.0.0.1</code>에만 바인딩돼요.
             <code>storepulse snapshot</code>은 보드를 JSON으로 내보내고요.
           </div>
         </div>

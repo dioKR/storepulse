@@ -106,14 +106,16 @@ npx storepulse serve --demo     # ローカル Web ダッシュボード → htt
 npx storepulse snapshot --demo  # ボードを JSON で出力
 ```
 
-![各行に Latest 要約、リリースのあるチャンネルに ✓/▲ の伝播マークが付いた全幅表示の storepulse Web ダッシュボード](docs/images/dashboard-propagation.png)
+![グループセレクター、アプリカード、iOS/Android のプラットフォーム行、Latest バンドル、チャンネル伝播マークを表示する storepulse Web ダッシュボード](docs/images/dashboard-propagation.png)
 
-- **`storepulse serve`** は、同じボードを同じデザインで表示するローカル Web
-  ダッシュボードを起動します。自動で更新されます。行をクリックすると
-  詳細パネルが開き、リリースノート全文、提出/アップロード日、そして TestFlight
-  の有効期限が残り 7 日以下になると D-day 警告を表示します。上部のチップで
-  OS(iOS/Android)とグループ(`prod`/`dev`)を組み合わせて絞り込むことも
-  できます。各行には最新バンドルの要約(`Latest: 2.5.0 (108)`)が付き、
+- **`storepulse serve`** は自動更新されるローカル Web ダッシュボードを起動します。
+  ターゲットに `group` があれば、セレクターは一度に 1 グループを表示します
+  (`prod` は Production、`dev` は Development と表示)。グループがなければ
+  セレクターは隠れます。選択したグループ内ではアプリごとにカードが作られ、
+  iOS/Android のプラットフォーム行、Latest 列、ストアチャンネルが並びます。
+  OS チップでさらに絞り込めます。行をクリックするとリリースノート全文、
+  提出/アップロード日、TestFlight の D-day 警告を含む詳細パネルが開きます。
+  各プラットフォーム行には最新バンドル(`2.5.0 (108)`)が表示され、
   リリースのあるチャンネルの先頭には伝播マークが表示されます — 最新バンドルが反映済みなら
   ✓、遅れていれば ▲(ホバーで現在 vs 最新を比較。Android は versionCode
   基準です)。「最新ビルドはどこまで届いたか」がひと目で分かります。

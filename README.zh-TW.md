@@ -100,15 +100,17 @@ npx storepulse serve --demo     # 本機 Web 儀表板 → http://127.0.0.1:4780
 npx storepulse snapshot --demo  # 把看板輸出成 JSON
 ```
 
-![storepulse Web 儀表板 —— 全寬版面,每列帶 Latest 摘要,每個有版本的通道前有 ✓/▲ 傳播標記](docs/images/dashboard-propagation.png)
+![storepulse Web 儀表板 —— 群組選擇器、App 卡片、iOS/Android 平台列、Latest 建置與通道傳播標記](docs/images/dashboard-propagation.png)
 
-- **`storepulse serve`** 會啟動一個本機 Web 儀表板 —— 同一塊看板、同樣的
-  設計,還會自動重新整理。點選任一列就會展開詳細面板:版本說明全文、
-  送審/上傳日期,TestFlight 有效期限剩不到 7 天時還會亮出倒數警告。上方的
-  篩選標籤可以依 OS(iOS/Android)與群組(`prod`/`dev`)組合過濾看板。
-  每列還帶著最新建置的摘要(`Latest: 2.5.0 (108)`),每個有版本的通道前有一個傳播
+- **`storepulse serve`** 會啟動一個自動重新整理的本機 Web 儀表板。目標設有
+  `group` 時,群組選擇器一次只顯示一個群組(`prod` 顯示為 Production,
+  `dev` 顯示為 Development);完全沒有群組時選擇器會隱藏。在選取的群組裡,
+  每個 App 都有自己的卡片,並列顯示 iOS/Android 平台列、Latest 欄與商店通道;
+  OS 篩選標籤還能進一步縮小平台範圍。點選任一列即可展開詳細面板:版本說明全文、
+  送審/上傳日期與 TestFlight 到期倒數。每個平台列還帶著最新建置
+  (`2.5.0 (108)`),每個有版本的通道前有一個傳播
   標記 —— 已經拿到最新建置顯示 ✓,落後了則顯示 ▲(游標移上去可對照目前 vs
-  最新;Android 以 versionCode 判斷)——「最新建置到底發到了哪些環境」
+  最新;Android 以 versionCode 判斷)——「最新建置到底發到了哪些發布階段」
   一眼就能看清。
   頂欄的 EN/KO 切換器可以切換儀表板語言(選擇會記在瀏覽器裡),點一下
   狀態徽章(而不是整列)會跳出解釋該狀態意義的術語對話方塊。

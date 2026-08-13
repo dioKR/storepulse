@@ -126,10 +126,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <div class="feat-row">
           <div class="k">Web 儀表板</div>
           <div class="v">
-            <code>storepulse serve</code> 讓同一塊看板在瀏覽器裡打開 ——
-            同樣的設計、自動重新整理,預設只綁定 <code>127.0.0.1</code>。
-            展開列可以看到版本說明和 TestFlight 到期倒數,標籤還能依
-            OS 與群組篩選。<code>storepulse snapshot</code> 則把看板輸出成 JSON。
+            <code>storepulse serve</code> 在瀏覽器中打開自動重新整理的看板。
+            選用的群組一次只顯示一個;設定中沒有群組時會隱藏選擇器。每張 App
+            卡片分開顯示 iOS 與 Android 列,並把最新套件放在發布管道旁。展開列
+            可以看到版本說明和 TestFlight 到期倒數,OS 標籤可篩選平台列。預設只
+            綁定 <code>127.0.0.1</code>。<code>storepulse snapshot</code> 則把看板輸出成 JSON。
           </div>
         </div>
         <div class="feat-row">

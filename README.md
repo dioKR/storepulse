@@ -103,18 +103,21 @@ npx storepulse serve --demo     # local web dashboard → http://127.0.0.1:4780
 npx storepulse snapshot --demo  # the board as JSON, to stdout
 ```
 
-![storepulse web dashboard — a full-width board with a Latest summary per row and ✓/▲ propagation marks on channels that have releases](docs/images/dashboard-propagation.png)
+![storepulse web dashboard — group selector, app cards, iOS/Android platform rows, Latest bundles, and channel propagation marks](docs/images/dashboard-propagation.png)
 
-- **`storepulse serve`** starts a local, auto-refreshing web dashboard — same
-  board, same design. Click any row to open a detail panel: full release
-  notes, submission/upload dates, and a TestFlight expiry countdown that
-  turns into a warning at D-7. The chips at the top filter the board by OS
-  (iOS/Android) and by group (e.g. `prod` / `dev`), combined together.
-  Each row also sums up its latest uploaded bundle (`Latest: 2.5.0 (108)`),
+- **`storepulse serve`** starts a local, auto-refreshing web dashboard. When
+  targets have a `group`, the selector shows one group at a time (for example,
+  `prod` as Production and `dev` as Development); with no groups it stays
+  hidden. Inside the selected group, each app gets its own card with separate
+  iOS/Android platform rows, a Latest column, and the store channels. The OS
+  chips narrow those rows further. Click any row to open a detail panel: full
+  release notes, submission/upload dates, and a TestFlight expiry countdown
+  that turns into a warning at D-7. Each platform row sums up its latest
+  uploaded bundle (`2.5.0 (108)`),
   and every channel that has a release carries a propagation mark — ✓ when it already has that
   bundle, ▲ when it lags behind (hover to compare current vs latest; Android
   compares by versionCode) — so "how far did the newest build travel?" is
-  answered at a glance.
+  answered at a glance across delivery stages.
   The EN/KO switcher in the header flips the dashboard between English and
   Korean (your browser remembers the choice), and clicking a state badge —
   as opposed to the row — opens a glossary dialog explaining that state.

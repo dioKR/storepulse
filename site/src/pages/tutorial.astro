@@ -140,13 +140,15 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
       <pre class="code"><span class="p">$</span> npx storepulse serve</pre>
       <p>
         Open <a href="http://127.0.0.1:4780">http://127.0.0.1:4780</a> — the
-        same board, same design, as an auto-refreshing web dashboard.
-        Click any row to expand a detail panel with full release notes, dates,
-        and a TestFlight expiry countdown. The chips at the top filter the
-        board by OS and group. Click a state badge (not the row) to open a
-        dialog explaining what that state means, and flip the UI between
-        English and Korean with the EN/KO switcher in the header — your
-        browser remembers the choice. No
+        board appears as an auto-refreshing web dashboard. If your config uses
+        the optional <code>group</code> field, the selector shows one group at a
+        time; it stays hidden when no app has a group. Each app card separates
+        iOS and Android rows, with the latest bundle beside its delivery
+        channels, while the OS chips filter platform rows. Click a row to expand
+        full release notes, dates, and a TestFlight expiry countdown. Click a
+        state badge (not the row) to open a dialog explaining what that state
+        means, and flip the UI between English and Korean with the EN/KO
+        switcher in the header — your browser remembers the choice. No
         credentials yet? <code>npx storepulse serve --demo</code> works too.
         It binds to <code>127.0.0.1</code> by default: the board may list
         unreleased versions, so keep it local.

@@ -129,10 +129,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <div class="feat-row">
           <div class="k">Web ダッシュボード</div>
           <div class="v">
-            <code>storepulse serve</code> で同じボードをブラウザでも —
-            同じデザインのまま、自動更新付きです。行を開くとリリースノートや
-            TestFlight の期限が見え、チップで OS・グループの絞り込みも
-            できます。デフォルトでは <code>127.0.0.1</code> にのみバインドします。
+            <code>storepulse serve</code> で自動更新されるボードをブラウザでも
+            見られます。任意のグループは一度に 1 つ表示し、グループがない設定では
+            セレクターを隠します。アプリカードは iOS と Android の行を分け、最新の
+            バンドルを配信チャネルの隣に配置します。行を開くとリリースノートや
+            TestFlight の期限が見え、OS チップでプラットフォーム行を絞り込めます。
+            デフォルトでは <code>127.0.0.1</code> にのみバインドします。
             <code>storepulse snapshot</code> はボードを JSON で書き出します。
           </div>
         </div>
