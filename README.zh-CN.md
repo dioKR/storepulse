@@ -100,15 +100,17 @@ npx storepulse serve --demo     # 本地 Web 看板 → http://127.0.0.1:4780
 npx storepulse snapshot --demo  # 把看板输出成 JSON
 ```
 
-![storepulse Web 看板 —— 全宽布局,每行带 Latest 摘要,每个有版本的渠道前有 ✓/▲ 传播标记](docs/images/dashboard-propagation.png)
+![storepulse Web 看板 —— 分组选择器、应用卡片、iOS/Android 平台行、Latest 构建和渠道传播标记](docs/images/dashboard-propagation.png)
 
-- **`storepulse serve`** 启动一个本地 Web 看板 —— 同一块看板,同样的设计,
-  还会自动刷新。点击任意一行即可展开详情面板:发布说明全文、提交/上传日期,
-  TestFlight 剩余有效期不足 7 天时还会亮出倒计时警告。顶部的筛选标签可以按
-  OS(iOS/Android)和分组(`prod`/`dev`)组合过滤看板。每行还带着最新构建的
-  摘要(`Latest: 2.5.0 (108)`),每个有版本的渠道前有一个传播标记 —— 已经拿到最新
+- **`storepulse serve`** 启动一个自动刷新的本地 Web 看板。目标设置了 `group`
+  时,分组选择器一次只显示一个组(`prod` 显示为 Production,`dev` 显示为
+  Development);完全没有分组时选择器会隐藏。在选中的分组里,每个应用都有
+  独立卡片,并列显示 iOS/Android 平台行、Latest 列和商店渠道;OS 筛选标签还能
+  进一步缩小平台范围。点击任意一行即可展开详情面板:发布说明全文、提交/上传
+  日期和 TestFlight 到期倒计时。每个平台行还带着最新构建(`2.5.0 (108)`),
+  每个有版本的渠道前有一个传播标记 —— 已经拿到最新
   构建显示 ✓,落后了则显示 ▲(悬停可对比当前 vs 最新;Android 按
-  versionCode 判断)——"最新构建到底发到了哪些环境"一眼就能看清。顶栏的 EN/KO
+  versionCode 判断)——"最新构建到底发到了哪些发布阶段"一眼就能看清。顶栏的 EN/KO
   切换器可以切换看板语言(选择会记在浏览器里),点击状态徽标(而不是整行)
   会弹出解释该状态含义的术语对话框。选项:`--port`、
   `--host`、`--refresh <秒>`。默认只绑定

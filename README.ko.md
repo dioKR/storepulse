@@ -106,17 +106,19 @@ npx storepulse serve --demo     # 로컬 웹 대시보드 → http://127.0.0.1:4
 npx storepulse snapshot --demo  # 보드를 JSON으로 출력
 ```
 
-![행마다 Latest 요약, 릴리즈가 있는 채널마다 ✓/▲ 전파 마크가 붙은 전폭 storepulse 웹 대시보드](docs/images/dashboard-propagation.png)
+![분류 선택기와 앱 카드, iOS·Android 플랫폼 행, Latest 번들, 채널 전파 마크가 보이는 storepulse 웹 대시보드](docs/images/dashboard-propagation.png)
 
-- **`storepulse serve`**는 같은 보드를 같은 디자인으로 보여주는 로컬 웹
-  대시보드를 띄워요. 자동으로 새로고침되고요. 행을 클릭하면 상세 패널이
-  열려요 — 릴리즈 노트 전문, 제출/업로드 날짜, 그리고 TestFlight 만료가
-  7일 이하로 남으면 D-day 경고까지 보여줘요. 상단 칩으로 OS(iOS/Android)와
-  그룹(`prod`/`dev`)을 조합해 보드를 좁혀볼 수도 있고요. 행마다 최신 번들
-  요약(`Latest: 2.5.0 (108)`)이 붙고, 릴리즈가 있는 채널 앞에는 전파 마크가 표시돼요 —
+- **`storepulse serve`**는 자동으로 새로고침되는 로컬 웹 대시보드를 띄워요.
+  타깃에 `group`이 있으면 분류 선택기가 한 번에 하나의 그룹을 보여줘요
+  (`prod`는 Production, `dev`는 Development처럼 표시해요). group이 하나도
+  없으면 선택기는 숨겨지고요. 선택한 분류 안에서는 앱마다 카드가 생기고,
+  iOS·Android 플랫폼 행과 Latest 열, 스토어 채널이 나란히 보여요. OS 칩으로
+  플랫폼 행을 더 좁힐 수도 있어요. 행을 클릭하면 릴리즈 노트 전문, 제출/업로드
+  날짜, TestFlight 만료 D-day가 담긴 상세 패널이 열려요. 플랫폼 행마다 최신 번들
+  (`2.5.0 (108)`)이 보이고, 릴리즈가 있는 채널 앞에는 전파 마크가 표시돼요 —
   최신 번들이 이미 반영됐으면 ✓, 뒤처져 있으면 ▲(마우스를 올리면 현재 vs
   최신을 비교해줘요. Android는 versionCode 기준이에요). "최신 빌드가 어느
-  환경까지 나갔나"가 한눈에 들어와요. 헤더의 EN/KO
+  배포 단계까지 나갔나"가 한눈에 들어와요. 헤더의 EN/KO
   스위처로 대시보드 언어를 바꿀 수 있고(선택은 브라우저가 기억해요), 행이
   아니라 상태 배지를 클릭하면 그 상태가 무슨 뜻인지 알려주는 용어 설명
   다이얼로그가 열려요. 옵션은 `--port`,
