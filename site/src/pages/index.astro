@@ -129,7 +129,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
           <div class="v">
             <code>storepulse serve</code> opens an auto-refreshing board in your
             browser, bound to <code>127.0.0.1</code> by default. Optional groups
-            appear one at a time; apps without groups simply hide the selector.
+            appear one at a time; the selector stays hidden only when every
+            target is ungrouped.
             Each app card separates iOS and Android, puts the latest bundle next
             to its delivery channels, and expands into release notes, dates, and
             TestFlight expiry. OS chips filter the platform rows.
