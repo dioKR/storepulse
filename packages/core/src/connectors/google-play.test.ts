@@ -392,6 +392,49 @@ describe("GooglePlayConnector defensive parsing", () => {
     expect(lifecycleRequestCount()).toBe(1);
   });
 
+  it("refreshes for a new build and never applies the old cache when quota is exhausted", async () => {
+    const tracksResponse = {
+      tracks: [
+        {
+          track: "production",
+          releases: [{ name: "1.2.3", status: "completed", versionCodes: ["123"] }],
+        },
+      ],
+    };
+    const lifecycleResponses: Record<string, unknown> = {
+      production: {
+        releases: [
+          {
+            releaseLifecycleState: "RELEASE_LIFECYCLE_STATE_PUBLISHED",
+            activeArtifacts: [{ versionCode: "123" }],
+          },
+        ],
+      },
+    };
+    const connector = connectorWith(tracksResponse, { id: "edit-1" }, lifecycleResponses);
+
+    expect((await connector.fetchAppStatus(target)).channels[0].state).toBe("live");
+    tracksResponse.tracks[0].releases.unshift({
+      name: "1.2.4",
+      status: "completed",
+      versionCodes: ["124"],
+    });
+    lifecycleResponses.production = new MockHttpError(403, "Listing releases quota exceeded.");
+
+    const refreshed = await connector.fetchAppStatus(target);
+    const newBuild = refreshed.channels.find((release) => release.build === "124");
+    const cachedBuild = refreshed.channels.find((release) => release.build === "123");
+
+    expect(newBuild?.state).toBe("unknown");
+    expect(newBuild?.rawState).toContain("lifecycle=(missing)");
+    expect(cachedBuild?.state).toBe("live");
+    expect(cachedBuild?.rawState).toContain("lifecycleCache=stale");
+    expect(lifecycleRequestCount()).toBe(2);
+
+    await connector.fetchAppStatus(target);
+    expect(lifecycleRequestCount()).toBe(2);
+  });
+
   it("keeps the last lifecycle state stale and backs off after quota exhaustion", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-08-18T00:00:00Z"));

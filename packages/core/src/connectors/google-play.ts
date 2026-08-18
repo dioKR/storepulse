@@ -100,19 +100,23 @@ const RELEASE_LIFECYCLE_STATE: Record<string, ReleaseState> = {
 
 interface ReleaseLifecycleLookup {
   byTrackAndBuild: Map<string, string>;
+  verifiedTrackAndBuild: Set<string>;
   sourceByTrack: Map<string, LifecycleCacheSource>;
 }
 
 type LifecycleCacheSource = "fresh" | "stale" | "quota-exceeded" | "unavailable";
 type LifecycleFailure = "quota" | "error";
+type LifecycleVerification = "verified" | "unverified" | "not-applicable";
 
 interface TrackLifecycleResult {
   byBuild: Map<string, string>;
+  verifiedBuilds: Set<string>;
   source: LifecycleCacheSource;
 }
 
 interface TrackLifecycleCacheEntry {
   byBuild: Map<string, string>;
+  verifiedBuilds: Set<string>;
   hasValue: boolean;
   expiresAt: number;
   retryAt: number;
@@ -134,13 +138,30 @@ function releaseBuild(release: any): string | null {
   return asString(release?.name)?.match(/^(\d+)\s*\(.+\)$/)?.[1] ?? null;
 }
 
-function trackHasVersionedRelease(track: any): boolean {
-  return (asArray(track?.releases) as any[]).some((release) => releaseBuild(release) !== null);
+function versionedBuilds(track: any): Set<string> {
+  const builds = (asArray(track?.releases) as any[])
+    .map(releaseBuild)
+    .filter((build): build is string => build !== null);
+  return new Set(builds);
+}
+
+function includesEveryBuild(cachedBuilds: Set<string>, currentBuilds: Set<string>): boolean {
+  return [...currentBuilds].every((build) => cachedBuilds.has(build));
+}
+
+function lifecycleVerificationFor(
+  verifiedTrackAndBuild: Set<string>,
+  track: string | undefined,
+  build: string | null,
+): LifecycleVerification {
+  if (!track || !build) return "not-applicable";
+  return verifiedTrackAndBuild.has(releaseKey(track, build)) ? "verified" : "unverified";
 }
 
 function normalizeReleaseState(
   trackStatus: string | undefined,
   lifecycleState: string | undefined,
+  lifecycleVerification: LifecycleVerification,
 ): ReleaseState {
   const normalizedLifecycleState = lifecycleState?.replace(/^RELEASE_LIFECYCLE_STATE_/, "");
   if (normalizedLifecycleState === "PUBLISHED") {
@@ -149,6 +170,7 @@ function normalizeReleaseState(
   if (normalizedLifecycleState) {
     return RELEASE_LIFECYCLE_STATE[normalizedLifecycleState] || "unknown";
   }
+  if (lifecycleVerification === "unverified") return "unknown";
 
   // An in-progress track can be either under review or actively rolling out.
   // Only the release lifecycle API can distinguish those states safely.
@@ -159,11 +181,12 @@ function normalizeReleaseState(
 function lifecycleRawSuffix(
   trackStatus: string | undefined,
   lifecycleState: string | undefined,
+  lifecycleVerification: LifecycleVerification,
   source: LifecycleCacheSource | undefined,
 ): string {
   const staleSuffix = source === "stale" ? "; lifecycleCache=stale" : "";
   if (lifecycleState) return `; lifecycle=${lifecycleState}${staleSuffix}`;
-  if (trackStatus !== "inProgress") return "";
+  if (lifecycleVerification !== "unverified" && trackStatus !== "inProgress") return "";
   let availability = "missing";
   if (source === "quota-exceeded") availability = "quota-exceeded";
   if (source === "unavailable") availability = "unavailable";
@@ -242,12 +265,18 @@ export class GooglePlayConnector implements StoreConnector {
             trackName && build
               ? lifecycleLookup.byTrackAndBuild.get(releaseKey(trackName, build))
               : undefined;
-          const state = normalizeReleaseState(status, lifecycleState);
+          const lifecycleVerification = lifecycleVerificationFor(
+            lifecycleLookup.verifiedTrackAndBuild,
+            trackName,
+            build,
+          );
+          const state = normalizeReleaseState(status, lifecycleState, lifecycleVerification);
           const userFraction = asNumber(release?.userFraction);
           const releaseNotes = pickReleaseNotes(release?.releaseNotes);
           const lifecycleRawState = lifecycleRawSuffix(
             status,
             lifecycleState,
+            lifecycleVerification,
             trackName ? lifecycleLookup.sourceByTrack.get(trackName) : undefined,
           );
           channels.push({
@@ -286,38 +315,46 @@ export class GooglePlayConnector implements StoreConnector {
     pkg: string,
     tracks: any[],
   ): Promise<ReleaseLifecycleLookup> {
-    const trackNames = [
-      ...new Set(
-        tracks
-          .filter(trackHasVersionedRelease)
-          .map((track) => asString(track?.track))
-          .filter((track) => track !== undefined),
-      ),
-    ];
+    const buildsByTrack = new Map<string, Set<string>>();
+    for (const track of tracks) {
+      const trackName = asString(track?.track);
+      const builds = versionedBuilds(track);
+      if (!trackName || builds.size === 0) continue;
+      const combinedBuilds = buildsByTrack.get(trackName) ?? new Set<string>();
+      for (const build of builds) combinedBuilds.add(build);
+      buildsByTrack.set(trackName, combinedBuilds);
+    }
+
     const byTrackAndBuild = new Map<string, string>();
+    const verifiedTrackAndBuild = new Set<string>();
     const sourceByTrack = new Map<string, LifecycleCacheSource>();
 
     await Promise.all(
-      trackNames.map(async (trackName) => {
-        const result = await this.fetchTrackLifecycle(token, pkg, trackName);
+      [...buildsByTrack].map(async ([trackName, currentBuilds]) => {
+        const result = await this.fetchTrackLifecycle(token, pkg, trackName, currentBuilds);
         sourceByTrack.set(trackName, result.source);
         for (const [build, lifecycleState] of result.byBuild) {
           byTrackAndBuild.set(releaseKey(trackName, build), lifecycleState);
         }
+        for (const build of result.verifiedBuilds) {
+          verifiedTrackAndBuild.add(releaseKey(trackName, build));
+        }
       }),
     );
 
-    return { byTrackAndBuild, sourceByTrack };
+    return { byTrackAndBuild, verifiedTrackAndBuild, sourceByTrack };
   }
 
   private async fetchTrackLifecycle(
     token: string,
     pkg: string,
     trackName: string,
+    currentBuilds: Set<string>,
   ): Promise<TrackLifecycleResult> {
     const cacheKey = trackCacheKey(pkg, trackName);
     const cached = this.lifecycleCache.get(cacheKey) ?? {
       byBuild: new Map<string, string>(),
+      verifiedBuilds: new Set<string>(),
       hasValue: false,
       expiresAt: 0,
       retryAt: 0,
@@ -325,13 +362,18 @@ export class GooglePlayConnector implements StoreConnector {
     this.lifecycleCache.set(cacheKey, cached);
 
     const now = Date.now();
-    if (cached.hasValue && now < cached.expiresAt) {
-      return { byBuild: cached.byBuild, source: "fresh" };
+    const cacheCoversCurrentBuilds = includesEveryBuild(cached.verifiedBuilds, currentBuilds);
+    if (cached.hasValue && cacheCoversCurrentBuilds && now < cached.expiresAt) {
+      return {
+        byBuild: cached.byBuild,
+        verifiedBuilds: cached.verifiedBuilds,
+        source: "fresh",
+      };
     }
     if (now < cached.retryAt) return this.cachedFallback(cached);
     if (cached.inflight) return cached.inflight;
 
-    cached.inflight = this.refreshTrackLifecycle(token, pkg, trackName, cached);
+    cached.inflight = this.refreshTrackLifecycle(token, pkg, trackName, currentBuilds, cached);
     try {
       return await cached.inflight;
     } finally {
@@ -343,6 +385,7 @@ export class GooglePlayConnector implements StoreConnector {
     token: string,
     pkg: string,
     trackName: string,
+    currentBuilds: Set<string>,
     cached: TrackLifecycleCacheEntry,
   ): Promise<TrackLifecycleResult> {
     const path = `/applications/${encodeURIComponent(pkg)}/tracks/${encodeURIComponent(trackName)}/releases`;
@@ -360,11 +403,12 @@ export class GooglePlayConnector implements StoreConnector {
       }
 
       cached.byBuild = byBuild;
+      cached.verifiedBuilds = new Set(currentBuilds);
       cached.hasValue = true;
       cached.expiresAt = Date.now() + LIFECYCLE_CACHE_TTL_MS;
       cached.retryAt = 0;
       cached.failure = undefined;
-      return { byBuild, source: "fresh" };
+      return { byBuild, verifiedBuilds: cached.verifiedBuilds, source: "fresh" };
     } catch (error) {
       cached.failure = isQuotaError(error) ? "quota" : "error";
       const backoff =
@@ -375,9 +419,16 @@ export class GooglePlayConnector implements StoreConnector {
   }
 
   private cachedFallback(cached: TrackLifecycleCacheEntry): TrackLifecycleResult {
-    if (cached.hasValue) return { byBuild: cached.byBuild, source: "stale" };
+    if (cached.hasValue) {
+      return {
+        byBuild: cached.byBuild,
+        verifiedBuilds: cached.verifiedBuilds,
+        source: "stale",
+      };
+    }
     return {
       byBuild: cached.byBuild,
+      verifiedBuilds: cached.verifiedBuilds,
       source: cached.failure === "quota" ? "quota-exceeded" : "unavailable",
     };
   }

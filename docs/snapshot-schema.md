@@ -119,9 +119,11 @@ lifecycle is `RELEASE_LIFECYCLE_STATE_PUBLISHED`; otherwise it remains visibly
 configured target percentage.
 
 Lifecycle lookups are cached per package and track for one hour, and tracks
-without any versioned release are skipped. If a
-refresh fails after a successful lookup, the last lifecycle value remains in
-use and `rawState` includes `lifecycleCache=stale`. If Google rejects the first
+without any versioned release are skipped. A build that was not present when
+the track was cached triggers an immediate refresh; if that refresh fails, the
+unverified build remains `unknown` rather than inheriting the older track
+state. If a refresh fails after a successful lookup, the last lifecycle value
+remains in use and `rawState` includes `lifecycleCache=stale`. If Google rejects the first
 lookup because its listing quota is exhausted, the release stays `unknown`,
 `rawState` includes `lifecycle=(quota-exceeded)`, and storepulse waits one hour
 before retrying that track. These are raw-state value changes only;
