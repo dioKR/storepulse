@@ -105,7 +105,7 @@ const fixtures: Record<string, ChannelStatus[]> = {
       version: "2.4.1",
       build: "241",
       state: "rollout",
-      rawState: "production/inProgress",
+      rawState: "production/inProgress; lifecycle=RELEASE_LIFECYCLE_STATE_PUBLISHED",
       rolloutPercent: 50,
       releaseNotes: "· 홈 피드 로딩 속도 개선\n· 자잘한 버그 수정",
     },

@@ -69,7 +69,7 @@ Current version: **1**.
 | `version` | string \| null | Marketing version, e.g. `"2.4.1"`; `null` when the channel has no release |
 | `build` | string \| null? | Build number (iOS) / versionCode (Android) |
 | `state` | `ReleaseState` | See below |
-| `rawState` | string? | Store-specific state string, e.g. `"READY_FOR_SALE"`, `"production/inProgress"` |
+| `rawState` | string? | Store-specific state string, e.g. `"READY_FOR_SALE"`, `"production/inProgress; lifecycle=RELEASE_LIFECYCLE_STATE_PUBLISHED"` |
 | `rolloutPercent` | number? | 0–100, present while `state` is `"rollout"` |
 | `releaseNotes` | string? | Release notes for this release, line breaks preserved. iOS: App Store "What's New" (locale priority ko → en-US → first available). Android: `release.releaseNotes[]` text (ko-KR → en-US → first available). |
 | `date` | string? | ISO 8601. iOS only: `appStoreVersion.createdDate` (production) / TestFlight build `uploadedDate` (beta) |
@@ -110,6 +110,13 @@ too. No match → the `eas` field is simply absent, never an error.
 | `halted` | Rollout halted |
 | `draft` | PREPARE_FOR_SUBMISSION / draft release |
 | `unknown` | Unmapped store state — check `rawState`. Renderers must display this loudly (gray UNKNOWN badge), never hide it. |
+
+For Google Play, storepulse combines the track configuration with the release
+lifecycle matched by versionCode. Review, approval, and rejection lifecycle
+states take precedence. An `inProgress` track becomes `rollout` only when the
+lifecycle is `RELEASE_LIFECYCLE_STATE_PUBLISHED`; otherwise it remains visibly
+`unknown` rather than reporting a rollout percentage that may only be the
+configured target percentage.
 
 Consumers must tolerate **unknown `state` values** beyond this list: treat
 anything unrecognized like `unknown`. That is how an upstream store API
@@ -173,7 +180,7 @@ change degrades — visibly, not silently.
           "version": "2.4.1",
           "build": "241",
           "state": "rollout",
-          "rawState": "production/inProgress",
+          "rawState": "production/inProgress; lifecycle=RELEASE_LIFECYCLE_STATE_PUBLISHED",
           "rolloutPercent": 50
         }
       ],

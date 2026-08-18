@@ -75,6 +75,51 @@ const RELEASE_STATE: Record<string, ReleaseState> = {
   draft: "draft",
 };
 
+const RELEASE_LIFECYCLE_STATE: Record<string, ReleaseState> = {
+  DRAFT: "draft",
+  NOT_SENT_FOR_REVIEW: "draft",
+  IN_REVIEW: "in-review",
+  APPROVED_NOT_PUBLISHED: "pending",
+  NOT_APPROVED: "rejected",
+};
+
+interface ReleaseLifecycleLookup {
+  byTrackAndBuild: Map<string, string>;
+  unavailableTracks: Set<string>;
+}
+
+function releaseKey(track: string, build: string): string {
+  return `${track}\u0000${build}`;
+}
+
+function normalizeReleaseState(
+  trackStatus: string | undefined,
+  lifecycleState: string | undefined,
+): ReleaseState {
+  const normalizedLifecycleState = lifecycleState?.replace(/^RELEASE_LIFECYCLE_STATE_/, "");
+  if (normalizedLifecycleState === "PUBLISHED") {
+    return (trackStatus && RELEASE_STATE[trackStatus]) || "unknown";
+  }
+  if (normalizedLifecycleState) {
+    return RELEASE_LIFECYCLE_STATE[normalizedLifecycleState] || "unknown";
+  }
+
+  // An in-progress track can be either under review or actively rolling out.
+  // Only the release lifecycle API can distinguish those states safely.
+  if (trackStatus === "inProgress") return "unknown";
+  return (trackStatus && RELEASE_STATE[trackStatus]) || "unknown";
+}
+
+function lifecycleRawSuffix(
+  trackStatus: string | undefined,
+  lifecycleState: string | undefined,
+  lifecycleUnavailable: boolean,
+): string {
+  if (lifecycleState) return `; lifecycle=${lifecycleState}`;
+  if (trackStatus !== "inProgress") return "";
+  return lifecycleUnavailable ? "; lifecycle=(unavailable)" : "; lifecycle=(missing)";
+}
+
 function trackToChannel(track: string): Channel {
   if (track === "production") return "production";
   if (track === "internal") return "internal";
@@ -121,8 +166,10 @@ export class GooglePlayConnector implements StoreConnector {
         "GET",
         `/applications/${pkg}/edits/${editId}/tracks`,
       );
+      const trackList = asArray(tracks?.tracks) as any[];
+      const lifecycleLookup = await this.fetchReleaseLifecycles(token, pkg, trackList);
       const channels: ChannelStatus[] = [];
-      for (const track of asArray(tracks?.tracks) as any[]) {
+      for (const track of trackList) {
         // Fields may vanish in a future API version — degrade to "unknown", never crash
         const trackName = asString(track?.track);
         for (const release of asArray(track?.releases) as any[]) {
@@ -133,17 +180,29 @@ export class GooglePlayConnector implements StoreConnector {
           const autoName = version?.match(/^(\d+)\s*\((.+)\)$/);
           if (autoName) version = autoName[2];
           const lastVersionCode = asArray(release?.versionCodes).at(-1);
+          const build = lastVersionCode != null ? String(lastVersionCode) : (autoName?.[1] ?? null);
+          const lifecycleState =
+            trackName && build
+              ? lifecycleLookup.byTrackAndBuild.get(releaseKey(trackName, build))
+              : undefined;
+          const state = normalizeReleaseState(status, lifecycleState);
           const userFraction = asNumber(release?.userFraction);
           const releaseNotes = pickReleaseNotes(release?.releaseNotes);
+          const lifecycleRawState = lifecycleRawSuffix(
+            status,
+            lifecycleState,
+            trackName ? lifecycleLookup.unavailableTracks.has(trackName) : false,
+          );
           channels.push({
             channel: trackToChannel(trackName ?? ""),
             version,
-            build: lastVersionCode != null ? String(lastVersionCode) : (autoName?.[1] ?? null),
-            state: (status && RELEASE_STATE[status]) || "unknown",
-            rawState: `${trackName ?? "(track missing)"}/${status ?? "(status missing)"}`,
-            ...(userFraction !== undefined && {
-              rolloutPercent: Math.round(userFraction * 100),
-            }),
+            build,
+            state,
+            rawState: `${trackName ?? "(track missing)"}/${status ?? "(status missing)"}${lifecycleRawState}`,
+            ...(state === "rollout" &&
+              userFraction !== undefined && {
+                rolloutPercent: Math.round(userFraction * 100),
+              }),
             ...(releaseNotes !== undefined && { releaseNotes }),
           });
         }
@@ -163,6 +222,41 @@ export class GooglePlayConnector implements StoreConnector {
       throw new Error(`Play API ${res.status} on ${method} ${path}`);
     }
     return res.status === 204 ? null : res.json();
+  }
+
+  private async fetchReleaseLifecycles(
+    token: string,
+    pkg: string,
+    tracks: any[],
+  ): Promise<ReleaseLifecycleLookup> {
+    const trackNames = [
+      ...new Set(
+        tracks.map((track) => asString(track?.track)).filter((track) => track !== undefined),
+      ),
+    ];
+    const byTrackAndBuild = new Map<string, string>();
+    const unavailableTracks = new Set<string>();
+
+    await Promise.all(
+      trackNames.map(async (trackName) => {
+        const path = `/applications/${encodeURIComponent(pkg)}/tracks/${encodeURIComponent(trackName)}/releases`;
+        const response = await this.request(token, "GET", path).catch(() => {
+          unavailableTracks.add(trackName);
+          return null;
+        });
+        for (const release of asArray(response?.releases) as any[]) {
+          const lifecycleState = asString(release?.releaseLifecycleState);
+          if (!lifecycleState) continue;
+          for (const artifact of asArray(release?.activeArtifacts) as any[]) {
+            const versionCode = artifact?.versionCode;
+            if (typeof versionCode !== "string" && typeof versionCode !== "number") continue;
+            byTrackAndBuild.set(releaseKey(trackName, String(versionCode)), lifecycleState);
+          }
+        }
+      }),
+    );
+
+    return { byTrackAndBuild, unavailableTracks };
   }
 
   private async token(): Promise<string> {
