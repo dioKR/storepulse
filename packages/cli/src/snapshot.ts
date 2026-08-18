@@ -10,7 +10,7 @@ import {
   type Lang,
   uiString,
 } from "@storepulse/core";
-import { loadConfig } from "./config.js";
+import { type CliConfig, loadConfig } from "./config.js";
 import { demoConnector, demoTargets } from "./demo.js";
 
 /**
@@ -20,7 +20,12 @@ import { demoConnector, demoTargets } from "./demo.js";
  */
 export async function collectStatuses(demo: boolean): Promise<AppStatus[]> {
   if (demo) return fetchAll([demoConnector], demoTargets);
-  const { connectors, targets, enrichers } = loadConfig();
+  return collectConfiguredStatuses(loadConfig());
+}
+
+/** Fetch with an already-loaded config so long-running servers can reuse connector caches. */
+export async function collectConfiguredStatuses(config: CliConfig): Promise<AppStatus[]> {
+  const { connectors, targets, enrichers } = config;
   return enrichAll(enrichers, await fetchAll(connectors, targets));
 }
 

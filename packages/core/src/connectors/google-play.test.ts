@@ -14,6 +14,22 @@ const target: AppTarget = {
   storeId: "com.example.app",
 };
 
+class MockHttpError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+function lifecycleRequestCount(): number {
+  return vi
+    .mocked(fetch)
+    .mock.calls.filter(([url]) => /\/tracks\/[^/]+\/releases$/.test(new URL(String(url)).pathname))
+    .length;
+}
+
 /** Builds a connector whose OAuth exchange and HTTP layer are stubbed out. */
 function connectorWith(
   tracksResponse: unknown,
@@ -37,8 +53,15 @@ function connectorWith(
       if (method === "GET" && lifecycleMatch) {
         const trackName = decodeURIComponent(lifecycleMatch[1]);
         const lifecycleResponse = lifecycleResponses[trackName] ?? { releases: [] };
+        if (lifecycleResponse instanceof MockHttpError) {
+          return {
+            ok: false,
+            status: lifecycleResponse.status,
+            text: async () => lifecycleResponse.message,
+          };
+        }
         if (lifecycleResponse instanceof Error) {
-          return { ok: false, status: 503, json: async () => ({}) };
+          return { ok: false, status: 503, text: async () => lifecycleResponse.message };
         }
         return {
           ok: true,
@@ -56,6 +79,7 @@ function connectorWith(
 }
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
@@ -201,6 +225,32 @@ describe("GooglePlayConnector defensive parsing", () => {
     expect(status.channels[0].rolloutPercent).toBeUndefined();
   });
 
+  it("lets review lifecycle override a completed future rollout configuration", async () => {
+    const connector = connectorWith(
+      {
+        tracks: [
+          {
+            track: "production",
+            releases: [{ name: "1.2.3", status: "completed", versionCodes: ["123"] }],
+          },
+        ],
+      },
+      { id: "edit-1" },
+      {
+        production: {
+          releases: [
+            {
+              releaseLifecycleState: "RELEASE_LIFECYCLE_STATE_IN_REVIEW",
+              activeArtifacts: [{ versionCode: "123" }],
+            },
+          ],
+        },
+      },
+    );
+
+    expect((await connector.fetchAppStatus(target)).channels[0].state).toBe("in-review");
+  });
+
   it.each([
     ["RELEASE_LIFECYCLE_STATE_APPROVED_NOT_PUBLISHED", "pending"],
     ["RELEASE_LIFECYCLE_STATE_NOT_APPROVED", "rejected"],
@@ -269,6 +319,188 @@ describe("GooglePlayConnector defensive parsing", () => {
     expect(release.state).toBe("unknown");
     expect(release.rolloutPercent).toBeUndefined();
     expect(release.rawState).toContain("lifecycle=(unavailable)");
+  });
+
+  it("skips lifecycle calls only for tracks without a versioned release", async () => {
+    const connector = connectorWith(
+      {
+        tracks: [
+          {
+            track: "production",
+            releases: [{ name: "1.0.0", status: "completed", versionCodes: ["100"] }],
+          },
+          { track: "internal", releases: [{ status: "draft" }] },
+          {
+            track: "beta",
+            releases: [{ name: "1.1.0", status: "inProgress", versionCodes: ["110"] }],
+          },
+        ],
+      },
+      { id: "edit-1" },
+      {
+        beta: {
+          releases: [
+            {
+              releaseLifecycleState: "RELEASE_LIFECYCLE_STATE_IN_REVIEW",
+              activeArtifacts: [{ versionCode: "110" }],
+            },
+          ],
+        },
+      },
+    );
+
+    await connector.fetchAppStatus(target);
+
+    expect(lifecycleRequestCount()).toBe(2);
+    expect(
+      vi.mocked(fetch).mock.calls.some(([url]) => String(url).includes("/tracks/production/")),
+    ).toBe(true);
+    expect(vi.mocked(fetch).mock.calls.some(([url]) => String(url).includes("/tracks/beta/"))).toBe(
+      true,
+    );
+    expect(
+      vi.mocked(fetch).mock.calls.some(([url]) => String(url).includes("/tracks/internal/")),
+    ).toBe(false);
+  });
+
+  it("reuses a successful lifecycle response within the cache TTL", async () => {
+    const connector = connectorWith(
+      {
+        tracks: [
+          {
+            track: "production",
+            releases: [{ name: "1.2.3", status: "inProgress", versionCodes: ["123"] }],
+          },
+        ],
+      },
+      { id: "edit-1" },
+      {
+        production: {
+          releases: [
+            {
+              releaseLifecycleState: "RELEASE_LIFECYCLE_STATE_IN_REVIEW",
+              activeArtifacts: [{ versionCode: "123" }],
+            },
+          ],
+        },
+      },
+    );
+
+    await connector.fetchAppStatus(target);
+    await connector.fetchAppStatus(target);
+
+    expect(lifecycleRequestCount()).toBe(1);
+  });
+
+  it("refreshes for a new build and never applies the old cache when quota is exhausted", async () => {
+    const tracksResponse = {
+      tracks: [
+        {
+          track: "production",
+          releases: [{ name: "1.2.3", status: "completed", versionCodes: ["123"] }],
+        },
+      ],
+    };
+    const lifecycleResponses: Record<string, unknown> = {
+      production: {
+        releases: [
+          {
+            releaseLifecycleState: "RELEASE_LIFECYCLE_STATE_PUBLISHED",
+            activeArtifacts: [{ versionCode: "123" }],
+          },
+        ],
+      },
+    };
+    const connector = connectorWith(tracksResponse, { id: "edit-1" }, lifecycleResponses);
+
+    expect((await connector.fetchAppStatus(target)).channels[0].state).toBe("live");
+    tracksResponse.tracks[0].releases.unshift({
+      name: "1.2.4",
+      status: "completed",
+      versionCodes: ["124"],
+    });
+    lifecycleResponses.production = new MockHttpError(403, "Listing releases quota exceeded.");
+
+    const refreshed = await connector.fetchAppStatus(target);
+    const newBuild = refreshed.channels.find((release) => release.build === "124");
+    const cachedBuild = refreshed.channels.find((release) => release.build === "123");
+
+    expect(newBuild?.state).toBe("unknown");
+    expect(newBuild?.rawState).toContain("lifecycle=(missing)");
+    expect(cachedBuild?.state).toBe("live");
+    expect(cachedBuild?.rawState).toContain("lifecycleCache=stale");
+    expect(lifecycleRequestCount()).toBe(2);
+
+    await connector.fetchAppStatus(target);
+    expect(lifecycleRequestCount()).toBe(2);
+  });
+
+  it("keeps the last lifecycle state stale and backs off after quota exhaustion", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-18T00:00:00Z"));
+    const lifecycleResponses: Record<string, unknown> = {
+      production: {
+        releases: [
+          {
+            releaseLifecycleState: "RELEASE_LIFECYCLE_STATE_IN_REVIEW",
+            activeArtifacts: [{ versionCode: "123" }],
+          },
+        ],
+      },
+    };
+    const connector = connectorWith(
+      {
+        tracks: [
+          {
+            track: "production",
+            releases: [{ name: "1.2.3", status: "inProgress", versionCodes: ["123"] }],
+          },
+        ],
+      },
+      { id: "edit-1" },
+      lifecycleResponses,
+    );
+
+    expect((await connector.fetchAppStatus(target)).channels[0].state).toBe("in-review");
+    vi.advanceTimersByTime(60 * 60 * 1000 + 1);
+    lifecycleResponses.production = new MockHttpError(403, "Listing releases quota exceeded.");
+
+    const stale = (await connector.fetchAppStatus(target)).channels[0];
+    expect(stale.state).toBe("in-review");
+    expect(stale.rawState).toContain("lifecycleCache=stale");
+    expect(lifecycleRequestCount()).toBe(2);
+
+    await connector.fetchAppStatus(target);
+    expect(lifecycleRequestCount()).toBe(2);
+  });
+
+  it("backs off quota errors even when no lifecycle value has been cached", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-18T00:00:00Z"));
+    const connector = connectorWith(
+      {
+        tracks: [
+          {
+            track: "production",
+            releases: [{ name: "1.2.3", status: "inProgress", versionCodes: ["123"] }],
+          },
+        ],
+      },
+      { id: "edit-1" },
+      { production: new MockHttpError(403, "Listing releases quota exceeded.") },
+    );
+
+    const first = (await connector.fetchAppStatus(target)).channels[0];
+    const second = (await connector.fetchAppStatus(target)).channels[0];
+
+    expect(first.state).toBe("unknown");
+    expect(second.state).toBe("unknown");
+    expect(first.rawState).toContain("lifecycle=(quota-exceeded)");
+    expect(lifecycleRequestCount()).toBe(1);
+
+    vi.advanceTimersByTime(60 * 60 * 1000 + 1);
+    await connector.fetchAppStatus(target);
+    expect(lifecycleRequestCount()).toBe(2);
   });
 });
 

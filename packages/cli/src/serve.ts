@@ -3,9 +3,15 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
-import { createSnapshot, DEFAULT_LANG, type Lang, uiString } from "@storepulse/core";
-import { loadConfig } from "./config.js";
-import { collectStatuses } from "./snapshot.js";
+import {
+  type AppStatus,
+  createSnapshot,
+  DEFAULT_LANG,
+  type Lang,
+  uiString,
+} from "@storepulse/core";
+import { type CliConfig, loadConfig } from "./config.js";
+import { collectConfiguredStatuses, collectStatuses } from "./snapshot.js";
 
 export interface ServeOptions {
   /** Loopback by default — the board may list unreleased versions. */
@@ -85,7 +91,19 @@ function sendError(res: ServerResponse, status: number, message: string): void {
 }
 
 /** TTL-cached snapshot body so a busy dashboard tab never hammers the store APIs. */
-function makeSnapshotSource(opts: ServeOptions): () => Promise<string> {
+type StatusCollector = () => Promise<AppStatus[]>;
+
+/** Build once per server process so connector-level caches survive snapshot refreshes. */
+export function createStatusCollector(
+  demo: boolean,
+  configLoader: () => CliConfig = loadConfig,
+): StatusCollector {
+  if (demo) return () => collectStatuses(true);
+  const config = configLoader();
+  return () => collectConfiguredStatuses(config);
+}
+
+function makeSnapshotSource(opts: ServeOptions, collect: StatusCollector): () => Promise<string> {
   let cached: { at: number; body: string } | null = null;
   let inflight: Promise<string> | null = null;
 
@@ -93,7 +111,7 @@ function makeSnapshotSource(opts: ServeOptions): () => Promise<string> {
     if (cached && Date.now() - cached.at < opts.refreshSeconds * 1000) return cached.body;
     inflight ??= (async () => {
       try {
-        const body = `${JSON.stringify(createSnapshot(await collectStatuses(opts.demo)))}\n`;
+        const body = `${JSON.stringify(createSnapshot(await collect()))}\n`;
         cached = { at: Date.now(), body };
         return body;
       } finally {
@@ -121,8 +139,12 @@ function serveStatic(root: string, pathname: string, res: ServerResponse): void 
   send(res, 200, readFileSync(filePath), type);
 }
 
-export function createDashboardServer(opts: ServeOptions, dashboardRoot: string): Server {
-  const snapshotBody = makeSnapshotSource(opts);
+export function createDashboardServer(
+  opts: ServeOptions,
+  dashboardRoot: string,
+  collect: StatusCollector = () => collectStatuses(opts.demo),
+): Server {
+  const snapshotBody = makeSnapshotSource(opts, collect);
 
   return createServer(async (req: IncomingMessage, res: ServerResponse) => {
     if (req.method !== "GET" && req.method !== "HEAD") {
@@ -160,14 +182,14 @@ export async function runServe(argv: string[], lang: Lang = DEFAULT_LANG): Promi
     throw new Error(uiString("serve.dashboardMissing", lang));
   }
 
-  // Fail fast on missing config/credentials instead of 500-ing the first request.
-  if (!opts.demo) loadConfig();
+  // Load real connectors once: their lifecycle cache must survive dashboard refreshes.
+  const collect = createStatusCollector(opts.demo);
 
   if (opts.host !== "127.0.0.1" && opts.host !== "localhost" && opts.host !== "::1") {
     console.error(`storepulse: ${uiString("serve.bindWarning", lang, { host: opts.host })}`);
   }
 
-  const server = createDashboardServer(opts, dashboardRoot);
+  const server = createDashboardServer(opts, dashboardRoot, collect);
   await new Promise<void>((resolvePromise, reject) => {
     server.once("error", reject);
     server.listen(opts.port, opts.host, resolvePromise);
