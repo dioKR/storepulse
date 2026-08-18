@@ -15,7 +15,11 @@ const target: AppTarget = {
 };
 
 /** Builds a connector whose OAuth exchange and HTTP layer are stubbed out. */
-function connectorWith(tracksResponse: unknown, editResponse: unknown = { id: "edit-1" }) {
+function connectorWith(
+  tracksResponse: unknown,
+  editResponse: unknown = { id: "edit-1" },
+  lifecycleResponses: Record<string, unknown> = {},
+) {
   const connector = new GooglePlayConnector({ clientEmail: "e@x.com", privateKey: "unused" });
   vi.spyOn(connector as unknown as { token(): Promise<string> }, "token").mockResolvedValue("tok");
   vi.stubGlobal(
@@ -28,6 +32,19 @@ function connectorWith(tracksResponse: unknown, editResponse: unknown = { id: "e
       }
       if (method === "GET" && path.endsWith("/tracks")) {
         return { ok: true, status: 200, json: async () => tracksResponse };
+      }
+      const lifecycleMatch = path.match(/\/tracks\/([^/]+)\/releases$/);
+      if (method === "GET" && lifecycleMatch) {
+        const trackName = decodeURIComponent(lifecycleMatch[1]);
+        const lifecycleResponse = lifecycleResponses[trackName] ?? { releases: [] };
+        if (lifecycleResponse instanceof Error) {
+          return { ok: false, status: 503, json: async () => ({}) };
+        }
+        return {
+          ok: true,
+          status: 200,
+          json: async () => lifecycleResponse,
+        };
       }
       if (method === "DELETE") {
         return { ok: true, status: 204, json: async () => null };
@@ -105,7 +122,111 @@ describe("GooglePlayConnector defensive parsing", () => {
     await expect(connector.fetchAppStatus(target)).rejects.toThrow(/edits\.insert/);
   });
 
-  it("still maps known states (staged rollout) after the defensive rewrite", async () => {
+  it("maps inProgress to rollout only when the lifecycle is PUBLISHED", async () => {
+    const connector = connectorWith(
+      {
+        tracks: [
+          {
+            track: "production",
+            releases: [
+              {
+                name: "2.4.1",
+                status: "inProgress",
+                versionCodes: ["241"],
+                userFraction: 0.5,
+              },
+            ],
+          },
+          { track: "internal", releases: [{ name: "2.5.0", status: "draft" }] },
+        ],
+      },
+      { id: "edit-1" },
+      {
+        production: {
+          releases: [
+            {
+              releaseLifecycleState: "RELEASE_LIFECYCLE_STATE_PUBLISHED",
+              activeArtifacts: [{ versionCode: "241" }],
+            },
+          ],
+        },
+      },
+    );
+
+    const status = await connector.fetchAppStatus(target);
+    expect(status.channels).toMatchObject([
+      { channel: "production", state: "rollout", rolloutPercent: 50, build: "241" },
+      { channel: "internal", state: "draft", version: "2.5.0" },
+    ]);
+  });
+
+  it("uses the release lifecycle instead of treating review progress as rollout", async () => {
+    const connector = connectorWith(
+      {
+        tracks: [
+          {
+            track: "production",
+            releases: [
+              {
+                name: "39 (0.1.19)",
+                status: "inProgress",
+                versionCodes: ["39"],
+                userFraction: 0.5,
+              },
+            ],
+          },
+        ],
+      },
+      { id: "edit-1" },
+      {
+        production: {
+          releases: [
+            {
+              releaseLifecycleState: "RELEASE_LIFECYCLE_STATE_IN_REVIEW",
+              activeArtifacts: [{ versionCode: "39" }],
+            },
+          ],
+        },
+      },
+    );
+
+    const status = await connector.fetchAppStatus(target);
+    expect(status.channels[0]).toMatchObject({
+      channel: "production",
+      version: "0.1.19",
+      build: "39",
+      state: "in-review",
+      rawState: "production/inProgress; lifecycle=RELEASE_LIFECYCLE_STATE_IN_REVIEW",
+    });
+    expect(status.channels[0].rolloutPercent).toBeUndefined();
+  });
+
+  it.each([
+    ["RELEASE_LIFECYCLE_STATE_APPROVED_NOT_PUBLISHED", "pending"],
+    ["RELEASE_LIFECYCLE_STATE_NOT_APPROVED", "rejected"],
+    ["RELEASE_LIFECYCLE_STATE_NOT_SENT_FOR_REVIEW", "draft"],
+  ])("maps lifecycle %s to %s", async (releaseLifecycleState, expectedState) => {
+    const connector = connectorWith(
+      {
+        tracks: [
+          {
+            track: "production",
+            releases: [{ name: "1.2.3", status: "draft", versionCodes: ["123"] }],
+          },
+        ],
+      },
+      { id: "edit-1" },
+      {
+        production: {
+          releases: [{ releaseLifecycleState, activeArtifacts: [{ versionCode: "123" }] }],
+        },
+      },
+    );
+
+    expect((await connector.fetchAppStatus(target)).channels[0].state).toBe(expectedState);
+  });
+
+  it("does not claim rollout when lifecycle data for inProgress is missing", async () => {
     const connector = connectorWith({
       tracks: [
         {
@@ -114,15 +235,40 @@ describe("GooglePlayConnector defensive parsing", () => {
             { name: "2.4.1", status: "inProgress", versionCodes: ["241"], userFraction: 0.5 },
           ],
         },
-        { track: "internal", releases: [{ name: "2.5.0", status: "draft" }] },
       ],
     });
 
-    const status = await connector.fetchAppStatus(target);
-    expect(status.channels).toMatchObject([
-      { channel: "production", state: "rollout", rolloutPercent: 50, build: "241" },
-      { channel: "internal", state: "draft", version: "2.5.0" },
-    ]);
+    const release = (await connector.fetchAppStatus(target)).channels[0];
+    expect(release.state).toBe("unknown");
+    expect(release.rolloutPercent).toBeUndefined();
+    expect(release.rawState).toContain("lifecycle=(missing)");
+  });
+
+  it("surfaces an unavailable lifecycle lookup without failing the whole app", async () => {
+    const connector = connectorWith(
+      {
+        tracks: [
+          {
+            track: "production",
+            releases: [
+              {
+                name: "2.4.1",
+                status: "inProgress",
+                versionCodes: ["241"],
+                userFraction: 0.5,
+              },
+            ],
+          },
+        ],
+      },
+      { id: "edit-1" },
+      { production: new Error("temporary API failure") },
+    );
+
+    const release = (await connector.fetchAppStatus(target)).channels[0];
+    expect(release.state).toBe("unknown");
+    expect(release.rolloutPercent).toBeUndefined();
+    expect(release.rawState).toContain("lifecycle=(unavailable)");
   });
 });
 

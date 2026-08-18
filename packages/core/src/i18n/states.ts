@@ -40,7 +40,10 @@ export const STATE_EXPLANATIONS: Record<ReleaseState, StateExplanation> = {
         "심사를 통과해 전체 공개된 상태입니다. 베타 채널에서는 테스터가 설치할 수 있는 " +
         "유효한 TestFlight 빌드도 이 상태로 표시됩니다.",
     },
-    rawStates: { ios: ["READY_FOR_SALE", "VALID"], android: ["completed"] },
+    rawStates: {
+      ios: ["READY_FOR_SALE", "VALID"],
+      android: ["RELEASE_LIFECYCLE_STATE_PUBLISHED + completed"],
+    },
     action: {
       en: "Nothing to do — keep an eye on crash reports and user reviews.",
       ko: "별도 조치는 필요 없습니다. 크래시 리포트와 사용자 리뷰를 모니터링하세요.",
@@ -61,7 +64,10 @@ export const STATE_EXPLANATIONS: Record<ReleaseState, StateExplanation> = {
         "iOS 단계적 출시(phased release) 또는 Google Play 단계적 출시(staged rollout)입니다. " +
         "배지의 숫자는 현재 이 버전을 받을 수 있는 사용자 누적 비율입니다.",
     },
-    rawStates: { ios: ["ACTIVE (appStoreVersionPhasedRelease)"], android: ["inProgress"] },
+    rawStates: {
+      ios: ["ACTIVE (appStoreVersionPhasedRelease)"],
+      android: ["RELEASE_LIFECYCLE_STATE_PUBLISHED + inProgress"],
+    },
     action: {
       en: "Watch crash-free metrics; halt or resume the rollout in the store console if needed.",
       ko: "크래시 등 지표를 지켜보고, 문제가 있으면 스토어 콘솔에서 출시를 중단하거나 재개하세요.",
@@ -76,19 +82,19 @@ export const STATE_EXPLANATIONS: Record<ReleaseState, StateExplanation> = {
     },
     detail: {
       en:
-        "Submitted to App Store review (or TestFlight beta review). Review times vary " +
+        "Submitted to App Store or Google Play review (or TestFlight beta review). Review times vary " +
         "from a few hours to a few days.",
       ko:
-        "App Store 심사(또는 TestFlight 베타 심사)에 제출된 상태입니다. 심사 기간은 " +
+        "App Store 또는 Google Play 심사(또는 TestFlight 베타 심사)에 제출된 상태입니다. 심사 기간은 " +
         "몇 시간에서 며칠까지 걸릴 수 있습니다.",
     },
     rawStates: {
       ios: ["WAITING_FOR_REVIEW", "IN_REVIEW", "WAITING_FOR_BETA_REVIEW"],
-      android: [],
+      android: ["RELEASE_LIFECYCLE_STATE_IN_REVIEW"],
     },
     action: {
-      en: "Wait for the review to finish; check App Store Connect for reviewer messages.",
-      ko: "심사가 끝날 때까지 기다리세요. App Store Connect에서 심사 메시지를 확인할 수 있습니다.",
+      en: "Wait for the review to finish; check the store console for reviewer messages.",
+      ko: "심사가 끝날 때까지 기다리세요. 스토어 콘솔에서 심사 메시지를 확인할 수 있습니다.",
     },
   },
   pending: {
@@ -114,11 +120,11 @@ export const STATE_EXPLANATIONS: Record<ReleaseState, StateExplanation> = {
         "ACCEPTED",
         "PROCESSING",
       ],
-      android: [],
+      android: ["RELEASE_LIFECYCLE_STATE_APPROVED_NOT_PUBLISHED"],
     },
     action: {
-      en: 'If you release manually, press "Release this version" in App Store Connect when ready.',
-      ko: "수동 출시라면 준비되었을 때 App Store Connect에서 '이 버전 출시'를 누르세요.",
+      en: "If you release manually, publish the approved release in the store console when ready.",
+      ko: "수동 출시라면 준비되었을 때 스토어 콘솔에서 승인된 버전을 출시하세요.",
     },
   },
   rejected: {
@@ -145,11 +151,15 @@ export const STATE_EXPLANATIONS: Record<ReleaseState, StateExplanation> = {
         "FAILED",
         "INVALID",
       ],
-      android: [],
+      android: ["RELEASE_LIFECYCLE_STATE_NOT_APPROVED"],
     },
     action: {
-      en: "Check the reason in the App Store Connect Resolution Center, fix it, and resubmit.",
-      ko: "App Store Connect Resolution Center에서 거절 사유를 확인하고, 수정 후 다시 제출하세요.",
+      en:
+        "Check App Store Connect's Resolution Center or Play Console for review feedback, " +
+        "fix the issue, and resubmit.",
+      ko:
+        "App Store Connect Resolution Center에서 거절 사유를 확인하세요. Google Play는 " +
+        "Play Console에서 확인한 뒤 문제를 수정하고 다시 제출하세요.",
     },
   },
   halted: {
@@ -186,7 +196,10 @@ export const STATE_EXPLANATIONS: Record<ReleaseState, StateExplanation> = {
         "Users and reviewers cannot see it.",
       ko: "메타데이터나 빌드를 준비 중인 초안 상태입니다. 사용자와 심사자에게는 보이지 않습니다.",
     },
-    rawStates: { ios: ["PREPARE_FOR_SUBMISSION"], android: ["draft"] },
+    rawStates: {
+      ios: ["PREPARE_FOR_SUBMISSION"],
+      android: ["RELEASE_LIFECYCLE_STATE_DRAFT", "RELEASE_LIFECYCLE_STATE_NOT_SENT_FOR_REVIEW"],
+    },
     action: {
       en: "Finish the release and submit it for review.",
       ko: "릴리즈 준비를 마치고 심사에 제출하세요.",
