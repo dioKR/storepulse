@@ -1,7 +1,13 @@
 import type { Server } from "node:http";
 import { connect } from "node:net";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createDashboardServer, DEFAULT_PORT, findDashboardRoot, parseServeArgs } from "./serve.js";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import {
+  createDashboardServer,
+  createStatusCollector,
+  DEFAULT_PORT,
+  findDashboardRoot,
+  parseServeArgs,
+} from "./serve.js";
 
 describe("parseServeArgs", () => {
   it("defaults to loopback only", () => {
@@ -23,6 +29,35 @@ describe("parseServeArgs", () => {
     expect(() => parseServeArgs(["--port", "banana"])).toThrow(/--port/);
     expect(() => parseServeArgs(["--port", "70000"])).toThrow(/--port/);
     expect(() => parseServeArgs(["--refresh", "0"])).toThrow(/--refresh/);
+  });
+});
+
+describe("createStatusCollector", () => {
+  it("loads real connectors once and reuses them across refreshes", async () => {
+    const fetchAppStatus = vi.fn(async (target) => ({
+      target,
+      channels: [],
+      fetchedAt: new Date().toISOString(),
+    }));
+    const configLoader = vi.fn(() => ({
+      targets: [
+        {
+          key: "android",
+          name: "Android",
+          platform: "android" as const,
+          storeId: "com.example.app",
+        },
+      ],
+      connectors: [{ id: "test", supports: () => true, fetchAppStatus }],
+      enrichers: [],
+    }));
+
+    const collect = createStatusCollector(false, configLoader);
+    await collect();
+    await collect();
+
+    expect(configLoader).toHaveBeenCalledTimes(1);
+    expect(fetchAppStatus).toHaveBeenCalledTimes(2);
   });
 });
 

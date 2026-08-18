@@ -118,6 +118,15 @@ lifecycle is `RELEASE_LIFECYCLE_STATE_PUBLISHED`; otherwise it remains visibly
 `unknown` rather than reporting a rollout percentage that may only be the
 configured target percentage.
 
+Lifecycle lookups are cached per package and track for one hour, and tracks
+without any versioned release are skipped. If a
+refresh fails after a successful lookup, the last lifecycle value remains in
+use and `rawState` includes `lifecycleCache=stale`. If Google rejects the first
+lookup because its listing quota is exhausted, the release stays `unknown`,
+`rawState` includes `lifecycle=(quota-exceeded)`, and storepulse waits one hour
+before retrying that track. These are raw-state value changes only;
+`schemaVersion` remains **1**.
+
 Consumers must tolerate **unknown `state` values** beyond this list: treat
 anything unrecognized like `unknown`. That is how an upstream store API
 change degrades — visibly, not silently.
