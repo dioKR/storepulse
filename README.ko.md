@@ -128,6 +128,36 @@ npx storepulse snapshot --demo  # 보드를 JSON으로 출력
   파일로 저장돼요) — CI 아티팩트나 자체 스크립트에 쓰기 좋아요. 문서 형식은
   [docs/snapshot-schema.md](docs/snapshot-schema.md)에 정리돼 있어요.
 
+### Android 설치 카탈로그
+
+대시보드 헤더에서 **스토어 상태** 대신 전용 **Android 설치** 페이지로 이동할
+수 있어요. 상태 화면의 분류 선택기와 달리 설치 카탈로그는 Production과
+Development를 한 화면에서 앱과 versionCode별로 정리해 보여줘요.
+
+![Production·Development 빌드와 최신 내부 테스트·버전별 설치 버튼을 보여주는 storepulse Android 설치 카탈로그](docs/images/dashboard-installs.png)
+
+Android 타깃에 최신 설치 가능 빌드로 가는 고정 테스트 링크와 provider가 실제로
+반환한 versionCode별 링크를 선택적으로 등록하세요:
+
+```jsonc
+{
+  "key": "myapp-android",
+  "name": "MyApp",
+  "group": "dev",
+  "platform": "android",
+  "storeId": "com.example.myapp",
+  "latestTesterUrl": "https://play.google.com/apps/internaltest/1234567890",
+  "installLinks": {
+    "41": "https://provider.example/exact-download-url"
+  }
+}
+```
+
+storepulse는 입력한 정확한 HTTPS URL만 표시하며 다운로드 URL을 추측하지 않아요.
+링크가 없는 릴리즈도 **설치 링크 미등록**으로 목록에 남아요. 이전 빌드는 현재
+앱을 삭제해야 설치될 수 있고, 이때 로컬 데이터가 사라질 수 있어요. EAS는 설치
+카탈로그의 필수 조건이 아니라 선택적인 보강 정보예요.
+
 ![한국어로 표시된 대시보드 — 헤더에 EN/KO 스위처가 있어요](docs/images/dashboard-i18n.png)
 
 ![상태 배지를 클릭하면 열리는 용어 설명 다이얼로그 — `storepulse explain`이 출력하는 것과 같은 설명이에요](docs/images/dashboard-explain.png)
@@ -192,6 +222,8 @@ storepulse.config.json`으로도 같은 파일을 얻을 수 있어요.)
 | `group` | 이름 옆에 붙는 라벨 (선택) — 예: `prod` / `dev` |
 | `platform` | `ios` 또는 `android` |
 | `storeId` | **iOS**: 앱의 숫자 Apple ID · **Android**: 패키지명 |
+| `latestTesterUrl` | 선택 — 최신 설치 가능 빌드로 가는 Android HTTPS URL |
+| `installLinks` | 선택 — 정확한 versionCode별 Android HTTPS URL |
 
 **iOS 숫자 ID는 어디서 찾나요?** App Store Connect → 해당 앱 →
 **앱 정보(App Information)** → 일반 정보 → **Apple ID** (`1234567890` 같은 숫자예요).
@@ -353,6 +385,7 @@ Prettier를 대신하는 단일 도구예요. 에디터는 Biome 확장만 설�
 
 - [x] EAS 커넥터 — 스토어 상태를 Expo 빌드·제출과 연결
 - [x] 웹 대시보드 (`storepulse serve`)
+- [x] Android 설치 카탈로그 (`/installs.html`)
 - [x] npm 배포 (`npx storepulse`)
 - [x] CLI 출력 영어·한국어 지원 (`--lang ko`, `storepulse explain`)
 - [x] 스냅샷 diff 엔진 (`storepulse diff`)

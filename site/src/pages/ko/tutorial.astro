@@ -51,6 +51,8 @@ import Base from "../../layouts/Base.astro";
           <tr><td><code>group</code></td><td>선택 라벨 — 예: <code>prod</code> / <code>dev</code></td></tr>
           <tr><td><code>platform</code></td><td><code>ios</code> 또는 <code>android</code></td></tr>
           <tr><td><code>storeId</code></td><td><b>iOS</b>: 숫자 Apple ID · <b>Android</b>: 패키지명</td></tr>
+          <tr><td><code>latestTesterUrl</code></td><td>선택 — 최신 설치 가능 빌드로 가는 Android HTTPS URL</td></tr>
+          <tr><td><code>installLinks</code></td><td>선택 — 정확한 versionCode별 Android HTTPS URL</td></tr>
         </tbody>
       </table>
       <div class="note">
@@ -152,6 +154,16 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
         돼요. 기본으로 <code>127.0.0.1</code>에만 바인딩돼요 — 보드에 미출시
         버전이 보일 수 있으니, 로컬에만 두는 게 안전해요.
       </p>
+      <div class="note">
+        <b>Android 설치</b> — 헤더 탐색 메뉴에서 전용 설치 카탈로그를 열 수
+        있어요. 이 화면에서는 Production과 Development를 한 번에 보여줘요.
+        고정 <code>latestTesterUrl</code>이나 provider가 실제로 반환한
+        <code>installLinks</code>(예: <code>&quot;41&quot;:
+        &quot;https://provider.example/exact-download-url&quot;</code>)를 등록하세요.
+        storepulse는 다운로드 URL을 추측하지 않아요. 링크가 없는 릴리즈도
+        목록에는 남지만 클릭할 수 없어요. 이전 빌드는 현재 앱을 삭제해야 설치될
+        수 있고, 이때 로컬 데이터가 사라질 수 있어요.
+      </div>
     </section>
 
     <section>

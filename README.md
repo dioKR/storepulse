@@ -128,6 +128,38 @@ npx storepulse snapshot --demo  # the board as JSON, to stdout
   to a file) — handy for CI artifacts or your own scripts. The document format
   is specified in [docs/snapshot-schema.md](docs/snapshot-schema.md).
 
+### Android install catalog
+
+Use the dashboard header to switch from **Store status** to the dedicated
+**Android installs** page. Unlike the status view's group selector, the install
+catalog shows Production and Development together, organized by app and
+versionCode.
+
+![storepulse Android install catalog — Production and Development builds with latest-testing and version-specific install actions](docs/images/dashboard-installs.png)
+
+For an Android target, add a fixed testing-program link for the latest eligible
+build and/or exact provider-returned links by versionCode:
+
+```jsonc
+{
+  "key": "myapp-android",
+  "name": "MyApp",
+  "group": "dev",
+  "platform": "android",
+  "storeId": "com.example.myapp",
+  "latestTesterUrl": "https://play.google.com/apps/internaltest/1234567890",
+  "installLinks": {
+    "41": "https://provider.example/exact-download-url"
+  }
+}
+```
+
+Storepulse only renders exact HTTPS URLs you provide; it never guesses a
+download URL. Releases without a link remain visible as **Install link not
+registered**. Installing an older build may require uninstalling the current
+app and can remove local data. EAS is optional enrichment, not a prerequisite
+for the catalog.
+
 ![The dashboard in Korean — the EN/KO switcher lives in the header](docs/images/dashboard-i18n.png)
 
 ![Clicking a state badge opens a glossary dialog — the same explanations `storepulse explain` prints](docs/images/dashboard-explain.png)
@@ -193,6 +225,8 @@ Now open `storepulse.config.json` and describe your apps:
 | `group` | Optional label shown next to the name — e.g. `prod` / `dev` |
 | `platform` | `ios` or `android` |
 | `storeId` | **iOS**: the numeric Apple ID of the app. **Android**: the package name |
+| `latestTesterUrl` | Optional Android HTTPS URL for the latest eligible tester build |
+| `installLinks` | Optional Android HTTPS URLs keyed by exact versionCode |
 
 **Where do I find the iOS numeric ID?** App Store Connect → your app →
 **App Information** → General Information → **Apple ID** (a number like
@@ -354,6 +388,7 @@ Done so far:
 
 - [x] EAS connector — link store status to Expo builds & submissions
 - [x] Web dashboard (`storepulse serve`)
+- [x] Android install catalog (`/installs.html`)
 - [x] Publish to npm (`npx storepulse`)
 - [x] CLI output in English & Korean (`--lang ko`, `storepulse explain`)
 - [x] Snapshot diff engine (`storepulse diff`)

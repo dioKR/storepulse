@@ -50,6 +50,8 @@ import Base from "../../layouts/Base.astro";
           <tr><td><code>group</code></td><td>可选标签 —— 如 <code>prod</code> / <code>dev</code></td></tr>
           <tr><td><code>platform</code></td><td><code>ios</code> 或 <code>android</code></td></tr>
           <tr><td><code>storeId</code></td><td><b>iOS</b>:数字 Apple ID · <b>Android</b>:包名</td></tr>
+          <tr><td><code>latestTesterUrl</code></td><td>可选 —— 指向最新可安装测试构建的 Android HTTPS URL</td></tr>
+          <tr><td><code>installLinks</code></td><td>可选 —— 按精确 versionCode 登记的 Android HTTPS URL</td></tr>
         </tbody>
       </table>
       <div class="note">
@@ -147,6 +149,15 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
         <code>127.0.0.1</code> —— 看板上可能出现尚未发布的版本号,
         留在本机更稳妥。
       </p>
+      <div class="note">
+        <b>Android 安装</b> —— 通过顶栏导航打开独立的安装目录。该页面会同时
+        显示 Production 和 Development。请登记固定的
+        <code>latestTesterUrl</code>,或 provider 实际返回的
+        <code>installLinks</code>(例如 <code>&quot;41&quot;:
+        &quot;https://provider.example/exact-download-url&quot;</code>)。
+        storepulse 不会猜测下载 URL;没有链接的版本仍会显示,但无法点击。
+        安装旧构建可能需要先卸载当前应用,并可能清除本地数据。
+      </div>
     </section>
 
     <section>

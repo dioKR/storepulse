@@ -50,6 +50,8 @@ import Base from "../../layouts/Base.astro";
           <tr><td><code>group</code></td><td>選填標籤 —— 例如 <code>prod</code> / <code>dev</code></td></tr>
           <tr><td><code>platform</code></td><td><code>ios</code> 或 <code>android</code></td></tr>
           <tr><td><code>storeId</code></td><td><b>iOS</b>:數字 Apple ID · <b>Android</b>:套件名稱</td></tr>
+          <tr><td><code>latestTesterUrl</code></td><td>選填 —— 前往最新可安裝測試建置的 Android HTTPS URL</td></tr>
+          <tr><td><code>installLinks</code></td><td>選填 —— 依精確 versionCode 登記的 Android HTTPS URL</td></tr>
         </tbody>
       </table>
       <div class="note">
@@ -148,6 +150,15 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
         預設只綁定 <code>127.0.0.1</code> —— 看板上可能出現尚未發布的
         版本號,留在本機比較安全。
       </p>
+      <div class="note">
+        <b>Android 安裝</b> —— 從頂欄導覽開啟獨立的安裝目錄。這個頁面會同時
+        顯示 Production 和 Development。請登記固定的
+        <code>latestTesterUrl</code>,或 provider 實際回傳的
+        <code>installLinks</code>(例如 <code>&quot;41&quot;:
+        &quot;https://provider.example/exact-download-url&quot;</code>)。
+        storepulse 不會猜測下載 URL;沒有連結的版本仍會顯示,但無法點擊。
+        安裝舊建置可能要先移除目前的 App,並可能清除本機資料。
+      </div>
     </section>
 
     <section>
