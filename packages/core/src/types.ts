@@ -29,6 +29,13 @@ export interface AppTarget {
   platform: Platform;
   /** ASC numeric app ID (ios) or package name (android) */
   storeId: string;
+  /** Optional fixed Play testing link that always serves the latest eligible build. */
+  latestTesterUrl?: string;
+  /**
+   * Verified Android install URLs keyed by versionCode. Store the exact URL
+   * returned by the artifact provider; storepulse never guesses one.
+   */
+  installLinks?: Record<string, string>;
   /** Optional display grouping, e.g. "prod" | "dev" */
   group?: string;
   /**

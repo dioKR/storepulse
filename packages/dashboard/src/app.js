@@ -13,6 +13,7 @@
  * All data is inserted via textContent — snapshot strings never become markup.
  */
 
+import { androidReleases, latestTesterUrlFor } from "./downloads.js";
 import { STATE_EXPLANATIONS, SUPPORTED_LANGS, UI_STRINGS } from "./i18n.js";
 import {
   groupAppsByName,
@@ -38,6 +39,7 @@ const CHANNELS = [
 /** TestFlight builds expiring in ≤ this many days get a warning color. */
 const EXPIRY_WARN_DAYS = 7;
 const DAY_MS = 86_400_000;
+const PAGE = document.body.dataset.page === "installs" ? "installs" : "status";
 
 const boardEl = document.getElementById("board");
 const filtersEl = document.getElementById("filters");
@@ -45,6 +47,11 @@ const metaEl = document.getElementById("meta");
 const footEl = document.getElementById("foot");
 const langSwitchEl = document.getElementById("lang-switch");
 const explainEl = document.getElementById("explain");
+const primaryNavEl = document.getElementById("primary-nav");
+const navStatusEl = document.getElementById("nav-status");
+const navInstallsEl = document.getElementById("nav-installs");
+const pageTitleEl = document.getElementById("page-title");
+const pageDescriptionEl = document.getElementById("page-description");
 
 // UI state that must survive the 60s auto-refresh re-render.
 const expandedKeys = new Set();
@@ -95,10 +102,24 @@ function setLang(next) {
     // storage unavailable — the choice just won't survive a reload
   }
   document.documentElement.lang = next;
+  renderPageChrome();
   renderLangSwitch();
   if (openExplainState) renderExplainPanel();
   if (lastSnapshot) render(lastSnapshot);
   else if (lastError) renderLoadError(lastError);
+}
+
+function renderPageChrome() {
+  primaryNavEl.setAttribute("aria-label", t("dash.navLabel"));
+  navStatusEl.textContent = t("dash.navStatus");
+  navInstallsEl.textContent = t("dash.navInstalls");
+
+  const titleKey = PAGE === "installs" ? "dash.pageInstallsTitle" : "dash.pageStatusTitle";
+  const descriptionKey =
+    PAGE === "installs" ? "dash.pageInstallsDescription" : "dash.pageStatusDescription";
+  pageTitleEl.textContent = t(titleKey);
+  pageDescriptionEl.textContent = t(descriptionKey);
+  document.title = `storepulse — ${t(titleKey)}`;
 }
 
 function renderLangSwitch() {
@@ -145,6 +166,15 @@ function badge(entry) {
   const frag = document.createDocumentFragment();
   frag.append(`${entry.version ?? "?"} `);
 
+  frag.append(stateBadge(entry));
+
+  if (entry.build) frag.append(" ", el("span", "dim", `(${entry.build})`));
+  return frag;
+}
+
+function stateBadge(entry) {
+  const frag = document.createDocumentFragment();
+
   if (entry.state === "rollout") {
     frag.append(badgeButton("rollout", `${entry.rolloutPercent ?? "?"}%`));
   } else if (Object.hasOwn(STATE_EXPLANATIONS, entry.state) && entry.state !== "unknown") {
@@ -154,8 +184,6 @@ function badge(entry) {
     frag.append(badgeButton("unknown", "UNKNOWN"));
     if (entry.rawState) frag.append(" ", el("span", "dim", `(${entry.rawState})`));
   }
-
-  if (entry.build) frag.append(" ", el("span", "dim", `(${entry.build})`));
   return frag;
 }
 
@@ -456,6 +484,137 @@ function buildBoard(apps) {
   return grid;
 }
 
+/* ── Android install catalog ─────────────── */
+
+function channelLabel(channelId) {
+  return CHANNELS.find((channel) => channel.id === channelId)?.label ?? channelId;
+}
+
+async function copyInstallUrl(url, status) {
+  try {
+    await navigator.clipboard.writeText(url);
+    status.textContent = t("dash.copied");
+  } catch {
+    status.textContent = t("dash.copyFailed");
+  }
+}
+
+function installActions(url, installLabel) {
+  const actions = el("div", "release-actions");
+  const install = el("a", "action primary", installLabel);
+  install.href = url;
+  install.target = "_blank";
+  install.rel = "noopener noreferrer";
+
+  const copy = el("button", "action", t("dash.copyLink"));
+  copy.type = "button";
+  const copyStatus = el("span", "copy-status");
+  copyStatus.setAttribute("aria-live", "polite");
+  copy.addEventListener("click", () => copyInstallUrl(url, copyStatus));
+  actions.append(install, copy, copyStatus);
+  return actions;
+}
+
+function releaseItem(release) {
+  const item = el("article", "release-item");
+
+  const main = el("div", "release-main");
+  const title = el("h4", "release-title", release.version ?? "?");
+  if (release.build) title.append(" ", el("span", "dim", `(${release.build})`));
+  main.append(title);
+
+  const channelRow = el("div", "release-channels");
+  channelRow.append(el("span", "release-label", t("dash.availableChannels")));
+  for (const entry of release.channelEntries) {
+    const channel = el("span", "release-channel");
+    channel.append(`${channelLabel(entry.channel)} `, stateBadge(entry));
+    channelRow.append(channel);
+  }
+  main.append(channelRow);
+
+  if (release.date) main.append(el("div", "release-date", localDateTime(release.date)));
+  if (release.releaseNotes) main.append(el("div", "release-notes", release.releaseNotes));
+  if (release.eas && typeof release.eas === "object") main.append(easBlock(release.eas));
+
+  if (release.installUrl) {
+    item.append(main, installActions(release.installUrl, t("dash.installVersion")));
+  } else {
+    const unavailable = el("div", "install-unavailable");
+    unavailable.append(
+      el("strong", null, t("dash.installUnavailable")),
+      el("span", null, t("dash.installUnavailableBody")),
+    );
+    item.append(main, unavailable);
+  }
+  return item;
+}
+
+function latestTesterBlock(target) {
+  const url = latestTesterUrlFor(target);
+  if (!url) return null;
+
+  const block = el("div", "latest-tester");
+  const copy = el("div", "latest-tester-copy");
+  copy.append(
+    el("strong", null, t("dash.latestTesterTitle")),
+    el("span", null, t("dash.latestTesterBody")),
+  );
+  block.append(copy, installActions(url, t("dash.installLatest")));
+  return block;
+}
+
+function buildInstallCard(card) {
+  const section = el("section", "app-card release-card");
+  section.append(el("h3", "app-card-title", card.name));
+
+  const list = el("div", "release-list");
+  for (const app of card.apps) {
+    const latest = latestTesterBlock(app.target);
+    if (latest) list.append(latest);
+    for (const release of androidReleases(app)) list.append(releaseItem(release));
+  }
+  section.append(list);
+  return section;
+}
+
+function buildInstallGroup(group, apps) {
+  const section = el("section", "install-group");
+  section.append(el("h2", "install-group-title", groupLabel(group, t("dash.ungrouped"))));
+  const grid = el("div", "app-grid");
+  for (const card of groupAppsByName(apps)) grid.append(buildInstallCard(card));
+  section.append(grid);
+  return section;
+}
+
+function buildInstalls(apps) {
+  const root = el("div", "installs-view");
+  const verified = notice(t("dash.verifiedLinksTitle"), [[t("dash.verifiedLinksBody")]]);
+  verified.classList.add("install-info");
+  const warning = notice(t("dash.installWarningTitle"), [[t("dash.installWarningBody")]]);
+  warning.classList.add("warn", "install-warning");
+  root.append(verified, warning);
+
+  const androidApps = apps.filter(
+    (app) =>
+      app.target?.platform === "android" &&
+      (androidReleases(app).length > 0 || latestTesterUrlFor(app.target) !== null),
+  );
+  if (androidApps.length === 0) {
+    root.append(el("div", "filter-empty", t("dash.installsEmpty")));
+    return root;
+  }
+
+  for (const group of groupsOf(androidApps)) {
+    root.append(
+      buildInstallGroup(
+        group,
+        androidApps.filter((app) => groupId(app.target) === group),
+      ),
+    );
+  }
+  return root;
+}
+
 /* ── filter chips ────────────────────────── */
 
 function chip(label, pressed, onSelect) {
@@ -574,23 +733,32 @@ function render(snapshot) {
   }
 
   const apps = Array.isArray(snapshot.apps) ? snapshot.apps : [];
-  renderFilters(apps);
-  const visible = applyFilters(apps);
+  let visible = apps;
+  if (PAGE === "installs") {
+    filtersEl.hidden = true;
+  } else {
+    renderFilters(apps);
+    visible = applyFilters(apps);
+  }
 
   if (apps.length === 0) {
     boardEl.append(notice(t("dash.emptyTitle"), [noticeLine(t("dash.emptyBody"))]));
-  } else if (visible.length === 0) {
+  } else if (PAGE === "status" && visible.length === 0) {
     boardEl.append(el("div", "filter-empty", t("dash.filterEmpty")));
   } else {
-    boardEl.append(buildBoard(visible));
+    boardEl.append(PAGE === "installs" ? buildInstalls(apps) : buildBoard(visible));
   }
 
   const generated = snapshot.generatedAt ? new Date(snapshot.generatedAt) : null;
   metaEl.textContent = generated ? `· ${generated.toLocaleString()}` : "";
+  const shownCount =
+    PAGE === "installs"
+      ? apps.filter((app) => app.target?.platform === "android").length
+      : visible.length;
   const targetCount =
-    visible.length === apps.length
+    shownCount === apps.length
       ? t("dash.targets", { n: apps.length })
-      : t("dash.targetsFiltered", { shown: visible.length, total: apps.length });
+      : t("dash.targetsFiltered", { shown: shownCount, total: apps.length });
   footEl.textContent =
     `schema v${snapshot.schemaVersion ?? "?"} · ${targetCount} · ` +
     t("dash.autoRefresh", { seconds: REFRESH_MS / 1000 });
@@ -622,6 +790,7 @@ async function refresh() {
 
 document.documentElement.lang = lang;
 metaEl.textContent = t("dash.loading");
+renderPageChrome();
 renderLangSwitch();
 refresh();
 setInterval(refresh, REFRESH_MS);

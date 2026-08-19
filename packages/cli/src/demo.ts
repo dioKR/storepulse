@@ -19,6 +19,12 @@ export const demoTargets: AppTarget[] = [
     group: "prod",
     platform: "android",
     storeId: "com.example.aurora",
+    latestTesterUrl: "https://example.com/aurora/android/latest",
+    installLinks: {
+      "241": "https://example.com/aurora/android/241",
+      "250": "https://example.com/aurora/android/250",
+      "251": "https://example.com/aurora/android/251",
+    },
     easProjectId: AURORA_EAS_PROJECT_ID,
   },
   { key: "aurora-dev-ios", name: "Aurora Dev", group: "dev", platform: "ios", storeId: "2" },
@@ -28,6 +34,7 @@ export const demoTargets: AppTarget[] = [
     group: "dev",
     platform: "android",
     storeId: "com.example.aurora.dev",
+    installLinks: { "12": "https://example.com/aurora-dev/android/12" },
   },
   { key: "borealis-ios", name: "Borealis", group: "prod", platform: "ios", storeId: "3" },
   {
@@ -36,6 +43,11 @@ export const demoTargets: AppTarget[] = [
     group: "prod",
     platform: "android",
     storeId: "com.example.borealis",
+    latestTesterUrl: "https://example.com/borealis/android/latest",
+    installLinks: {
+      "192": "https://example.com/borealis/android/192",
+      "200": "https://example.com/borealis/android/200",
+    },
   },
   { key: "borealis-dev-ios", name: "Borealis Dev", group: "dev", platform: "ios", storeId: "4" },
   {
@@ -44,6 +56,7 @@ export const demoTargets: AppTarget[] = [
     group: "dev",
     platform: "android",
     storeId: "com.example.borealis.dev",
+    installLinks: { "45": "https://example.com/borealis-dev/android/45" },
   },
 ];
 

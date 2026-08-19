@@ -134,7 +134,7 @@ describe("doctor — config checks", () => {
     expect(report.ok).toBe(false);
   });
 
-  it("missing field: names the field and the offending entry", async () => {
+  it("missing field: names the field and the app key", async () => {
     const report = await runDoctorChecks({
       cwd: makeDir([{ key: "a", name: "A", platform: "ios" }]),
       env: {},
@@ -145,10 +145,10 @@ describe("doctor — config checks", () => {
     const fields = byId(report, "config.fields");
     expect(fields.status).toBe("fail");
     expect(fields.detail).toContain('"storeId"');
-    expect(fields.detail).toContain('"key":"a"');
+    expect(fields.detail).toContain('"a"');
   });
 
-  it("bad platform: names the bogus value", async () => {
+  it("bad platform: names the app without echoing the rejected value", async () => {
     const report = await runDoctorChecks({
       cwd: makeDir([{ key: "a", name: "A", platform: "web", storeId: "x" }]),
       env: {},
@@ -156,7 +156,52 @@ describe("doctor — config checks", () => {
       lang: "en",
     });
 
-    expect(byId(report, "config.fields").detail).toContain('"web"');
+    const fields = byId(report, "config.fields");
+    expect(fields.detail).toContain('"a"');
+    expect(fields.detail).not.toContain('"web"');
+  });
+
+  it("invalid install links report only the app and field, never embedded credentials", async () => {
+    const report = await runDoctorChecks({
+      cwd: makeDir([
+        {
+          ...androidApp,
+          latestTesterUrl: "https://private-user:private-secret@example.com/latest",
+        },
+      ]),
+      env: {},
+      fetchImpl: neverFetch,
+      lang: "en",
+    });
+
+    const fields = byId(report, "config.fields");
+    expect(fields.status).toBe("fail");
+    expect(fields.detail).toContain('"app-android"');
+    expect(fields.detail).toContain('"latestTesterUrl"');
+    expect(JSON.stringify(report)).not.toContain("private-user");
+    expect(JSON.stringify(report)).not.toContain("private-secret");
+  });
+
+  it("required-field errors cannot bypass install credential redaction", async () => {
+    const report = await runDoctorChecks({
+      cwd: makeDir([
+        {
+          key: "app-android",
+          platform: "android",
+          storeId: "com.example.app",
+          latestTesterUrl: "https://private-user:private-secret@example.com/latest",
+        },
+      ]),
+      env: {},
+      fetchImpl: neverFetch,
+      lang: "en",
+    });
+
+    const fields = byId(report, "config.fields");
+    expect(fields.detail).toContain('"app-android"');
+    expect(fields.detail).toContain('"name"');
+    expect(JSON.stringify(report)).not.toContain("private-user");
+    expect(JSON.stringify(report)).not.toContain("private-secret");
   });
 });
 

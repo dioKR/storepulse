@@ -345,20 +345,24 @@ export const UI_STRINGS = {
     "ko": "\"apps\"는 비어 있지 않은 배열이어야 합니다"
   },
   "doctor.config.fieldMissing": {
-    "en": "app entry {app} is missing \"{field}\"",
-    "ko": "앱 항목 {app}에 \"{field}\"가 없습니다"
+    "en": "app \"{app}\" is missing \"{field}\"",
+    "ko": "앱 \"{app}\"에 \"{field}\"가 없습니다"
   },
   "doctor.config.badPlatform": {
-    "en": "platform must be \"ios\" or \"android\", got \"{platform}\"",
-    "ko": "platform은 \"ios\" 또는 \"android\"여야 합니다 (현재 \"{platform}\")"
+    "en": "app \"{app}\" has an invalid platform — use \"ios\" or \"android\"",
+    "ko": "앱 \"{app}\"의 platform이 올바르지 않습니다 — \"ios\" 또는 \"android\"를 사용하세요"
+  },
+  "doctor.config.badInstallLink": {
+    "en": "app \"{app}\" has an invalid \"{field}\" — it is Android-only and must contain HTTPS URLs without embedded credentials",
+    "ko": "앱 \"{app}\"의 \"{field}\"이 올바르지 않습니다 — Android에서만 사용할 수 있고 사용자 정보가 없는 HTTPS URL이어야 합니다"
   },
   "doctor.config.badEasProjectId": {
-    "en": "app entry {app} has a non-string or empty \"easProjectId\"",
-    "ko": "앱 항목 {app}의 \"easProjectId\"가 문자열이 아니거나 비어 있습니다"
+    "en": "app \"{app}\" has a non-string or empty \"easProjectId\"",
+    "ko": "앱 \"{app}\"의 \"easProjectId\"가 문자열이 아니거나 비어 있습니다"
   },
   "doctor.config.badEasAppIdentifier": {
-    "en": "app entry {app} has a non-string or empty \"easAppIdentifier\"",
-    "ko": "앱 항목 {app}의 \"easAppIdentifier\"가 문자열이 아니거나 비어 있습니다"
+    "en": "app \"{app}\" has a non-string or empty \"easAppIdentifier\"",
+    "ko": "앱 \"{app}\"의 \"easAppIdentifier\"가 문자열이 아니거나 비어 있습니다"
   },
   "doctor.fix.init": {
     "en": "run `storepulse init` to scaffold the config + .env templates",
@@ -775,6 +779,94 @@ export const UI_STRINGS = {
   "dash.filterByGroup": {
     "en": "select group",
     "ko": "분류 선택"
+  },
+  "dash.navLabel": {
+    "en": "storepulse pages",
+    "ko": "storepulse 페이지"
+  },
+  "dash.navStatus": {
+    "en": "Store status",
+    "ko": "스토어 현황"
+  },
+  "dash.navInstalls": {
+    "en": "Android installs",
+    "ko": "Android 설치"
+  },
+  "dash.pageStatusTitle": {
+    "en": "Release status",
+    "ko": "스토어 배포 현황"
+  },
+  "dash.pageStatusDescription": {
+    "en": "Compare store channels, review states, and the latest builds for every app.",
+    "ko": "모든 앱의 스토어 채널, 심사 상태와 최신 빌드를 비교합니다."
+  },
+  "dash.pageInstallsTitle": {
+    "en": "Android installs",
+    "ko": "Android 설치"
+  },
+  "dash.pageInstallsDescription": {
+    "en": "Browse every environment and open only verified tester and version-specific links.",
+    "ko": "모든 환경의 버전을 확인하고 검증된 최신·버전별 링크만 엽니다."
+  },
+  "dash.installsEmpty": {
+    "en": "no Android releases are available in this snapshot",
+    "ko": "이 스냅샷에 Android 릴리즈가 없습니다"
+  },
+  "dash.verifiedLinksTitle": {
+    "en": "Verified links only",
+    "ko": "검증된 링크만 제공"
+  },
+  "dash.verifiedLinksBody": {
+    "en": "A store release can appear without an install action. Version installs are enabled only for exact provider URLs registered for that versionCode.",
+    "ko": "스토어 릴리즈가 보여도 설치 버튼은 없을 수 있습니다. 해당 versionCode에 공급자가 발급한 정확한 URL을 등록한 경우에만 버전 설치가 활성화됩니다."
+  },
+  "dash.installWarningTitle": {
+    "en": "Android version installs",
+    "ko": "Android 버전별 설치"
+  },
+  "dash.installWarningBody": {
+    "en": "Older versions cannot coexist with the same application ID. Android may require uninstalling the current app first, which can remove local app data.",
+    "ko": "동일한 application ID의 여러 버전은 함께 설치할 수 없습니다. 이전 버전 설치 시 현재 앱을 먼저 삭제해야 할 수 있으며 로컬 앱 데이터가 사라질 수 있습니다."
+  },
+  "dash.latestTesterTitle": {
+    "en": "Latest internal test",
+    "ko": "최신 내부 테스트"
+  },
+  "dash.latestTesterBody": {
+    "en": "This fixed testing-program link serves the latest build eligible for the tester.",
+    "ko": "고정 테스트 링크이며 테스터에게 허용된 최신 빌드를 설치합니다."
+  },
+  "dash.installLatest": {
+    "en": "Install latest",
+    "ko": "최신 설치"
+  },
+  "dash.installVersion": {
+    "en": "Install this version",
+    "ko": "이 버전 설치"
+  },
+  "dash.installUnavailable": {
+    "en": "Install link not registered",
+    "ko": "설치 링크 미등록"
+  },
+  "dash.installUnavailableBody": {
+    "en": "Store status is available, but no verified artifact URL was registered for this versionCode.",
+    "ko": "스토어 상태는 확인됐지만 이 versionCode의 검증된 artifact URL은 등록되지 않았습니다."
+  },
+  "dash.copyLink": {
+    "en": "Copy link",
+    "ko": "링크 복사"
+  },
+  "dash.copied": {
+    "en": "Copied",
+    "ko": "복사됨"
+  },
+  "dash.copyFailed": {
+    "en": "Copy failed",
+    "ko": "복사 실패"
+  },
+  "dash.availableChannels": {
+    "en": "channels",
+    "ko": "채널"
   },
   "dash.ungrouped": {
     "en": "Ungrouped",
