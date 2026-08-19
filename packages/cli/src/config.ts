@@ -61,6 +61,7 @@ export type ConfigIssue =
   | { kind: "apps-missing" }
   | { kind: "field-missing"; app: unknown; field: string }
   | { kind: "bad-platform"; platform: string }
+  | { kind: "bad-install-url-template"; app: unknown }
   | { kind: "bad-eas-project-id"; app: unknown }
   | { kind: "bad-eas-app-identifier"; app: unknown };
 
@@ -78,6 +79,9 @@ export function validateTargets(raw: unknown): { targets: AppTarget[] } | { issu
     }
     if (app.platform !== "ios" && app.platform !== "android") {
       return { issue: { kind: "bad-platform", platform: app.platform } };
+    }
+    if (app.installUrlTemplate !== undefined && !isValidInstallUrlTemplate(app)) {
+      return { issue: { kind: "bad-install-url-template", app } };
     }
     // Optional field, but when present it must be a usable project id.
     if (
@@ -113,10 +117,34 @@ function configIssueMessage(issue: ConfigIssue): string {
       return `${CONFIG_FILE}: app entry ${JSON.stringify(issue.app)} is missing "${issue.field}"`;
     case "bad-platform":
       return `${CONFIG_FILE}: platform must be "ios" or "android", got "${issue.platform}"`;
+    case "bad-install-url-template":
+      return `${CONFIG_FILE}: app entry ${JSON.stringify(issue.app)} has an invalid "installUrlTemplate" (Android only; use HTTPS and include {storeId} and {build})`;
     case "bad-eas-project-id":
       return `${CONFIG_FILE}: app entry ${JSON.stringify(issue.app)} has a non-string or empty "easProjectId"`;
     case "bad-eas-app-identifier":
       return `${CONFIG_FILE}: app entry ${JSON.stringify(issue.app)} has a non-string or empty "easAppIdentifier"`;
+  }
+}
+
+function isValidInstallUrlTemplate(app: Record<string, unknown>): boolean {
+  const template = app.installUrlTemplate;
+  if (
+    app.platform !== "android" ||
+    typeof template !== "string" ||
+    template.length === 0 ||
+    !template.includes("{storeId}") ||
+    !template.includes("{build}")
+  ) {
+    return false;
+  }
+
+  try {
+    const url = new URL(
+      template.replaceAll("{storeId}", "com.example.app").replaceAll("{build}", "123"),
+    );
+    return url.protocol === "https:" && url.username === "" && url.password === "";
+  } catch {
+    return false;
   }
 }
 

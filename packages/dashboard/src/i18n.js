@@ -352,6 +352,10 @@ export const UI_STRINGS = {
     "en": "platform must be \"ios\" or \"android\", got \"{platform}\"",
     "ko": "platform은 \"ios\" 또는 \"android\"여야 합니다 (현재 \"{platform}\")"
   },
+  "doctor.config.badInstallUrlTemplate": {
+    "en": "app entry {app} has an invalid \"installUrlTemplate\" — it is Android-only and must use HTTPS with {storeId} and {build}",
+    "ko": "앱 항목 {app}의 \"installUrlTemplate\"이 올바르지 않습니다 — Android에서만 사용할 수 있고 HTTPS 주소에 {storeId}와 {build}가 필요합니다"
+  },
   "doctor.config.badEasProjectId": {
     "en": "app entry {app} has a non-string or empty \"easProjectId\"",
     "ko": "앱 항목 {app}의 \"easProjectId\"가 문자열이 아니거나 비어 있습니다"
@@ -775,6 +779,50 @@ export const UI_STRINGS = {
   "dash.filterByGroup": {
     "en": "select group",
     "ko": "분류 선택"
+  },
+  "dash.viewSwitch": {
+    "en": "dashboard view",
+    "ko": "대시보드 화면"
+  },
+  "dash.viewBoard": {
+    "en": "Board",
+    "ko": "현황"
+  },
+  "dash.viewReleases": {
+    "en": "Releases",
+    "ko": "설치 버전"
+  },
+  "dash.releasesEmpty": {
+    "en": "no installable Android releases match the current filter",
+    "ko": "현재 필터에 설치 가능한 Android 버전이 없습니다"
+  },
+  "dash.installWarningTitle": {
+    "en": "Android version installs",
+    "ko": "Android 버전별 설치"
+  },
+  "dash.installWarningBody": {
+    "en": "Older versions cannot coexist with the same application ID. Android may require uninstalling the current app first, which can remove local app data.",
+    "ko": "동일한 application ID의 여러 버전은 함께 설치할 수 없습니다. 이전 버전 설치 시 현재 앱을 먼저 삭제해야 할 수 있으며 로컬 앱 데이터가 사라질 수 있습니다."
+  },
+  "dash.install": {
+    "en": "Install",
+    "ko": "설치"
+  },
+  "dash.copyLink": {
+    "en": "Copy link",
+    "ko": "링크 복사"
+  },
+  "dash.copied": {
+    "en": "Copied",
+    "ko": "복사됨"
+  },
+  "dash.copyFailed": {
+    "en": "Copy failed",
+    "ko": "복사 실패"
+  },
+  "dash.availableChannels": {
+    "en": "channels",
+    "ko": "채널"
   },
   "dash.ungrouped": {
     "en": "Ungrouped",

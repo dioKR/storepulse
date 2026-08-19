@@ -177,6 +177,7 @@ function isTarget(value: unknown): boolean {
     typeof value.name === "string" &&
     (value.platform === "ios" || value.platform === "android") &&
     typeof value.storeId === "string" &&
+    optionalString(value.installUrlTemplate) &&
     optionalString(value.group) &&
     optionalString(value.easProjectId) &&
     optionalString(value.easAppIdentifier)

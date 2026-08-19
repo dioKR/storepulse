@@ -29,6 +29,12 @@ export interface AppTarget {
   platform: Platform;
   /** ASC numeric app ID (ios) or package name (android) */
   storeId: string;
+  /**
+   * Optional Android install-page URL template. `{storeId}` and `{build}`
+   * are replaced with the package name and versionCode in the dashboard.
+   * Only HTTPS templates are accepted by the CLI.
+   */
+  installUrlTemplate?: string;
   /** Optional display grouping, e.g. "prod" | "dev" */
   group?: string;
   /**

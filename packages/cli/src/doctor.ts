@@ -264,6 +264,10 @@ function configIssueDetail(issue: ConfigIssue, lang: Lang): string {
       });
     case "bad-platform":
       return uiString("doctor.config.badPlatform", lang, { platform: issue.platform });
+    case "bad-install-url-template":
+      return uiString("doctor.config.badInstallUrlTemplate", lang, {
+        app: JSON.stringify(issue.app),
+      });
     case "bad-eas-project-id":
       return uiString("doctor.config.badEasProjectId", lang, { app: JSON.stringify(issue.app) });
     case "bad-eas-app-identifier":

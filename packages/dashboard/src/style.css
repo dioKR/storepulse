@@ -127,6 +127,19 @@ body {
   margin-top: 14px;
 }
 
+/* Primary view switch: status board vs opt-in Android install catalog. */
+.view-switch {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.view-switch[hidden] {
+  display: none;
+}
+
 /* ── group → app → platform board ───────── */
 .app-grid {
   display: grid;
@@ -427,6 +440,112 @@ button.chip.on {
   font-size: 0.9rem;
 }
 
+/* ── Android install catalog ─────────────── */
+.install-warning {
+  margin-bottom: 16px;
+}
+
+.release-list {
+  padding: 0 14px;
+}
+
+.release-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: start;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.release-item:last-child {
+  border-bottom: none;
+}
+
+.release-title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.release-channels {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.release-label {
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.release-channel {
+  border: 1px solid var(--line-strong);
+  color: var(--muted);
+  font-size: 0.72rem;
+  padding: 0 6px;
+}
+
+.release-date {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.release-notes {
+  margin-top: 10px;
+  padding-left: 10px;
+  border-left: 2px solid var(--line-strong);
+  white-space: pre-wrap;
+  font-size: 0.86rem;
+}
+
+.release-actions {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  gap: 7px;
+  justify-content: end;
+}
+
+.action {
+  font: inherit;
+  font-size: 0.78rem;
+  line-height: 1.65;
+  color: var(--ink);
+  background: var(--panel-2);
+  border: 1px solid var(--line-strong);
+  padding: 4px 10px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.action:hover {
+  border-color: var(--accent);
+}
+
+.action:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.action.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #121014;
+  font-weight: 700;
+}
+
+.copy-status {
+  grid-column: 1 / -1;
+  min-height: 1.2em;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-align: right;
+}
+
 @media (max-width: 760px) {
   .wrap {
     padding: 16px 10px 32px;
@@ -455,6 +574,18 @@ button.chip.on {
 
   table.app-board {
     min-width: 760px;
+  }
+
+  .release-item {
+    grid-template-columns: 1fr;
+  }
+
+  .release-actions {
+    justify-content: start;
+  }
+
+  .copy-status {
+    text-align: left;
   }
 }
 
