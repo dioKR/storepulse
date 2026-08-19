@@ -48,7 +48,8 @@ describe("dashboard Android install URLs", () => {
           channel: "internal",
           version: "1.1.0",
           build: "100",
-          state: "live",
+          state: "rollout",
+          rolloutPercent: 50,
           releaseNotes: "New tester flow",
         },
         { channel: "internal", version: "1.2.0", build: "101", state: "draft" },
@@ -63,7 +64,10 @@ describe("dashboard Android install URLs", () => {
     ]);
     expect(releases[0].installUrl).toBeNull();
     expect(releases[1]).toMatchObject({
-      channels: ["beta", "internal"],
+      channelEntries: [
+        { channel: "beta", state: "live" },
+        { channel: "internal", state: "rollout", rolloutPercent: 50 },
+      ],
       releaseNotes: "New tester flow",
       installUrl: "https://play.google.com/apps/test/com.example.app/100",
     });

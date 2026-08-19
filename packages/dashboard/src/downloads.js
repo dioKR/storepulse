@@ -45,6 +45,15 @@ function compareBuildsDesc(left, right) {
   return right.build.localeCompare(left.build, undefined, { numeric: true });
 }
 
+function channelEntry(entry) {
+  return {
+    channel: entry.channel,
+    state: entry.state,
+    rawState: entry.rawState,
+    rolloutPercent: entry.rolloutPercent,
+  };
+}
+
 /**
  * One row per Android versionCode. Store releases remain visible when an
  * install artifact is not registered; only the install action is omitted.
@@ -64,7 +73,9 @@ export function androidReleases(app) {
     const build = String(entry.build);
     const existing = byBuild.get(build);
     if (existing) {
-      if (!existing.channels.includes(entry.channel)) existing.channels.push(entry.channel);
+      if (!existing.channelEntries.some((candidate) => candidate.channel === entry.channel)) {
+        existing.channelEntries.push(channelEntry(entry));
+      }
       if (!existing.releaseNotes && entry.releaseNotes) existing.releaseNotes = entry.releaseNotes;
       if (!existing.date && entry.date) existing.date = entry.date;
       if (!existing.eas && entry.eas) existing.eas = entry.eas;
@@ -81,7 +92,7 @@ export function androidReleases(app) {
       releaseNotes: entry.releaseNotes,
       date: entry.date,
       eas: entry.eas,
-      channels: [entry.channel],
+      channelEntries: [channelEntry(entry)],
     });
   }
 

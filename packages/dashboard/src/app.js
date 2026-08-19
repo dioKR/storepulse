@@ -166,6 +166,15 @@ function badge(entry) {
   const frag = document.createDocumentFragment();
   frag.append(`${entry.version ?? "?"} `);
 
+  frag.append(stateBadge(entry));
+
+  if (entry.build) frag.append(" ", el("span", "dim", `(${entry.build})`));
+  return frag;
+}
+
+function stateBadge(entry) {
+  const frag = document.createDocumentFragment();
+
   if (entry.state === "rollout") {
     frag.append(badgeButton("rollout", `${entry.rolloutPercent ?? "?"}%`));
   } else if (Object.hasOwn(STATE_EXPLANATIONS, entry.state) && entry.state !== "unknown") {
@@ -175,8 +184,6 @@ function badge(entry) {
     frag.append(badgeButton("unknown", "UNKNOWN"));
     if (entry.rawState) frag.append(" ", el("span", "dim", `(${entry.rawState})`));
   }
-
-  if (entry.build) frag.append(" ", el("span", "dim", `(${entry.build})`));
   return frag;
 }
 
@@ -512,14 +519,16 @@ function releaseItem(release) {
   const item = el("article", "release-item");
 
   const main = el("div", "release-main");
-  const title = el("h4", "release-title");
-  title.append(badge(release));
+  const title = el("h4", "release-title", release.version ?? "?");
+  if (release.build) title.append(" ", el("span", "dim", `(${release.build})`));
   main.append(title);
 
   const channelRow = el("div", "release-channels");
   channelRow.append(el("span", "release-label", t("dash.availableChannels")));
-  for (const channel of release.channels) {
-    channelRow.append(el("span", "release-channel", channelLabel(channel)));
+  for (const entry of release.channelEntries) {
+    const channel = el("span", "release-channel");
+    channel.append(`${channelLabel(entry.channel)} `, stateBadge(entry));
+    channelRow.append(channel);
   }
   main.append(channelRow);
 

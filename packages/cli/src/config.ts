@@ -59,11 +59,11 @@ export function loadConfig(cwd = process.cwd()): CliConfig {
  */
 export type ConfigIssue =
   | { kind: "apps-missing" }
-  | { kind: "field-missing"; app: unknown; field: string }
-  | { kind: "bad-platform"; platform: string }
+  | { kind: "field-missing"; appKey: string; field: string }
+  | { kind: "bad-platform"; appKey: string }
   | { kind: "bad-install-link"; appKey: string; field: "latestTesterUrl" | "installLinks" }
-  | { kind: "bad-eas-project-id"; app: unknown }
-  | { kind: "bad-eas-app-identifier"; app: unknown };
+  | { kind: "bad-eas-project-id"; appKey: string }
+  | { kind: "bad-eas-app-identifier"; appKey: string };
 
 /** Validate the parsed config shape; reports the first issue found. */
 export function validateTargets(raw: unknown): { targets: AppTarget[] } | { issue: ConfigIssue } {
@@ -71,35 +71,36 @@ export function validateTargets(raw: unknown): { targets: AppTarget[] } | { issu
   if (!Array.isArray(apps) || apps.length === 0) {
     return { issue: { kind: "apps-missing" } };
   }
-  for (const app of apps) {
+  for (const [index, app] of apps.entries()) {
+    const appKey = configAppKey(app, index);
     for (const field of ["key", "name", "platform", "storeId"]) {
       if (typeof app?.[field] !== "string" || app[field] === "") {
-        return { issue: { kind: "field-missing", app, field } };
+        return { issue: { kind: "field-missing", appKey, field } };
       }
     }
     if (app.platform !== "ios" && app.platform !== "android") {
-      return { issue: { kind: "bad-platform", platform: app.platform } };
+      return { issue: { kind: "bad-platform", appKey } };
     }
     if (
       app.latestTesterUrl !== undefined &&
       (app.platform !== "android" || !isSafeHttpsUrl(app.latestTesterUrl))
     ) {
       return {
-        issue: { kind: "bad-install-link", appKey: app.key, field: "latestTesterUrl" },
+        issue: { kind: "bad-install-link", appKey, field: "latestTesterUrl" },
       };
     }
     if (
       app.installLinks !== undefined &&
       (app.platform !== "android" || !isValidInstallLinks(app.installLinks))
     ) {
-      return { issue: { kind: "bad-install-link", appKey: app.key, field: "installLinks" } };
+      return { issue: { kind: "bad-install-link", appKey, field: "installLinks" } };
     }
     // Optional field, but when present it must be a usable project id.
     if (
       app.easProjectId !== undefined &&
       (typeof app.easProjectId !== "string" || app.easProjectId === "")
     ) {
-      return { issue: { kind: "bad-eas-project-id", app } };
+      return { issue: { kind: "bad-eas-project-id", appKey } };
     }
     // Optional too — scopes EAS matching to one app variant (iOS bundle ID
     // / Android package name) when a project builds several.
@@ -107,7 +108,7 @@ export function validateTargets(raw: unknown): { targets: AppTarget[] } | { issu
       app.easAppIdentifier !== undefined &&
       (typeof app.easAppIdentifier !== "string" || app.easAppIdentifier === "")
     ) {
-      return { issue: { kind: "bad-eas-app-identifier", app } };
+      return { issue: { kind: "bad-eas-app-identifier", appKey } };
     }
   }
   return { targets: apps as AppTarget[] };
@@ -125,16 +126,21 @@ function configIssueMessage(issue: ConfigIssue): string {
     case "apps-missing":
       return `${CONFIG_FILE} must contain a non-empty "apps" array`;
     case "field-missing":
-      return `${CONFIG_FILE}: app entry ${JSON.stringify(issue.app)} is missing "${issue.field}"`;
+      return `${CONFIG_FILE}: app "${issue.appKey}" is missing "${issue.field}"`;
     case "bad-platform":
-      return `${CONFIG_FILE}: platform must be "ios" or "android", got "${issue.platform}"`;
+      return `${CONFIG_FILE}: app "${issue.appKey}" has an invalid platform (use "ios" or "android")`;
     case "bad-install-link":
       return `${CONFIG_FILE}: app "${issue.appKey}" has an invalid "${issue.field}" (Android only; use HTTPS URLs without embedded credentials)`;
     case "bad-eas-project-id":
-      return `${CONFIG_FILE}: app entry ${JSON.stringify(issue.app)} has a non-string or empty "easProjectId"`;
+      return `${CONFIG_FILE}: app "${issue.appKey}" has a non-string or empty "easProjectId"`;
     case "bad-eas-app-identifier":
-      return `${CONFIG_FILE}: app entry ${JSON.stringify(issue.app)} has a non-string or empty "easAppIdentifier"`;
+      return `${CONFIG_FILE}: app "${issue.appKey}" has a non-string or empty "easAppIdentifier"`;
   }
+}
+
+function configAppKey(app: unknown, index: number): string {
+  const key = (app as { key?: unknown } | null)?.key;
+  return typeof key === "string" && /^[A-Za-z0-9._-]{1,80}$/.test(key) ? key : `#${index + 1}`;
 }
 
 function isSafeHttpsUrl(value: unknown): boolean {

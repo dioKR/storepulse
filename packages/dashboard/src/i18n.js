@@ -345,24 +345,24 @@ export const UI_STRINGS = {
     "ko": "\"apps\"는 비어 있지 않은 배열이어야 합니다"
   },
   "doctor.config.fieldMissing": {
-    "en": "app entry {app} is missing \"{field}\"",
-    "ko": "앱 항목 {app}에 \"{field}\"가 없습니다"
+    "en": "app \"{app}\" is missing \"{field}\"",
+    "ko": "앱 \"{app}\"에 \"{field}\"가 없습니다"
   },
   "doctor.config.badPlatform": {
-    "en": "platform must be \"ios\" or \"android\", got \"{platform}\"",
-    "ko": "platform은 \"ios\" 또는 \"android\"여야 합니다 (현재 \"{platform}\")"
+    "en": "app \"{app}\" has an invalid platform — use \"ios\" or \"android\"",
+    "ko": "앱 \"{app}\"의 platform이 올바르지 않습니다 — \"ios\" 또는 \"android\"를 사용하세요"
   },
   "doctor.config.badInstallLink": {
     "en": "app \"{app}\" has an invalid \"{field}\" — it is Android-only and must contain HTTPS URLs without embedded credentials",
     "ko": "앱 \"{app}\"의 \"{field}\"이 올바르지 않습니다 — Android에서만 사용할 수 있고 사용자 정보가 없는 HTTPS URL이어야 합니다"
   },
   "doctor.config.badEasProjectId": {
-    "en": "app entry {app} has a non-string or empty \"easProjectId\"",
-    "ko": "앱 항목 {app}의 \"easProjectId\"가 문자열이 아니거나 비어 있습니다"
+    "en": "app \"{app}\" has a non-string or empty \"easProjectId\"",
+    "ko": "앱 \"{app}\"의 \"easProjectId\"가 문자열이 아니거나 비어 있습니다"
   },
   "doctor.config.badEasAppIdentifier": {
-    "en": "app entry {app} has a non-string or empty \"easAppIdentifier\"",
-    "ko": "앱 항목 {app}의 \"easAppIdentifier\"가 문자열이 아니거나 비어 있습니다"
+    "en": "app \"{app}\" has a non-string or empty \"easAppIdentifier\"",
+    "ko": "앱 \"{app}\"의 \"easAppIdentifier\"가 문자열이 아니거나 비어 있습니다"
   },
   "doctor.fix.init": {
     "en": "run `storepulse init` to scaffold the config + .env templates",

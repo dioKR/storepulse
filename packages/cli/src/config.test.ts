@@ -43,4 +43,23 @@ describe("Android install link config", () => {
     expect(JSON.stringify(result)).not.toContain("secret");
     expect(JSON.stringify(result)).not.toContain("javascript");
   });
+
+  it("does not retain install credentials when another required field fails first", () => {
+    const result = validateTargets({
+      apps: [
+        {
+          key: "app-android",
+          platform: "android",
+          storeId: "com.example.app",
+          latestTesterUrl: "https://private-user:private-secret@example.com/latest",
+        },
+      ],
+    });
+
+    expect(result).toEqual({
+      issue: { kind: "field-missing", appKey: "app-android", field: "name" },
+    });
+    expect(JSON.stringify(result)).not.toContain("private-user");
+    expect(JSON.stringify(result)).not.toContain("private-secret");
+  });
 });

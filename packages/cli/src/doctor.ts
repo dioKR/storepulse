@@ -259,22 +259,20 @@ function configIssueDetail(issue: ConfigIssue, lang: Lang): string {
       return uiString("doctor.config.appsMissing", lang);
     case "field-missing":
       return uiString("doctor.config.fieldMissing", lang, {
-        app: JSON.stringify(issue.app),
+        app: issue.appKey,
         field: issue.field,
       });
     case "bad-platform":
-      return uiString("doctor.config.badPlatform", lang, { platform: issue.platform });
+      return uiString("doctor.config.badPlatform", lang, { app: issue.appKey });
     case "bad-install-link":
       return uiString("doctor.config.badInstallLink", lang, {
         app: issue.appKey,
         field: issue.field,
       });
     case "bad-eas-project-id":
-      return uiString("doctor.config.badEasProjectId", lang, { app: JSON.stringify(issue.app) });
+      return uiString("doctor.config.badEasProjectId", lang, { app: issue.appKey });
     case "bad-eas-app-identifier":
-      return uiString("doctor.config.badEasAppIdentifier", lang, {
-        app: JSON.stringify(issue.app),
-      });
+      return uiString("doctor.config.badEasAppIdentifier", lang, { app: issue.appKey });
   }
 }
 
