@@ -1,6 +1,6 @@
 {
   "name": "@storepulse/core",
-  "version": "0.10.2",
+  "version": "0.11.0",
   "description": "Core connectors for the storepulse CLI — normalized App Store Connect + Google Play release status types and API clients. Bring your own credentials.",
   "license": "MIT",
   "type": "module",

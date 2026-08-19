@@ -1,6 +1,6 @@
 {
   "name": "storepulse",
-  "version": "0.10.2",
+  "version": "0.11.0",
   "description": "storepulse CLI — App Store Connect + Google Play release monitor. Live versions, review states, rollout % and test tracks for all your iOS & Android apps in one terminal board.",
   "license": "MIT",
   "type": "module",
