@@ -13,7 +13,7 @@
  * All data is inserted via textContent — snapshot strings never become markup.
  */
 
-import { hasInstallableReleases, installableReleases } from "./downloads.js";
+import { androidReleases, latestTesterUrlFor } from "./downloads.js";
 import { STATE_EXPLANATIONS, SUPPORTED_LANGS, UI_STRINGS } from "./i18n.js";
 import {
   groupAppsByName,
@@ -39,20 +39,24 @@ const CHANNELS = [
 /** TestFlight builds expiring in ≤ this many days get a warning color. */
 const EXPIRY_WARN_DAYS = 7;
 const DAY_MS = 86_400_000;
+const PAGE = document.body.dataset.page === "installs" ? "installs" : "status";
 
 const boardEl = document.getElementById("board");
 const filtersEl = document.getElementById("filters");
-const viewSwitchEl = document.getElementById("view-switch");
 const metaEl = document.getElementById("meta");
 const footEl = document.getElementById("foot");
 const langSwitchEl = document.getElementById("lang-switch");
 const explainEl = document.getElementById("explain");
+const primaryNavEl = document.getElementById("primary-nav");
+const navStatusEl = document.getElementById("nav-status");
+const navInstallsEl = document.getElementById("nav-installs");
+const pageTitleEl = document.getElementById("page-title");
+const pageDescriptionEl = document.getElementById("page-description");
 
 // UI state that must survive the 60s auto-refresh re-render.
 const expandedKeys = new Set();
 let osFilter = "all";
 let activeGroup = null;
-let activeView = "board";
 let lastSnapshot = null;
 let lastError = null;
 
@@ -98,10 +102,24 @@ function setLang(next) {
     // storage unavailable — the choice just won't survive a reload
   }
   document.documentElement.lang = next;
+  renderPageChrome();
   renderLangSwitch();
   if (openExplainState) renderExplainPanel();
   if (lastSnapshot) render(lastSnapshot);
   else if (lastError) renderLoadError(lastError);
+}
+
+function renderPageChrome() {
+  primaryNavEl.setAttribute("aria-label", t("dash.navLabel"));
+  navStatusEl.textContent = t("dash.navStatus");
+  navInstallsEl.textContent = t("dash.navInstalls");
+
+  const titleKey = PAGE === "installs" ? "dash.pageInstallsTitle" : "dash.pageStatusTitle";
+  const descriptionKey =
+    PAGE === "installs" ? "dash.pageInstallsDescription" : "dash.pageStatusDescription";
+  pageTitleEl.textContent = t(titleKey);
+  pageDescriptionEl.textContent = t(descriptionKey);
+  document.title = `storepulse — ${t(titleKey)}`;
 }
 
 function renderLangSwitch() {
@@ -474,11 +492,27 @@ async function copyInstallUrl(url, status) {
   }
 }
 
+function installActions(url, installLabel) {
+  const actions = el("div", "release-actions");
+  const install = el("a", "action primary", installLabel);
+  install.href = url;
+  install.target = "_blank";
+  install.rel = "noopener noreferrer";
+
+  const copy = el("button", "action", t("dash.copyLink"));
+  copy.type = "button";
+  const copyStatus = el("span", "copy-status");
+  copyStatus.setAttribute("aria-live", "polite");
+  copy.addEventListener("click", () => copyInstallUrl(url, copyStatus));
+  actions.append(install, copy, copyStatus);
+  return actions;
+}
+
 function releaseItem(release) {
   const item = el("article", "release-item");
 
   const main = el("div", "release-main");
-  const title = el("div", "release-title");
+  const title = el("h4", "release-title");
   title.append(badge(release));
   main.append(title);
 
@@ -493,50 +527,82 @@ function releaseItem(release) {
   if (release.releaseNotes) main.append(el("div", "release-notes", release.releaseNotes));
   if (release.eas && typeof release.eas === "object") main.append(easBlock(release.eas));
 
-  const actions = el("div", "release-actions");
-  const install = el("a", "action primary", t("dash.install"));
-  install.href = release.installUrl;
-  install.target = "_blank";
-  install.rel = "noopener noreferrer";
-
-  const copy = el("button", "action", t("dash.copyLink"));
-  copy.type = "button";
-  const copyStatus = el("span", "copy-status");
-  copyStatus.setAttribute("aria-live", "polite");
-  copy.addEventListener("click", () => copyInstallUrl(release.installUrl, copyStatus));
-  actions.append(install, copy, copyStatus);
-
-  item.append(main, actions);
+  if (release.installUrl) {
+    item.append(main, installActions(release.installUrl, t("dash.installVersion")));
+  } else {
+    const unavailable = el("div", "install-unavailable");
+    unavailable.append(
+      el("strong", null, t("dash.installUnavailable")),
+      el("span", null, t("dash.installUnavailableBody")),
+    );
+    item.append(main, unavailable);
+  }
   return item;
 }
 
-function buildReleaseCard(card) {
+function latestTesterBlock(target) {
+  const url = latestTesterUrlFor(target);
+  if (!url) return null;
+
+  const block = el("div", "latest-tester");
+  const copy = el("div", "latest-tester-copy");
+  copy.append(
+    el("strong", null, t("dash.latestTesterTitle")),
+    el("span", null, t("dash.latestTesterBody")),
+  );
+  block.append(copy, installActions(url, t("dash.installLatest")));
+  return block;
+}
+
+function buildInstallCard(card) {
   const section = el("section", "app-card release-card");
-  section.append(el("h2", "app-card-title", card.name));
+  section.append(el("h3", "app-card-title", card.name));
 
   const list = el("div", "release-list");
   for (const app of card.apps) {
-    for (const release of installableReleases(app)) list.append(releaseItem(release));
+    const latest = latestTesterBlock(app.target);
+    if (latest) list.append(latest);
+    for (const release of androidReleases(app)) list.append(releaseItem(release));
   }
   section.append(list);
   return section;
 }
 
-function buildReleases(apps) {
-  const root = el("div", "releases-view");
+function buildInstallGroup(group, apps) {
+  const section = el("section", "install-group");
+  section.append(el("h2", "install-group-title", groupLabel(group, t("dash.ungrouped"))));
+  const grid = el("div", "app-grid");
+  for (const card of groupAppsByName(apps)) grid.append(buildInstallCard(card));
+  section.append(grid);
+  return section;
+}
+
+function buildInstalls(apps) {
+  const root = el("div", "installs-view");
+  const verified = notice(t("dash.verifiedLinksTitle"), [[t("dash.verifiedLinksBody")]]);
+  verified.classList.add("install-info");
   const warning = notice(t("dash.installWarningTitle"), [[t("dash.installWarningBody")]]);
   warning.classList.add("warn", "install-warning");
-  root.append(warning);
+  root.append(verified, warning);
 
-  const eligible = apps.filter(hasInstallableReleases);
-  if (eligible.length === 0) {
-    root.append(el("div", "filter-empty", t("dash.releasesEmpty")));
+  const androidApps = apps.filter(
+    (app) =>
+      app.target?.platform === "android" &&
+      (androidReleases(app).length > 0 || latestTesterUrlFor(app.target) !== null),
+  );
+  if (androidApps.length === 0) {
+    root.append(el("div", "filter-empty", t("dash.installsEmpty")));
     return root;
   }
 
-  const grid = el("div", "app-grid");
-  for (const card of groupAppsByName(eligible)) grid.append(buildReleaseCard(card));
-  root.append(grid);
+  for (const group of groupsOf(androidApps)) {
+    root.append(
+      buildInstallGroup(
+        group,
+        androidApps.filter((app) => groupId(app.target) === group),
+      ),
+    );
+  }
   return root;
 }
 
@@ -590,12 +656,11 @@ function groupTabs(groups) {
 }
 
 function renderFilters(apps) {
-  const filterableApps = activeView === "releases" ? apps.filter(hasInstallableReleases) : apps;
-  const groups = groupsOf(filterableApps);
+  const groups = groupsOf(apps);
   if (!groups.includes(activeGroup)) activeGroup = groups[0] ?? null;
 
   filtersEl.replaceChildren();
-  if (filterableApps.length === 0) {
+  if (apps.length === 0) {
     filtersEl.hidden = true;
     return;
   }
@@ -609,13 +674,11 @@ function renderFilters(apps) {
   if (shouldShowGroupSelector(groups)) {
     filtersEl.append(groupTabs(groups));
   }
-  if (activeView === "board") {
-    filtersEl.append(
-      chipRow(t("dash.filterOs"), t("dash.filterByOs"), osOptions, osFilter, (id) => {
-        osFilter = id;
-      }),
-    );
-  }
+  filtersEl.append(
+    chipRow(t("dash.filterOs"), t("dash.filterByOs"), osOptions, osFilter, (id) => {
+      osFilter = id;
+    }),
+  );
 }
 
 /** Group selection + OS chip — pure client-side show/hide, no refetch. */
@@ -623,34 +686,8 @@ function applyFilters(apps) {
   return apps.filter(
     (app) =>
       (activeGroup === null || groupId(app.target) === activeGroup) &&
-      (activeView === "releases"
-        ? hasInstallableReleases(app)
-        : osFilter === "all" || app.target?.platform === osFilter),
+      (osFilter === "all" || app.target?.platform === osFilter),
   );
-}
-
-function renderViewSwitch(apps) {
-  const hasReleases = apps.some(hasInstallableReleases);
-  if (!hasReleases) activeView = "board";
-
-  viewSwitchEl.hidden = !hasReleases;
-  viewSwitchEl.replaceChildren();
-  if (!hasReleases) return;
-
-  viewSwitchEl.setAttribute("role", "group");
-  viewSwitchEl.setAttribute("aria-label", t("dash.viewSwitch"));
-  for (const view of [
-    { id: "board", label: t("dash.viewBoard") },
-    { id: "releases", label: t("dash.viewReleases") },
-  ]) {
-    viewSwitchEl.append(
-      chip(view.label, activeView === view.id, () => {
-        activeView = view.id;
-        if (lastSnapshot) render(lastSnapshot);
-        viewSwitchEl.querySelector(".chip.on")?.focus();
-      }),
-    );
-  }
 }
 
 /* ── page ────────────────────────────────── */
@@ -687,24 +724,32 @@ function render(snapshot) {
   }
 
   const apps = Array.isArray(snapshot.apps) ? snapshot.apps : [];
-  renderViewSwitch(apps);
-  renderFilters(apps);
-  const visible = applyFilters(apps);
+  let visible = apps;
+  if (PAGE === "installs") {
+    filtersEl.hidden = true;
+  } else {
+    renderFilters(apps);
+    visible = applyFilters(apps);
+  }
 
   if (apps.length === 0) {
     boardEl.append(notice(t("dash.emptyTitle"), [noticeLine(t("dash.emptyBody"))]));
-  } else if (visible.length === 0) {
+  } else if (PAGE === "status" && visible.length === 0) {
     boardEl.append(el("div", "filter-empty", t("dash.filterEmpty")));
   } else {
-    boardEl.append(activeView === "releases" ? buildReleases(visible) : buildBoard(visible));
+    boardEl.append(PAGE === "installs" ? buildInstalls(apps) : buildBoard(visible));
   }
 
   const generated = snapshot.generatedAt ? new Date(snapshot.generatedAt) : null;
   metaEl.textContent = generated ? `· ${generated.toLocaleString()}` : "";
+  const shownCount =
+    PAGE === "installs"
+      ? apps.filter((app) => app.target?.platform === "android").length
+      : visible.length;
   const targetCount =
-    visible.length === apps.length
+    shownCount === apps.length
       ? t("dash.targets", { n: apps.length })
-      : t("dash.targetsFiltered", { shown: visible.length, total: apps.length });
+      : t("dash.targetsFiltered", { shown: shownCount, total: apps.length });
   footEl.textContent =
     `schema v${snapshot.schemaVersion ?? "?"} · ${targetCount} · ` +
     t("dash.autoRefresh", { seconds: REFRESH_MS / 1000 });
@@ -712,7 +757,6 @@ function render(snapshot) {
 
 function renderLoadError(err) {
   lastError = err;
-  viewSwitchEl.hidden = true;
   filtersEl.hidden = true;
   boardEl.replaceChildren(
     notice(t("dash.loadErrorTitle", { url: DATA_URL }), [
@@ -737,6 +781,7 @@ async function refresh() {
 
 document.documentElement.lang = lang;
 metaEl.textContent = t("dash.loading");
+renderPageChrome();
 renderLangSwitch();
 refresh();
 setInterval(refresh, REFRESH_MS);

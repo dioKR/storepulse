@@ -29,12 +29,13 @@ export interface AppTarget {
   platform: Platform;
   /** ASC numeric app ID (ios) or package name (android) */
   storeId: string;
+  /** Optional fixed Play testing link that always serves the latest eligible build. */
+  latestTesterUrl?: string;
   /**
-   * Optional Android install-page URL template. `{storeId}` and `{build}`
-   * are replaced with the package name and versionCode in the dashboard.
-   * Only HTTPS templates are accepted by the CLI.
+   * Verified Android install URLs keyed by versionCode. Store the exact URL
+   * returned by the artifact provider; storepulse never guesses one.
    */
-  installUrlTemplate?: string;
+  installLinks?: Record<string, string>;
   /** Optional display grouping, e.g. "prod" | "dev" */
   group?: string;
   /**

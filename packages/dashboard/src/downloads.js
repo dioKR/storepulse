@@ -1,36 +1,34 @@
-/**
- * Build a safe Android install URL from an opt-in target template.
- * This is intentionally defensive: static snapshots can be hosted separately
- * from the CLI that originally validated the config.
- */
-export function installUrlFor(target, entry) {
-  const template = target?.installUrlTemplate;
-  const storeId = target?.storeId;
-  const build = entry?.build;
-  if (
-    target?.platform !== "android" ||
-    typeof template !== "string" ||
-    typeof storeId !== "string" ||
-    storeId.length === 0 ||
-    (typeof build !== "string" && typeof build !== "number") ||
-    String(build).length === 0 ||
-    !template.includes("{storeId}") ||
-    !template.includes("{build}")
-  ) {
-    return null;
-  }
-
+function safeHttpsUrl(value) {
+  if (typeof value !== "string" || value.length === 0) return null;
   try {
-    const url = new URL(
-      template
-        .replaceAll("{storeId}", encodeURIComponent(storeId))
-        .replaceAll("{build}", encodeURIComponent(String(build))),
-    );
+    const url = new URL(value);
     if (url.protocol !== "https:" || url.username !== "" || url.password !== "") return null;
     return url.href;
   } catch {
     return null;
   }
+}
+
+/** Fixed testing-program link. It always serves the latest eligible build. */
+export function latestTesterUrlFor(target) {
+  if (target?.platform !== "android") return null;
+  return safeHttpsUrl(target.latestTesterUrl);
+}
+
+/** Exact provider URL registered for this Android versionCode, or null. */
+export function installUrlFor(target, entry) {
+  const build = entry?.build;
+  if (
+    target?.platform !== "android" ||
+    (typeof build !== "string" && typeof build !== "number") ||
+    String(build).length === 0 ||
+    typeof target.installLinks !== "object" ||
+    target.installLinks === null ||
+    Array.isArray(target.installLinks)
+  ) {
+    return null;
+  }
+  return safeHttpsUrl(target.installLinks[String(build)]);
 }
 
 function compareBuildsDesc(left, right) {
@@ -48,16 +46,20 @@ function compareBuildsDesc(left, right) {
 }
 
 /**
- * One install row per Android versionCode. A build can move through multiple
- * Play tracks, so matching channel entries are folded into the same row.
+ * One row per Android versionCode. Store releases remain visible when an
+ * install artifact is not registered; only the install action is omitted.
  */
-export function installableReleases(app) {
-  const target = app?.target;
-  const byBuild = new Map();
+export function androidReleases(app) {
+  if (app?.target?.platform !== "android") return [];
 
-  for (const entry of app?.channels ?? []) {
-    const installUrl = installUrlFor(target, entry);
-    if (!installUrl) continue;
+  const byBuild = new Map();
+  for (const entry of app.channels ?? []) {
+    if (
+      (typeof entry?.build !== "string" && typeof entry?.build !== "number") ||
+      String(entry.build).length === 0
+    ) {
+      continue;
+    }
 
     const build = String(entry.build);
     const existing = byBuild.get(build);
@@ -70,8 +72,8 @@ export function installableReleases(app) {
     }
 
     byBuild.set(build, {
-      target,
-      installUrl,
+      target: app.target,
+      installUrl: installUrlFor(app.target, entry),
       build,
       version: entry.version,
       state: entry.state,
@@ -84,8 +86,4 @@ export function installableReleases(app) {
   }
 
   return [...byBuild.values()].sort(compareBuildsDesc);
-}
-
-export function hasInstallableReleases(app) {
-  return installableReleases(app).length > 0;
 }

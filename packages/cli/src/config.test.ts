@@ -8,38 +8,39 @@ const androidApp = {
   storeId: "com.example.app",
 };
 
-describe("installUrlTemplate config", () => {
-  it("accepts an Android HTTPS template with store and build placeholders", () => {
-    const result = validateTargets({
-      apps: [
-        {
-          ...androidApp,
-          installUrlTemplate: "https://play.google.com/apps/test/{storeId}/{build}",
-        },
-      ],
-    });
+describe("Android install link config", () => {
+  it("accepts a fixed latest link and verified links keyed by versionCode", () => {
+    const target = {
+      ...androidApp,
+      latestTesterUrl: "https://play.google.com/apps/internaltest/1234567890",
+      installLinks: {
+        "41": "https://play.google.com/apps/test/com.example.app/41",
+      },
+    };
 
-    expect(result).toEqual({
-      targets: [
-        {
-          ...androidApp,
-          installUrlTemplate: "https://play.google.com/apps/test/{storeId}/{build}",
-        },
-      ],
-    });
+    expect(validateTargets({ apps: [target] })).toEqual({ targets: [target] });
   });
 
   it.each([
-    ["iOS target", { ...androidApp, platform: "ios" }, "https://example.com/{storeId}/{build}"],
-    ["HTTP URL", androidApp, "http://example.com/{storeId}/{build}"],
-    ["missing storeId", androidApp, "https://example.com/build/{build}"],
-    ["missing build", androidApp, "https://example.com/app/{storeId}"],
-    ["embedded credentials", androidApp, "https://user:password@example.com/{storeId}/{build}"],
-  ])("rejects %s", (_label, base, installUrlTemplate) => {
-    const result = validateTargets({
-      apps: [{ ...base, installUrlTemplate }],
-    });
+    [
+      "an iOS target",
+      { ...androidApp, platform: "ios", latestTesterUrl: "https://example.com/latest" },
+    ],
+    ["an HTTP latest link", { ...androidApp, latestTesterUrl: "http://example.com/latest" }],
+    [
+      "credentials in the latest link",
+      { ...androidApp, latestTesterUrl: "https://user:secret@example.com/latest" },
+    ],
+    ["a non-object link map", { ...androidApp, installLinks: "https://example.com/41" }],
+    ["a non-versionCode key", { ...androidApp, installLinks: { preview: "https://example.com" } }],
+    ["an unsafe version link", { ...androidApp, installLinks: { "41": "javascript:alert(1)" } }],
+  ])("rejects %s without retaining the rejected URL", (_label, target) => {
+    const result = validateTargets({ apps: [target] });
 
-    expect(result).toMatchObject({ issue: { kind: "bad-install-url-template" } });
+    expect(result).toMatchObject({
+      issue: { kind: "bad-install-link", appKey: "app-android" },
+    });
+    expect(JSON.stringify(result)).not.toContain("secret");
+    expect(JSON.stringify(result)).not.toContain("javascript");
   });
 });

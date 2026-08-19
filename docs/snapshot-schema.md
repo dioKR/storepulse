@@ -57,7 +57,8 @@ Current version: **1**.
 | `name` | string | Display name, e.g. `"MyApp"` |
 | `platform` | `"ios" \| "android"` | |
 | `storeId` | string | ASC numeric app ID (ios) or package name (android) |
-| `installUrlTemplate` | string? | Android-only HTTPS install-page template. It must contain `{storeId}` and `{build}`; the dashboard substitutes the package name and versionCode and exposes the Releases view. |
+| `latestTesterUrl` | string? | Android-only fixed HTTPS testing link that serves the latest eligible build. |
+| `installLinks` | `Record<string, string>`? | Android-only verified HTTPS install URLs keyed by versionCode. Values are exact provider-returned URLs; consumers must not synthesize missing links. |
 | `group` | string? | Optional display grouping, e.g. `"prod"` / `"dev"` |
 | `easProjectId` | string? | EAS project ID (`app.json` → `extra.eas.projectId`). The ios and android targets of one app share the same value — the platform split happens in the EAS build query. |
 | `easAppIdentifier` | string? | App identifier the target's EAS builds carry (iOS bundle ID / Android package name). Scopes EAS matching when one EAS project builds several variants of a platform. Android defaults to `storeId`; set it explicitly to enable scoping on iOS. |
@@ -77,7 +78,7 @@ Current version: **1**.
 | `expiresAt` | string? | ISO 8601. TestFlight builds only: `expirationDate` of the beta build |
 | `eas` | `EasBuildInfo`? | EAS build matched to this release (see below). Present only when the EAS enricher is configured **and** a build matched this entry's `version`/`build`. |
 
-`releaseNotes`, `date`, `expiresAt`, `eas`, `AppTarget.installUrlTemplate`,
+`releaseNotes`, `date`, `expiresAt`, `eas`, `AppTarget.latestTesterUrl`, `AppTarget.installLinks`,
 `AppTarget.easProjectId`, and `AppTarget.easAppIdentifier` were
 added as **optional** fields after the initial release. Per the versioning rule
 above — *"Adding new optional fields does **not** bump it"* — `schemaVersion`
@@ -185,7 +186,10 @@ change degrades — visibly, not silently.
         "group": "prod",
         "platform": "android",
         "storeId": "com.example.aurora",
-        "installUrlTemplate": "https://play.google.com/apps/test/{storeId}/{build}"
+        "latestTesterUrl": "https://play.google.com/apps/internaltest/1234567890",
+        "installLinks": {
+          "241": "https://play.google.com/apps/test/com.example.aurora/241"
+        }
       },
       "channels": [
         {

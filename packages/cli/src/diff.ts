@@ -177,7 +177,8 @@ function isTarget(value: unknown): boolean {
     typeof value.name === "string" &&
     (value.platform === "ios" || value.platform === "android") &&
     typeof value.storeId === "string" &&
-    optionalString(value.installUrlTemplate) &&
+    optionalString(value.latestTesterUrl) &&
+    optionalStringRecord(value.installLinks) &&
     optionalString(value.group) &&
     optionalString(value.easProjectId) &&
     optionalString(value.easAppIdentifier)
@@ -204,6 +205,13 @@ function isChannelStatus(value: unknown): value is ChannelStatus {
 
 function optionalString(value: unknown): boolean {
   return value === undefined || value === null || typeof value === "string";
+}
+
+function optionalStringRecord(value: unknown): boolean {
+  return (
+    value === undefined ||
+    (isRecord(value) && Object.values(value).every((entry) => typeof entry === "string"))
+  );
 }
 
 function optionalNumber(value: unknown): boolean {

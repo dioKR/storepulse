@@ -56,18 +56,19 @@ describe("readSnapshot", () => {
     expect(readSnapshot(path).apps[0]?.target.key).toBe("my-ios");
   });
 
-  it("accepts the optional Android install URL template without a schema bump", () => {
+  it("accepts optional verified Android install links without a schema bump", () => {
     const android = app();
     android.target = {
       key: "my-android",
       name: "My App",
       platform: "android",
       storeId: "com.example.app",
-      installUrlTemplate: "https://play.google.com/apps/test/{storeId}/{build}",
+      latestTesterUrl: "https://play.google.com/apps/internaltest/1234567890",
+      installLinks: { "42": "https://play.google.com/apps/test/com.example.app/42" },
     };
     const path = writeTempSnapshot(snapshot(android, "2026-08-01T00:00:00.000Z"));
 
-    expect(readSnapshot(path).apps[0]?.target.installUrlTemplate).toContain("{build}");
+    expect(readSnapshot(path).apps[0]?.target.installLinks?.["42"]).toContain("/42");
   });
 
   it("rejects schema mismatches and invalid documents", () => {

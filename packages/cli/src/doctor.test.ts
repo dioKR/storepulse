@@ -158,6 +158,27 @@ describe("doctor — config checks", () => {
 
     expect(byId(report, "config.fields").detail).toContain('"web"');
   });
+
+  it("invalid install links report only the app and field, never embedded credentials", async () => {
+    const report = await runDoctorChecks({
+      cwd: makeDir([
+        {
+          ...androidApp,
+          latestTesterUrl: "https://private-user:private-secret@example.com/latest",
+        },
+      ]),
+      env: {},
+      fetchImpl: neverFetch,
+      lang: "en",
+    });
+
+    const fields = byId(report, "config.fields");
+    expect(fields.status).toBe("fail");
+    expect(fields.detail).toContain('"app-android"');
+    expect(fields.detail).toContain('"latestTesterUrl"');
+    expect(JSON.stringify(report)).not.toContain("private-user");
+    expect(JSON.stringify(report)).not.toContain("private-secret");
+  });
 });
 
 // ── [2] secrets ──────────────────────────────────────────────────────

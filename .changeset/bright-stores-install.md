@@ -3,4 +3,4 @@
 "storepulse": minor
 ---
 
-Add an opt-in Android install URL template to app targets and a dashboard Releases view that groups versionCode-specific install links by app.
+Add an Android installs page with an optional latest testing link and explicit, verified versionCode-specific install links grouped by app and environment.

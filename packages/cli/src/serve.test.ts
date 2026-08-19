@@ -117,6 +117,14 @@ describe("dashboard server (demo mode)", () => {
     expect(css.headers.get("content-type")).toContain("text/css");
   });
 
+  it("serves the dedicated Android installs page", async () => {
+    const installs = await fetch(`${base}/installs.html`);
+
+    expect(installs.status).toBe(200);
+    expect(installs.headers.get("content-type")).toContain("text/html");
+    expect(await installs.text()).toContain('data-page="installs"');
+  });
+
   it("404s unknown paths and 405s non-GET methods", async () => {
     expect((await fetch(`${base}/nope.html`)).status).toBe(404);
     expect((await fetch(`${base}/api/status`, { method: "POST" })).status).toBe(405);

@@ -61,7 +61,7 @@ export type ConfigIssue =
   | { kind: "apps-missing" }
   | { kind: "field-missing"; app: unknown; field: string }
   | { kind: "bad-platform"; platform: string }
-  | { kind: "bad-install-url-template"; app: unknown }
+  | { kind: "bad-install-link"; appKey: string; field: "latestTesterUrl" | "installLinks" }
   | { kind: "bad-eas-project-id"; app: unknown }
   | { kind: "bad-eas-app-identifier"; app: unknown };
 
@@ -80,8 +80,19 @@ export function validateTargets(raw: unknown): { targets: AppTarget[] } | { issu
     if (app.platform !== "ios" && app.platform !== "android") {
       return { issue: { kind: "bad-platform", platform: app.platform } };
     }
-    if (app.installUrlTemplate !== undefined && !isValidInstallUrlTemplate(app)) {
-      return { issue: { kind: "bad-install-url-template", app } };
+    if (
+      app.latestTesterUrl !== undefined &&
+      (app.platform !== "android" || !isSafeHttpsUrl(app.latestTesterUrl))
+    ) {
+      return {
+        issue: { kind: "bad-install-link", appKey: app.key, field: "latestTesterUrl" },
+      };
+    }
+    if (
+      app.installLinks !== undefined &&
+      (app.platform !== "android" || !isValidInstallLinks(app.installLinks))
+    ) {
+      return { issue: { kind: "bad-install-link", appKey: app.key, field: "installLinks" } };
     }
     // Optional field, but when present it must be a usable project id.
     if (
@@ -117,8 +128,8 @@ function configIssueMessage(issue: ConfigIssue): string {
       return `${CONFIG_FILE}: app entry ${JSON.stringify(issue.app)} is missing "${issue.field}"`;
     case "bad-platform":
       return `${CONFIG_FILE}: platform must be "ios" or "android", got "${issue.platform}"`;
-    case "bad-install-url-template":
-      return `${CONFIG_FILE}: app entry ${JSON.stringify(issue.app)} has an invalid "installUrlTemplate" (Android only; use HTTPS and include {storeId} and {build})`;
+    case "bad-install-link":
+      return `${CONFIG_FILE}: app "${issue.appKey}" has an invalid "${issue.field}" (Android only; use HTTPS URLs without embedded credentials)`;
     case "bad-eas-project-id":
       return `${CONFIG_FILE}: app entry ${JSON.stringify(issue.app)} has a non-string or empty "easProjectId"`;
     case "bad-eas-app-identifier":
@@ -126,26 +137,23 @@ function configIssueMessage(issue: ConfigIssue): string {
   }
 }
 
-function isValidInstallUrlTemplate(app: Record<string, unknown>): boolean {
-  const template = app.installUrlTemplate;
-  if (
-    app.platform !== "android" ||
-    typeof template !== "string" ||
-    template.length === 0 ||
-    !template.includes("{storeId}") ||
-    !template.includes("{build}")
-  ) {
-    return false;
-  }
-
+function isSafeHttpsUrl(value: unknown): boolean {
+  if (typeof value !== "string" || value.length === 0) return false;
   try {
-    const url = new URL(
-      template.replaceAll("{storeId}", "com.example.app").replaceAll("{build}", "123"),
-    );
+    const url = new URL(value);
     return url.protocol === "https:" && url.username === "" && url.password === "";
   } catch {
     return false;
   }
+}
+
+function isValidInstallLinks(value: unknown): boolean {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    Object.entries(value).every(([build, url]) => /^\d+$/.test(build) && isSafeHttpsUrl(url))
+  );
 }
 
 function ascCredentialsFromEnv() {
