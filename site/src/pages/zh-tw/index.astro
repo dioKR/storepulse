@@ -134,6 +134,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
           </div>
         </div>
         <div class="feat-row">
+          <div class="k">Android 安裝目錄</div>
+          <div class="v">
+            獨立的安裝頁面同時顯示 Production 與 Development。可以設定固定的
+            <code>latestTesterUrl</code>,或依 versionCode 登記 provider 實際回傳的
+            <code>installLinks</code>。storepulse 不會猜測下載 URL,安裝舊建置可能
+            需要移除目前 App 時也會先提出警告。
+          </div>
+        </div>
+        <div class="feat-row">
           <div class="k">Expo 友善</div>
           <div class="v">
             任何 iOS/Android App 都能用,但它出自 Expo 團隊之手,
@@ -209,6 +218,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <span class="done">CLI 英文·韓文輸出</span>
         <span class="done">快照 diff</span>
         <span class="done">CI 政策關卡</span>
+        <span class="done">Android 安裝目錄</span>
         <span>官方 GitHub Action</span>
         <span>generic webhook 事件</span>
         <span>本機 watch 模式</span>

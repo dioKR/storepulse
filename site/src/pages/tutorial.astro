@@ -52,6 +52,8 @@ import Base from "../layouts/Base.astro";
           <tr><td><code>group</code></td><td>Optional label — e.g. <code>prod</code> / <code>dev</code></td></tr>
           <tr><td><code>platform</code></td><td><code>ios</code> or <code>android</code></td></tr>
           <tr><td><code>storeId</code></td><td><b>iOS</b>: numeric Apple ID · <b>Android</b>: package name</td></tr>
+          <tr><td><code>latestTesterUrl</code></td><td>Optional Android HTTPS URL for the latest eligible tester build</td></tr>
+          <tr><td><code>installLinks</code></td><td>Optional Android HTTPS URLs keyed by exact versionCode</td></tr>
         </tbody>
       </table>
       <div class="note">
@@ -153,6 +155,16 @@ ASC_PRIVATE_KEY_PATH=./AuthKey_ABC123DEFG.p8</pre>
         It binds to <code>127.0.0.1</code> by default: the board may list
         unreleased versions, so keep it local.
       </p>
+      <div class="note">
+        <b>Android installs</b> — use the header navigation to open the dedicated
+        install catalog. It shows Production and Development together. Add a
+        fixed <code>latestTesterUrl</code> or provider-returned
+        <code>installLinks</code> such as <code>&quot;41&quot;:
+        &quot;https://provider.example/exact-download-url&quot;</code>. Storepulse never
+        guesses a download URL; a release without one stays visible but is not
+        clickable. Installing an older build may require uninstalling the
+        current app and can remove local data.
+      </div>
     </section>
 
     <section>

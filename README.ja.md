@@ -131,6 +131,38 @@ npx storepulse snapshot --demo  # ボードを JSON で出力
   便利です。ドキュメント形式は
   [docs/snapshot-schema.md](docs/snapshot-schema.md) にまとまっています。
 
+### Android インストールカタログ
+
+ダッシュボードのヘッダーから **Store status** と専用の
+**Android installs** ページを切り替えられます。状態画面のグループセレクターと
+異なり、インストールカタログは Production と Development を同じ画面に表示し、
+アプリと versionCode ごとに整理します。
+
+![Production・Development ビルドと最新テスト・バージョン別インストール操作を表示する storepulse Android インストールカタログ](docs/images/dashboard-installs.png)
+
+Android ターゲットには、最新のインストール可能ビルドへ移動する固定テスト
+リンクと、provider が実際に返した versionCode 別リンクを任意で登録できます:
+
+```jsonc
+{
+  "key": "myapp-android",
+  "name": "MyApp",
+  "group": "dev",
+  "platform": "android",
+  "storeId": "com.example.myapp",
+  "latestTesterUrl": "https://play.google.com/apps/internaltest/1234567890",
+  "installLinks": {
+    "41": "https://provider.example/exact-download-url"
+  }
+}
+```
+
+Storepulse は入力された正確な HTTPS URL だけを表示し、ダウンロード URL を
+推測しません。リンクのないリリースも **Install link not registered** として
+一覧に残ります。古いビルドのインストールには現在のアプリの削除が必要な場合が
+あり、ローカルデータが消えることがあります。EAS は任意の補足情報であり、
+カタログの前提条件ではありません。
+
 ![韓国語表示のダッシュボード — ヘッダーに EN/KO スイッチャーがあります](docs/images/dashboard-i18n.png)
 
 ![状態バッジをクリックすると開く用語説明ダイアログ — `storepulse explain` が出力するのと同じ説明です](docs/images/dashboard-explain.png)
@@ -197,6 +229,8 @@ npx storepulse init
 | `group` | 名前の横に付くラベル(任意)— 例: `prod` / `dev` |
 | `platform` | `ios` または `android` |
 | `storeId` | **iOS**: アプリの数字の Apple ID · **Android**: パッケージ名 |
+| `latestTesterUrl` | 任意 — 最新のインストール可能ビルドへ移動する Android HTTPS URL |
+| `installLinks` | 任意 — 正確な versionCode ごとの Android HTTPS URL |
 
 **iOS の数字 ID はどこにある?** App Store Connect → 対象のアプリ →
 **App 情報(App Information)** → 一般情報 → **Apple ID**(`1234567890` の
@@ -363,6 +397,7 @@ ESLint + Prettier を置き換える単一ツールです。エディタは Biom
 
 - [x] EAS コネクタ — ストアの状態を Expo のビルド・提出と結びつける
 - [x] Web ダッシュボード(`storepulse serve`)
+- [x] Android インストールカタログ(`/installs.html`)
 - [x] npm 公開(`npx storepulse`)
 - [x] CLI 出力の英語・韓国語対応(`--lang ko`、`storepulse explain`)
 - [x] スナップショット diff エンジン(`storepulse diff`)

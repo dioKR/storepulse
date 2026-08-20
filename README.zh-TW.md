@@ -120,6 +120,35 @@ npx storepulse snapshot --demo  # 把看板輸出成 JSON
   —— 適合 CI 產物或你自己的腳本。文件格式請見
   [docs/snapshot-schema.md](docs/snapshot-schema.md)。
 
+### Android 安裝目錄
+
+透過儀表板頂欄可以在 **Store status** 和獨立的 **Android installs** 頁面之間
+切換。與狀態頁的群組選擇器不同,安裝目錄會在同一頁面依 App 和 versionCode
+同時整理 Production 與 Development。
+
+![同時顯示 Production、Development 建置以及最新測試和版本專屬安裝操作的 storepulse Android 安裝目錄](docs/images/dashboard-installs.png)
+
+可為 Android 目標登記前往最新可安裝建置的固定測試連結,以及 provider 實際
+回傳的 versionCode 專屬連結:
+
+```jsonc
+{
+  "key": "myapp-android",
+  "name": "MyApp",
+  "group": "dev",
+  "platform": "android",
+  "storeId": "com.example.myapp",
+  "latestTesterUrl": "https://play.google.com/apps/internaltest/1234567890",
+  "installLinks": {
+    "41": "https://provider.example/exact-download-url"
+  }
+}
+```
+
+storepulse 只顯示你提供的正確 HTTPS URL,絕不猜測下載網址。沒有連結的版本
+仍會以 **Install link not registered** 留在清單中。安裝舊建置可能需要先移除
+目前的 App,並可能清除本機資料。EAS 只是選用的補充資訊,不是安裝目錄的前提。
+
 ![韓文介面的看板 —— EN/KO 切換器就在頂欄](docs/images/dashboard-i18n.png)
 
 ![點一下狀態徽章跳出的術語解釋對話方塊 —— 和 `storepulse explain` 輸出的是同一套說明](docs/images/dashboard-explain.png)
@@ -182,6 +211,8 @@ storepulse.config.example.json storepulse.config.json` 也能得到同一份檔�
 | `group` | 名稱旁的標籤(選填)—— 例如 `prod` / `dev` |
 | `platform` | `ios` 或 `android` |
 | `storeId` | **iOS**:App 的數字 Apple ID · **Android**:套件名稱 |
+| `latestTesterUrl` | 選填 —— 前往最新可安裝測試建置的 Android HTTPS URL |
+| `installLinks` | 選填 —— 依精確 versionCode 登記的 Android HTTPS URL |
 
 **iOS 的數字 ID 去哪找?** App Store Connect → 你的 App →
 **App 資訊(App Information)** → 一般資訊 → **Apple ID**(像
@@ -336,6 +367,7 @@ ESLint + Prettier。編輯器裝上 Biome 擴充功能,就會自動讀取 `biome
 
 - [x] EAS 連接器 —— 把商店狀態與 Expo 的建置·送審串起來
 - [x] Web 儀表板(`storepulse serve`)
+- [x] Android 安裝目錄(`/installs.html`)
 - [x] 發布到 npm(`npx storepulse`)
 - [x] CLI 輸出支援英文·韓文(`--lang ko`、`storepulse explain`)
 - [x] 快照 diff 引擎(`storepulse diff`)

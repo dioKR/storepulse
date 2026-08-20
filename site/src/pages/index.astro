@@ -138,6 +138,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
           </div>
         </div>
         <div class="feat-row">
+          <div class="k">Android install catalog</div>
+          <div class="v">
+            The dedicated Installs page shows Production and Development
+            together. Add a fixed <code>latestTesterUrl</code> or exact,
+            provider-returned <code>installLinks</code> by versionCode;
+            storepulse never guesses a download URL, and warns before older
+            builds that may require uninstalling the current app.
+          </div>
+        </div>
+        <div class="feat-row">
           <div class="k">expo-friendly</div>
           <div class="v">
             Works with any iOS/Android app, but built by an Expo team for Expo
@@ -215,6 +225,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <span class="done">english / korean cli output</span>
         <span class="done">snapshot diff</span>
         <span class="done">ci policy gate</span>
+        <span class="done">Android install catalog</span>
         <span>official github action</span>
         <span>generic webhook events</span>
         <span>local watch mode</span>

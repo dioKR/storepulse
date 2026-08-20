@@ -139,6 +139,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
           </div>
         </div>
         <div class="feat-row">
+          <div class="k">Android インストールカタログ</div>
+          <div class="v">
+            専用のインストールページで Production と Development を同時に
+            表示します。固定の <code>latestTesterUrl</code>、または provider が
+            返した正確な versionCode 別 <code>installLinks</code> を登録できます。
+            storepulse は URL を推測せず、古いビルドで現在のアプリの削除が
+            必要になる可能性も事前に警告します。
+          </div>
+        </div>
+        <div class="feat-row">
           <div class="k">Expo フレンドリー</div>
           <div class="v">
             どんな iOS/Android アプリでも動きますが、作ったのは Expo チーム、
@@ -215,6 +225,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <span class="done">CLI 出力の英語・韓国語対応</span>
         <span class="done">スナップショット diff</span>
         <span class="done">CI ポリシーゲート</span>
+        <span class="done">Android インストールカタログ</span>
         <span>公式 GitHub Action</span>
         <span>generic webhook イベント</span>
         <span>ローカル watch モード</span>

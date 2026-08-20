@@ -142,6 +142,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
           </div>
         </div>
         <div class="feat-row">
+          <div class="k">Android 설치 카탈로그</div>
+          <div class="v">
+            전용 설치 페이지에서 Production과 Development를 함께 보여줘요.
+            고정 <code>latestTesterUrl</code>이나 provider가 반환한 정확한
+            versionCode별 <code>installLinks</code>를 등록하세요. storepulse는
+            다운로드 URL을 추측하지 않고, 이전 빌드 설치로 앱 삭제가 필요할 수
+            있으면 먼저 경고해요.
+          </div>
+        </div>
+        <div class="feat-row">
           <div class="k">Expo 친화적</div>
           <div class="v">
             어떤 iOS/Android 앱과도 잘 동작하지만, Expo 팀이 Expo 팀을
@@ -217,6 +227,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <span class="done">CLI 영어 / 한국어 출력</span>
         <span class="done">스냅샷 diff</span>
         <span class="done">CI 정책 게이트</span>
+        <span class="done">Android 설치 카탈로그</span>
         <span>공식 GitHub Action</span>
         <span>generic webhook 이벤트</span>
         <span>로컬 watch 모드</span>
