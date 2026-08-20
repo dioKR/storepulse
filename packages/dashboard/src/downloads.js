@@ -54,6 +54,14 @@ function channelEntry(entry) {
   };
 }
 
+function latestUpdate(left, right) {
+  if (!left) return right;
+  if (!right) return left;
+  return String(right.createdAt ?? "").localeCompare(String(left.createdAt ?? "")) > 0
+    ? right
+    : left;
+}
+
 /**
  * One row per Android versionCode. Store releases remain visible when an
  * install artifact is not registered; only the install action is omitted.
@@ -79,6 +87,7 @@ export function androidReleases(app) {
       if (!existing.releaseNotes && entry.releaseNotes) existing.releaseNotes = entry.releaseNotes;
       if (!existing.date && entry.date) existing.date = entry.date;
       if (!existing.eas && entry.eas) existing.eas = entry.eas;
+      existing.easUpdate = latestUpdate(existing.easUpdate, entry.easUpdate);
       continue;
     }
 
@@ -92,6 +101,7 @@ export function androidReleases(app) {
       releaseNotes: entry.releaseNotes,
       date: entry.date,
       eas: entry.eas,
+      easUpdate: entry.easUpdate,
       channelEntries: [channelEntry(entry)],
     });
   }

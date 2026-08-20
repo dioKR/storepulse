@@ -1,6 +1,6 @@
 import { asArray, asString } from "../connectors/defensive.js";
 import type { Enricher } from "../enricher.js";
-import type { AppStatus, ChannelStatus, EasBuildInfo, Platform } from "../types.js";
+import type { AppStatus, ChannelStatus, EasBuildInfo, EasUpdateInfo, Platform } from "../types.js";
 
 /**
  * EAS enricher — attaches "which EAS build is this store version?" info to
@@ -21,6 +21,8 @@ export const EAS_GRAPHQL_ENDPOINT = "https://api.expo.dev/graphql";
 
 /** How many recent finished builds to consider per project × platform. */
 const BUILD_PAGE_SIZE = 50;
+/** How many recent update groups to consider per EAS project. */
+const UPDATE_GROUP_PAGE_SIZE = 50;
 
 export interface EasCredentials {
   /** Personal or robot access token — expo.dev → Settings → Access tokens */
@@ -90,6 +92,35 @@ const VIEW_BUILDS_QUERY = `
             status
             createdAt
           }
+        }
+      }
+    }
+  }
+`;
+
+/** eas-cli UpdateQuery.viewUpdateGroupsOnAppAsync, trimmed to consumed fields. */
+const VIEW_UPDATE_GROUPS_QUERY = `
+  query ViewUpdateGroupsOnApp($appId: String!, $offset: Int!, $limit: Int!) {
+    app {
+      byId(appId: $appId) {
+        id
+        updateGroups(offset: $offset, limit: $limit) {
+          id
+          group
+          message
+          createdAt
+          platform
+          manifestFragment
+          manifestPermalink
+          gitCommitHash
+          runtime {
+            version
+          }
+          branch {
+            name
+          }
+          rolloutPercentage
+          isRollBackToEmbedded
         }
       }
     }
@@ -199,6 +230,22 @@ interface EasBuild {
   submissionStatus?: string;
 }
 
+/** One EAS Update platform record, including binary identity from its manifest. */
+interface EasUpdate {
+  groupId?: string;
+  appVersion?: string;
+  appBuildVersion?: string;
+  appIdentifier?: string;
+  branch?: string;
+  message?: string;
+  commit?: string;
+  createdAt?: string;
+  runtimeVersion?: string;
+  rolloutPercentage?: number;
+  manifestPermalink?: string;
+  isRollbackToEmbedded?: boolean;
+}
+
 function parseBuild(raw: any): EasBuild {
   // Latest submission wins — sort by createdAt descending, missing dates last.
   const submissions = (asArray(raw?.submissions) as any[])
@@ -224,6 +271,61 @@ function parseBuild(raw: any): EasBuild {
   };
 }
 
+function asFiniteNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+/** Parse binary identity from the Expo config embedded in manifestFragment. */
+function parseUpdate(raw: any, platform: Platform): EasUpdate | undefined {
+  const apiPlatform = platform === "ios" ? "IOS" : "ANDROID";
+  if (asString(raw?.platform)?.toUpperCase() !== apiPlatform) return undefined;
+
+  const fragment = asString(raw?.manifestFragment);
+  if (fragment === undefined) return undefined;
+
+  let manifest: any;
+  try {
+    manifest = JSON.parse(fragment);
+  } catch {
+    return undefined;
+  }
+
+  const expoClient = manifest?.extra?.expoClient;
+  if (typeof expoClient !== "object" || expoClient === null) return undefined;
+
+  const native = platform === "ios" ? expoClient.ios : expoClient.android;
+  const rawBuild = platform === "ios" ? native?.buildNumber : native?.versionCode;
+  const appBuildVersion =
+    typeof rawBuild === "string" || typeof rawBuild === "number" ? String(rawBuild) : undefined;
+  const appIdentifier = asString(platform === "ios" ? native?.bundleIdentifier : native?.package);
+  const groupId = asString(raw?.group) ?? asString(raw?.id);
+  const appVersion = asString(expoClient?.version);
+  const branch = asString(raw?.branch?.name);
+  const message = asString(raw?.message);
+  const commit = asString(raw?.gitCommitHash);
+  const createdAt = asString(raw?.createdAt);
+  const runtimeVersion = asString(raw?.runtime?.version);
+  const rolloutPercentage = asFiniteNumber(raw?.rolloutPercentage);
+  const manifestPermalink = asString(raw?.manifestPermalink);
+  const isRollbackToEmbedded =
+    typeof raw?.isRollBackToEmbedded === "boolean" ? raw.isRollBackToEmbedded : undefined;
+
+  return {
+    ...(groupId !== undefined && { groupId }),
+    ...(appVersion !== undefined && { appVersion }),
+    ...(appBuildVersion !== undefined && { appBuildVersion }),
+    ...(appIdentifier !== undefined && { appIdentifier }),
+    ...(branch !== undefined && { branch }),
+    ...(message !== undefined && { message }),
+    ...(commit !== undefined && { commit }),
+    ...(createdAt !== undefined && { createdAt }),
+    ...(runtimeVersion !== undefined && { runtimeVersion }),
+    ...(rolloutPercentage !== undefined && { rolloutPercentage }),
+    ...(manifestPermalink !== undefined && { manifestPermalink }),
+    ...(isRollbackToEmbedded !== undefined && { isRollbackToEmbedded }),
+  };
+}
+
 /**
  * Restrict a project's builds to the ones that belong to this store app.
  * One EAS project can build several variants of the same platform (prod +
@@ -240,6 +342,16 @@ function scopeBuilds(builds: EasBuild[], expected: string | undefined): EasBuild
   }
   const identifiers = new Set(builds.map((b) => b.appIdentifier).filter((v) => v !== undefined));
   return identifiers.size <= 1 ? builds : [];
+}
+
+function scopeUpdates(updates: EasUpdate[], expected: string | undefined): EasUpdate[] {
+  if (expected !== undefined) {
+    return updates.filter((update) => update.appIdentifier === expected);
+  }
+  const identifiers = new Set(
+    updates.map((update) => update.appIdentifier).filter((value) => value !== undefined),
+  );
+  return identifiers.size <= 1 ? updates : [];
 }
 
 /**
@@ -289,6 +401,24 @@ export function matchEasBuild(
   return undefined;
 }
 
+/**
+ * Match an OTA update to the native binary represented by a store channel.
+ * When both version and build are known, both must match. Without a build
+ * number, a version matches only when it identifies a single update record;
+ * storepulse never guesses among several native runtimes.
+ */
+export function matchEasUpdate(
+  channel: Pick<ChannelStatus, "version" | "build">,
+  updates: EasUpdate[],
+): EasUpdate | undefined {
+  if (channel.version == null) return undefined;
+  const sameVersion = updates.filter((update) => update.appVersion === channel.version);
+  if (channel.build != null) {
+    return sameVersion.find((update) => update.appBuildVersion === channel.build);
+  }
+  return sameVersion.length === 1 ? sameVersion[0] : undefined;
+}
+
 function withEasInfo(channel: ChannelStatus, builds: EasBuild[]): ChannelStatus {
   const match = matchEasBuild(channel, builds);
   if (!match) return channel;
@@ -303,11 +433,34 @@ function withEasInfo(channel: ChannelStatus, builds: EasBuild[]): ChannelStatus 
   return { ...channel, eas };
 }
 
+function withEasUpdateInfo(channel: ChannelStatus, updates: EasUpdate[]): ChannelStatus {
+  const match = matchEasUpdate(channel, updates);
+  if (!match) return channel;
+  const easUpdate: EasUpdateInfo = {
+    ...(match.groupId !== undefined && { groupId: match.groupId }),
+    ...(match.branch !== undefined && { branch: match.branch }),
+    ...(match.message !== undefined && { message: match.message }),
+    ...(match.commit !== undefined && { commit: match.commit }),
+    ...(match.createdAt !== undefined && { createdAt: match.createdAt }),
+    ...(match.runtimeVersion !== undefined && { runtimeVersion: match.runtimeVersion }),
+    ...(match.rolloutPercentage !== undefined && {
+      rolloutPercentage: match.rolloutPercentage,
+    }),
+    ...(match.manifestPermalink !== undefined && {
+      manifestPermalink: match.manifestPermalink,
+    }),
+    ...(match.isRollbackToEmbedded !== undefined && {
+      isRollbackToEmbedded: match.isRollbackToEmbedded,
+    }),
+  };
+  if (Object.keys(easUpdate).length === 0) return channel;
+  return { ...channel, easUpdate };
+}
+
 /**
- * Attaches EAS build/submission info to every channel entry whose target has
- * an `easProjectId`. One builds query per project × platform actually in use;
- * any failed query (bad projectId, network, permissions) silently leaves the
- * affected targets un-enriched — the board itself never dies on EAS problems.
+ * Attaches EAS build/submission and OTA update info to channel entries whose
+ * target has an `easProjectId`. Build and update query failures are isolated;
+ * the store board itself never dies on EAS problems.
  */
 export class EasEnricher implements Enricher {
   readonly id = "eas";
@@ -322,32 +475,47 @@ export class EasEnricher implements Enricher {
     for (const status of statuses) {
       const projectId = status.target.easProjectId;
       if (!projectId || status.error) continue;
-      const key = `${projectId} ${status.target.platform}`;
+      const key = `${projectId}::${status.target.platform}`;
       wanted.set(key, { projectId, platform: status.target.platform });
     }
 
     const buildsByKey = new Map<string, EasBuild[]>();
-    await Promise.all(
-      [...wanted.entries()].map(async ([key, { projectId, platform }]) => {
+    const projectIds = new Set([...wanted.values()].map(({ projectId }) => projectId));
+    const updatesByProject = new Map<string, Record<Platform, EasUpdate[]>>();
+    await Promise.all([
+      ...[...wanted.entries()].map(async ([key, { projectId, platform }]) => {
         try {
           buildsByKey.set(key, await this.fetchFinishedBuilds(projectId, platform));
         } catch {
           // This project × platform is skipped; everything else still enriches.
         }
       }),
-    );
+      ...[...projectIds].map(async (projectId) => {
+        try {
+          updatesByProject.set(projectId, await this.fetchUpdates(projectId));
+        } catch {
+          // OTA enrichment is independent of build enrichment.
+        }
+      }),
+    ]);
 
     return statuses.map((status) => {
       const projectId = status.target.easProjectId;
       if (!projectId) return status;
-      const builds = buildsByKey.get(`${projectId} ${status.target.platform}`);
-      if (!builds || builds.length === 0) return status;
       const expected =
         status.target.easAppIdentifier ??
         (status.target.platform === "android" ? status.target.storeId : undefined);
-      const scoped = scopeBuilds(builds, expected);
-      if (scoped.length === 0) return status;
-      return { ...status, channels: status.channels.map((c) => withEasInfo(c, scoped)) };
+      const builds = buildsByKey.get(`${projectId}::${status.target.platform}`) ?? [];
+      const updates = updatesByProject.get(projectId)?.[status.target.platform] ?? [];
+      const scopedBuilds = scopeBuilds(builds, expected);
+      const scopedUpdates = scopeUpdates(updates, expected);
+      if (scopedBuilds.length === 0 && scopedUpdates.length === 0) return status;
+      return {
+        ...status,
+        channels: status.channels.map((channel) =>
+          withEasUpdateInfo(withEasInfo(channel, scopedBuilds), scopedUpdates),
+        ),
+      };
     });
   }
 
@@ -368,5 +536,26 @@ export class EasEnricher implements Enricher {
     // The API answers newest-first (same query as `eas build:list`); sorting by
     // completedAt is a local safety net in case that ordering ever changes.
     return builds.sort((a, b) => (b.completedAt ?? "").localeCompare(a.completedAt ?? ""));
+  }
+
+  /** Recent update groups split into platform records, newest first. */
+  private async fetchUpdates(projectId: string): Promise<Record<Platform, EasUpdate[]>> {
+    const data = (await easGraphqlRequest(
+      this.creds.token,
+      VIEW_UPDATE_GROUPS_QUERY,
+      { appId: projectId, offset: 0, limit: UPDATE_GROUP_PAGE_SIZE },
+      this.fetchImpl,
+    )) as any;
+    const groups = asArray(data?.app?.byId?.updateGroups) as unknown[];
+    const rawUpdates = groups.flatMap((group) => asArray(group));
+    const ios = rawUpdates
+      .map((raw) => parseUpdate(raw, "ios"))
+      .filter((update): update is EasUpdate => update !== undefined)
+      .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+    const android = rawUpdates
+      .map((raw) => parseUpdate(raw, "android"))
+      .filter((update): update is EasUpdate => update !== undefined)
+      .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+    return { ios, android };
   }
 }

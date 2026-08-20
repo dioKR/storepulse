@@ -30,6 +30,7 @@ export {
   fetchEasProject,
   fetchEasViewer,
   matchEasBuild,
+  matchEasUpdate,
 } from "./enrichers/eas.js";
 export * from "./i18n/index.js";
 export * from "./snapshot.js";

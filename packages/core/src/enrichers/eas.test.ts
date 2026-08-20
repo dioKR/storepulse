@@ -7,6 +7,7 @@ import {
   fetchEasProject,
   fetchEasViewer,
   matchEasBuild,
+  matchEasUpdate,
 } from "./eas.js";
 
 // NOTE: these tests replay recorded/handcrafted GraphQL responses in the
@@ -43,7 +44,12 @@ interface GqlCall {
 }
 
 /** GraphQL-aware fetch mock: hand the parsed body to a handler per call. */
-function gqlFetch(handler: (body: any) => { status?: number; payload?: unknown }) {
+function gqlFetch(
+  handler: (body: any) => { status?: number; payload?: unknown },
+  updateHandler: (body: any) => { status?: number; payload?: unknown } = () => ({
+    payload: updatesPayload([]),
+  }),
+) {
   const calls: GqlCall[] = [];
   const fn = vi.fn(async (url: unknown, init?: RequestInit) => {
     const body = JSON.parse(String(init?.body));
@@ -53,7 +59,7 @@ function gqlFetch(handler: (body: any) => { status?: number; payload?: unknown }
       headers: (init?.headers ?? {}) as Record<string, string>,
       body,
     });
-    const r = handler(body);
+    const r = body.query.includes("ViewUpdateGroupsOnApp") ? updateHandler(body) : handler(body);
     const httpStatus = r.status ?? 200;
     return {
       ok: httpStatus >= 200 && httpStatus < 300,
@@ -66,6 +72,37 @@ function gqlFetch(handler: (body: any) => { status?: number; payload?: unknown }
 
 function buildsPayload(builds: unknown[]) {
   return { data: { app: { byId: { id: "app-1", builds } } } };
+}
+
+function updatesPayload(groups: unknown[][]) {
+  return { data: { app: { byId: { id: "app-1", updateGroups: groups } } } };
+}
+
+function updateRecord(
+  overrides: Record<string, unknown> = {},
+  manifestOverrides: Record<string, unknown> = {},
+) {
+  const expoClient = {
+    version: "2.5.0",
+    ios: { buildNumber: "108", bundleIdentifier: "com.example.aurora" },
+    android: { versionCode: 108, package: "com.example.aurora" },
+    ...manifestOverrides,
+  };
+  return {
+    id: "update-ios-1",
+    group: "group-1",
+    message: "Fix checkout flow",
+    createdAt: "2026-07-23T10:00:00Z",
+    platform: "IOS",
+    manifestFragment: JSON.stringify({ extra: { expoClient } }),
+    manifestPermalink: "https://u.expo.dev/group-1",
+    gitCommitHash: "1234567890abcdef1234567890abcdef12345678",
+    runtime: { version: "runtime-ios-108" },
+    branch: { name: "production" },
+    rolloutPercentage: 25,
+    isRollBackToEmbedded: false,
+    ...overrides,
+  };
 }
 
 const build108 = {
@@ -159,6 +196,99 @@ describe("EasEnricher — matching", () => {
   });
 });
 
+describe("EasEnricher — OTA matching", () => {
+  it("attaches the latest OTA to an exact app version, build, and identifier", async () => {
+    const old = updateRecord({ id: "old", group: "old-group", createdAt: "2026-07-22T10:00:00Z" });
+    const latest = updateRecord();
+    const { fn } = gqlFetch(
+      () => ({ payload: buildsPayload([]) }),
+      () => ({ payload: updatesPayload([[old, latest]]) }),
+    );
+    const enricher = new EasEnricher({ token: TOKEN }, fn);
+
+    const [enriched] = await enricher.enrich([
+      status({ ...target("aurora-ios", "ios", PROJECT), easAppIdentifier: "com.example.aurora" }, [
+        { channel: "production", version: "2.5.0", build: "108", state: "live" },
+      ]),
+    ]);
+
+    expect(enriched.channels[0].eas).toBeUndefined();
+    expect(enriched.channels[0].easUpdate).toEqual({
+      groupId: "group-1",
+      branch: "production",
+      message: "Fix checkout flow",
+      commit: "1234567890abcdef1234567890abcdef12345678",
+      createdAt: "2026-07-23T10:00:00Z",
+      runtimeVersion: "runtime-ios-108",
+      rolloutPercentage: 25,
+      manifestPermalink: "https://u.expo.dev/group-1",
+      isRollbackToEmbedded: false,
+    });
+  });
+
+  it("matches OTA metadata even when EAS has no build because the binary was built locally", async () => {
+    const android = updateRecord(
+      { platform: "ANDROID", id: "update-android", group: "android-group" },
+      { version: "0.1.1", android: { versionCode: 23, package: "com.example.aurora" } },
+    );
+    const { fn } = gqlFetch(
+      () => ({ payload: buildsPayload([]) }),
+      () => ({ payload: updatesPayload([[android]]) }),
+    );
+    const enricher = new EasEnricher({ token: TOKEN }, fn);
+
+    const [enriched] = await enricher.enrich([
+      status(target("aurora-android", "android", PROJECT), [
+        { channel: "internal", version: "0.1.1", build: "23", state: "live" },
+      ]),
+    ]);
+
+    expect(enriched.channels[0].eas).toBeUndefined();
+    expect(enriched.channels[0].easUpdate?.groupId).toBe("android-group");
+  });
+
+  it("does not attach an OTA for another build or app variant", async () => {
+    const wrongBuild = updateRecord(
+      {},
+      { ios: { buildNumber: "109", bundleIdentifier: "com.example.aurora" } },
+    );
+    const wrongVariant = updateRecord(
+      { id: "dev", group: "dev-group" },
+      { ios: { buildNumber: "108", bundleIdentifier: "com.example.aurora.dev" } },
+    );
+    const { fn } = gqlFetch(
+      () => ({ payload: buildsPayload([]) }),
+      () => ({ payload: updatesPayload([[wrongBuild, wrongVariant]]) }),
+    );
+    const enricher = new EasEnricher({ token: TOKEN }, fn);
+
+    const [enriched] = await enricher.enrich([
+      status({ ...target("aurora-ios", "ios", PROJECT), easAppIdentifier: "com.example.aurora" }, [
+        { channel: "production", version: "2.5.0", build: "108", state: "live" },
+      ]),
+    ]);
+
+    expect(enriched.channels[0].easUpdate).toBeUndefined();
+  });
+
+  it("keeps build enrichment when the independent OTA query fails", async () => {
+    const { fn } = gqlFetch(
+      () => ({ payload: buildsPayload([build108]) }),
+      () => ({ status: 500 }),
+    );
+    const enricher = new EasEnricher({ token: TOKEN }, fn);
+
+    const [enriched] = await enricher.enrich([
+      status(target("aurora-ios", "ios", PROJECT), [
+        { channel: "production", version: "2.5.0", build: "108", state: "live" },
+      ]),
+    ]);
+
+    expect(enriched.channels[0].eas?.buildId).toBe(build108.id);
+    expect(enriched.channels[0].easUpdate).toBeUndefined();
+  });
+});
+
 describe("EasEnricher — variant scoping (appIdentifier)", () => {
   const prodBuild = {
     ...build108,
@@ -243,8 +373,11 @@ describe("EasEnricher — queries", () => {
       status(target("aurora-android", "android", PROJECT), []),
     ]);
 
-    expect(calls).toHaveLength(2);
-    for (const call of calls) {
+    const buildCalls = calls.filter((call) => call.body.query.includes("ViewBuildsOnApp"));
+    const updateCalls = calls.filter((call) => call.body.query.includes("ViewUpdateGroupsOnApp"));
+    expect(buildCalls).toHaveLength(2);
+    expect(updateCalls).toHaveLength(1);
+    for (const call of buildCalls) {
       expect(call.url).toBe(EAS_GRAPHQL_ENDPOINT);
       expect(call.method).toBe("POST");
       expect(call.headers.authorization).toBe(`Bearer ${TOKEN}`);
@@ -252,7 +385,11 @@ describe("EasEnricher — queries", () => {
       expect(call.body.variables.appId).toBe(PROJECT);
       expect(call.body.variables.filter.status).toBe("FINISHED");
     }
-    expect(calls.map((c) => c.body.variables.filter.platform).sort()).toEqual(["ANDROID", "IOS"]);
+    expect(buildCalls.map((c) => c.body.variables.filter.platform).sort()).toEqual([
+      "ANDROID",
+      "IOS",
+    ]);
+    expect(updateCalls[0].body.variables).toEqual({ appId: PROJECT, offset: 0, limit: 50 });
   });
 
   it("deduplicates queries for targets sharing a projectId and platform", async () => {
@@ -264,7 +401,10 @@ describe("EasEnricher — queries", () => {
       status(target("b-ios", "ios", PROJECT), []),
     ]);
 
-    expect(calls).toHaveLength(1);
+    expect(calls.filter((call) => call.body.query.includes("ViewBuildsOnApp"))).toHaveLength(1);
+    expect(calls.filter((call) => call.body.query.includes("ViewUpdateGroupsOnApp"))).toHaveLength(
+      1,
+    );
   });
 
   it("never queries for targets without easProjectId or with a fetch error", async () => {
@@ -386,6 +526,30 @@ describe("matchEasBuild", () => {
 
   it("no fallback when the version matched but the build number did not", () => {
     expect(matchEasBuild({ version: "2.5.0", build: "999" }, builds)).toBeUndefined();
+  });
+});
+
+describe("matchEasUpdate", () => {
+  const updates = [
+    { appVersion: "0.1.1", appBuildVersion: "23", groupId: "g23" },
+    { appVersion: "0.1.1", appBuildVersion: "22", groupId: "g22" },
+  ];
+
+  it("requires an exact version and build when both are available", () => {
+    expect(matchEasUpdate({ version: "0.1.1", build: "23" }, updates)?.groupId).toBe("g23");
+    expect(matchEasUpdate({ version: "0.1.1", build: "24" }, updates)).toBeUndefined();
+  });
+
+  it("never guesses when a build-less store entry has several runtimes", () => {
+    expect(matchEasUpdate({ version: "0.1.1" }, updates)).toBeUndefined();
+  });
+
+  it("matches a unique version when the store does not expose a build number", () => {
+    expect(
+      matchEasUpdate({ version: "0.2.0" }, [
+        { appVersion: "0.2.0", appBuildVersion: "24", groupId: "g24" },
+      ])?.groupId,
+    ).toBe("g24");
   });
 });
 

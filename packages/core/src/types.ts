@@ -73,6 +73,32 @@ export interface EasBuildInfo {
   submissionStatus?: string;
 }
 
+/**
+ * EAS Update (OTA) info attached to the store binary it targets.
+ * The update manifest supplies the app version, native build number, and app
+ * identifier used for exact matching, so locally built binaries work too.
+ */
+export interface EasUpdateInfo {
+  /** EAS Update group ID (UUID) */
+  groupId?: string;
+  /** EAS Update branch, e.g. "production" */
+  branch?: string;
+  /** Update message supplied by EAS CLI */
+  message?: string;
+  /** Full git commit hash recorded for the update */
+  commit?: string;
+  /** ISO date the update was published */
+  createdAt?: string;
+  /** EAS runtime version targeted by this update */
+  runtimeVersion?: string;
+  /** 0-100 when the update uses a staged rollout */
+  rolloutPercentage?: number;
+  /** Expo-hosted manifest URL */
+  manifestPermalink?: string;
+  /** True when this update rolls clients back to the embedded bundle */
+  isRollbackToEmbedded?: boolean;
+}
+
 export interface ChannelStatus {
   channel: Channel;
   /** Marketing version, e.g. "2.4.1". Null when the channel has no release. */
@@ -92,6 +118,8 @@ export interface ChannelStatus {
   expiresAt?: string;
   /** EAS build info matched to this release (EasEnricher) */
   eas?: EasBuildInfo;
+  /** Latest EAS Update (OTA) matched to this release's exact native binary */
+  easUpdate?: EasUpdateInfo;
 }
 
 export interface AppStatus {

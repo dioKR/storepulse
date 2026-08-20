@@ -199,7 +199,23 @@ function isChannelStatus(value: unknown): value is ChannelStatus {
     optionalString(value.date) &&
     optionalString(value.expiresAt) &&
     (value.eas === undefined ||
-      (isRecord(value.eas) && Object.values(value.eas).every(optionalString)))
+      (isRecord(value.eas) && Object.values(value.eas).every(optionalString))) &&
+    (value.easUpdate === undefined || isEasUpdate(value.easUpdate))
+  );
+}
+
+function isEasUpdate(value: unknown): boolean {
+  if (!isRecord(value)) return false;
+  return (
+    optionalString(value.groupId) &&
+    optionalString(value.branch) &&
+    optionalString(value.message) &&
+    optionalString(value.commit) &&
+    optionalString(value.createdAt) &&
+    optionalString(value.runtimeVersion) &&
+    optionalNumber(value.rolloutPercentage) &&
+    optionalString(value.manifestPermalink) &&
+    (value.isRollbackToEmbedded === undefined || typeof value.isRollbackToEmbedded === "boolean")
   );
 }
 

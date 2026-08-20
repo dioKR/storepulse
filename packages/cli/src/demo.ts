@@ -110,6 +110,14 @@ const fixtures: Record<string, ChannelStatus[]> = {
         completedAt: daysFromNow(-6),
         submissionStatus: "FINISHED",
       },
+      easUpdate: {
+        groupId: "52c1c6ea-31db-49a5-b178-91e94ea9ab8b",
+        branch: "production",
+        message: "Fix widget refresh after account switching",
+        commit: "a7c4e12f9d2a8b6c1e3f4a5b6c7d8e9f0a1b2c3d",
+        createdAt: daysFromNow(-1),
+        runtimeVersion: "runtime-ios-108",
+      },
     },
   ],
   "aurora-android": [
@@ -144,6 +152,15 @@ const fixtures: Record<string, ChannelStatus[]> = {
       build: "251",
       state: "draft",
       rawState: "internal/draft",
+      easUpdate: {
+        groupId: "a29fba19-8f48-446a-9f52-b3b85036b036",
+        branch: "development",
+        message: "Tune Android widget background refresh",
+        commit: "b8d5f23a0e3b9c7d2f4a5b6c7d8e9f0a1b2c3d4e",
+        createdAt: daysFromNow(-1),
+        runtimeVersion: "runtime-android-251",
+        rolloutPercentage: 50,
+      },
     },
   ],
   "aurora-dev-ios": [

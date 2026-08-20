@@ -187,6 +187,15 @@ export type UiKey =
   | "dash.kvEasCommit"
   | "dash.kvEasCompleted"
   | "dash.kvEasSubmission"
+  | "dash.otaDeployed"
+  | "dash.easUpdateTitle"
+  | "dash.kvEasUpdateBranch"
+  | "dash.kvEasUpdatePublished"
+  | "dash.kvEasUpdateRuntime"
+  | "dash.kvEasUpdateRollout"
+  | "dash.kvEasUpdateType"
+  | "dash.kvEasUpdateMessage"
+  | "dash.easUpdateRollback"
   | "dash.langLabel"
   | "dash.explainBadge"
   | "dash.explainClose";
@@ -795,6 +804,15 @@ export const UI_STRINGS: Readonly<Record<UiKey, Readonly<Localized>>> = {
   "dash.kvEasCommit": { en: "commit", ko: "커밋" },
   "dash.kvEasCompleted": { en: "built", ko: "빌드 완료" },
   "dash.kvEasSubmission": { en: "submission", ko: "제출 상태" },
+  "dash.otaDeployed": { en: "OTA · {date}", ko: "OTA · {date}" },
+  "dash.easUpdateTitle": { en: "EAS Update (OTA)", ko: "EAS Update (OTA)" },
+  "dash.kvEasUpdateBranch": { en: "branch", ko: "브랜치" },
+  "dash.kvEasUpdatePublished": { en: "published", ko: "배포 시각" },
+  "dash.kvEasUpdateRuntime": { en: "runtime", ko: "런타임" },
+  "dash.kvEasUpdateRollout": { en: "rollout", ko: "롤아웃" },
+  "dash.kvEasUpdateType": { en: "type", ko: "유형" },
+  "dash.kvEasUpdateMessage": { en: "message", ko: "메시지" },
+  "dash.easUpdateRollback": { en: "rollback to embedded", ko: "내장 번들로 롤백" },
   "dash.langLabel": { en: "language", ko: "언어" },
   "dash.explainBadge": { en: "explain {badge}", ko: "{badge} 설명" },
   "dash.explainClose": { en: "close", ko: "닫기" },
