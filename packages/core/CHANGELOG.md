@@ -1,5 +1,11 @@
 # @storepulse/core
 
+## 0.12.0
+
+### Minor Changes
+
+- 05e669c: Show the latest EAS Update OTA deployment matched to each store binary by app version, native build number, and app identifier.
+
 ## 0.11.0
 
 ### Minor Changes
