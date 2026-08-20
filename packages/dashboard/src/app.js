@@ -219,6 +219,13 @@ function channelCell(app, channelId, latest) {
     // Wrapping unit: entries may move to the next line, but never break inside
     const chunk = el("span", "entry");
     chunk.append(badge(entry));
+    if (entry.easUpdate && typeof entry.easUpdate === "object") {
+      const ota = el("span", "ota-chip", "OTA");
+      ota.title = entry.easUpdate.createdAt
+        ? t("dash.otaDeployed", { date: localDateTime(entry.easUpdate.createdAt) })
+        : "OTA";
+      chunk.append(" ", ota);
+    }
     td.append(chunk);
   });
   return td;
@@ -347,6 +354,31 @@ function easBlock(eas) {
   return box;
 }
 
+/** EAS Update block — the latest OTA bundle matched to this native binary. */
+function easUpdateBlock(update) {
+  const box = el("div", "eas eas-update");
+  box.append(el("div", "eas-title", t("dash.easUpdateTitle")));
+  const dl = el("dl", "kv");
+  if (update.branch) kvPair(dl, t("dash.kvEasUpdateBranch"), update.branch);
+  if (update.commit) {
+    kvPair(dl, t("dash.kvEasCommit"), shortCommit(update.commit));
+    dl.lastChild.title = update.commit;
+  }
+  if (update.createdAt) {
+    kvPair(dl, t("dash.kvEasUpdatePublished"), localDateTime(update.createdAt));
+  }
+  if (update.runtimeVersion) kvPair(dl, t("dash.kvEasUpdateRuntime"), update.runtimeVersion);
+  if (update.rolloutPercentage !== undefined) {
+    kvPair(dl, t("dash.kvEasUpdateRollout"), `${update.rolloutPercentage}%`);
+  }
+  if (update.isRollbackToEmbedded) {
+    kvPair(dl, t("dash.kvEasUpdateType"), t("dash.easUpdateRollback"));
+  }
+  if (update.message) kvPair(dl, t("dash.kvEasUpdateMessage"), update.message);
+  box.append(dl);
+  return box;
+}
+
 function detailEntry(entry, channelLabel) {
   const box = el("div", "detail-entry");
 
@@ -368,6 +400,9 @@ function detailEntry(entry, channelLabel) {
   box.append(dl);
 
   if (entry.eas && typeof entry.eas === "object") box.append(easBlock(entry.eas));
+  if (entry.easUpdate && typeof entry.easUpdate === "object") {
+    box.append(easUpdateBlock(entry.easUpdate));
+  }
 
   // Full release notes, line breaks preserved via CSS white-space: pre-wrap.
   const notes = el("div", "notes");
@@ -393,6 +428,21 @@ function detailRow(app, id, open, columns) {
   td.append(panel);
   tr.append(td);
   return tr;
+}
+
+function latestEasUpdate(app, latest) {
+  if (!latest) return null;
+  const matching = (app.channels ?? []).filter((entry) => {
+    if (!entry.easUpdate || entry.version !== latest.version) return false;
+    if (latest.build == null || entry.build == null) return true;
+    return String(entry.build) === String(latest.build);
+  });
+  return matching.reduce((best, entry) => {
+    if (!best) return entry.easUpdate;
+    return String(entry.easUpdate.createdAt ?? "").localeCompare(String(best.createdAt ?? "")) > 0
+      ? entry.easUpdate
+      : best;
+  }, null);
 }
 
 /* ── group → app → platform board ───────── */
@@ -423,7 +473,18 @@ function platformRow(app, columns) {
   }
   row.append(toggleTd);
   row.append(el("td", "platform", target.platform === "ios" ? "iOS" : "Android"));
-  row.append(el("td", "latest-cell", latest ? formatBundle(latest) : "—"));
+  const latestCell = el("td", "latest-cell", latest ? formatBundle(latest) : "—");
+  const latestOta = latestEasUpdate(app, latest);
+  if (latestOta?.createdAt) {
+    latestCell.append(
+      el(
+        "span",
+        "ota-summary",
+        t("dash.otaDeployed", { date: localDateTime(latestOta.createdAt) }),
+      ),
+    );
+  }
+  row.append(latestCell);
 
   if (app.error) {
     const errTd = el("td", "err", `error: ${app.error}`);
@@ -535,6 +596,9 @@ function releaseItem(release) {
   if (release.date) main.append(el("div", "release-date", localDateTime(release.date)));
   if (release.releaseNotes) main.append(el("div", "release-notes", release.releaseNotes));
   if (release.eas && typeof release.eas === "object") main.append(easBlock(release.eas));
+  if (release.easUpdate && typeof release.easUpdate === "object") {
+    main.append(easUpdateBlock(release.easUpdate));
+  }
 
   if (release.installUrl) {
     item.append(main, installActions(release.installUrl, t("dash.installVersion")));

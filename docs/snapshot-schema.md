@@ -77,8 +77,9 @@ Current version: **1**.
 | `date` | string? | ISO 8601. iOS only: `appStoreVersion.createdDate` (production) / TestFlight build `uploadedDate` (beta) |
 | `expiresAt` | string? | ISO 8601. TestFlight builds only: `expirationDate` of the beta build |
 | `eas` | `EasBuildInfo`? | EAS build matched to this release (see below). Present only when the EAS enricher is configured **and** a build matched this entry's `version`/`build`. |
+| `easUpdate` | `EasUpdateInfo`? | Latest EAS Update (OTA) matched to this exact native binary by app version, native build number, and app identifier (see below). |
 
-`releaseNotes`, `date`, `expiresAt`, `eas`, `AppTarget.latestTesterUrl`, `AppTarget.installLinks`,
+`releaseNotes`, `date`, `expiresAt`, `eas`, `easUpdate`, `AppTarget.latestTesterUrl`, `AppTarget.installLinks`,
 `AppTarget.easProjectId`, and `AppTarget.easAppIdentifier` were
 added as **optional** fields after the initial release. Per the versioning rule
 above — *"Adding new optional fields does **not** bump it"* — `schemaVersion`
@@ -99,6 +100,29 @@ too. No match → the `eas` field is simply absent, never an error.
 | `buildId` | string? | EAS build ID (UUID) — `eas build:view <id>` |
 | `completedAt` | string? | ISO 8601, when the EAS build finished |
 | `submissionStatus` | string? | Latest EAS submission status for the build, e.g. `"FINISHED"`, `"IN_PROGRESS"` — an EAS term passed through verbatim |
+
+### `EasUpdateInfo`
+
+The latest Expo OTA deployment that targets the store binary represented by
+the channel entry. storepulse reads binary identity from the update's
+`manifestFragment.extra.expoClient` and matches app version, iOS build number
+or Android versionCode, and bundle/package identifier. This also works for
+binaries built locally and submitted to a store, because no EAS Build record
+is required. Custom Play release names can fall back to a unique versionCode.
+If matching records span multiple EAS branches, or native identity is otherwise
+ambiguous or incomplete, the update is left unmatched rather than guessed.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `groupId` | string? | EAS Update group ID (UUID) |
+| `branch` | string? | EAS Update branch, e.g. `"production"` |
+| `message` | string? | Update message supplied when publishing |
+| `commit` | string? | Full git commit hash recorded for the update |
+| `createdAt` | string? | ISO 8601, when the OTA update was published |
+| `runtimeVersion` | string? | EAS runtime version targeted by the update |
+| `rolloutPercentage` | number? | 0–100 when the update uses a staged rollout |
+| `manifestPermalink` | string? | Expo-hosted manifest URL |
+| `isRollbackToEmbedded` | boolean? | Whether the update rolls clients back to the embedded bundle |
 
 ### `ReleaseState`
 
@@ -174,6 +198,14 @@ change degrades — visibly, not silently.
             "buildId": "3f6b9d21-84a5-4c7e-b0d2-5e8f1a3c6b90",
             "completedAt": "2026-07-21T09:30:00Z",
             "submissionStatus": "FINISHED"
+          },
+          "easUpdate": {
+            "groupId": "52c1c6ea-31db-49a5-b178-91e94ea9ab8b",
+            "branch": "production",
+            "message": "Fix widget refresh after account switching",
+            "commit": "a7c4e12f9d2a8b6c1e3f4a5b6c7d8e9f0a1b2c3d",
+            "createdAt": "2026-07-26T04:20:00Z",
+            "runtimeVersion": "runtime-ios-108"
           }
         }
       ],

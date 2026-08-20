@@ -235,6 +235,25 @@ td.latest-cell {
   font-weight: 400;
 }
 
+.ota-summary {
+  display: block;
+  margin-top: 3px;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ota-chip {
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0 4px;
+  vertical-align: 1px;
+}
+
 /* ── expandable detail rows ──────────────── */
 th.toggle-col,
 td.toggle-cell {
@@ -328,11 +347,15 @@ dd.exp-over {
   font-weight: 700;
 }
 
-/* EAS build block — present only when the snapshot entry carries `eas` */
+/* EAS build/update blocks — present only when the snapshot carries enrichment. */
 .eas {
   margin-top: 10px;
   border-top: 1px dashed var(--line);
   padding-top: 8px;
+}
+
+.eas-update {
+  border-top-color: var(--accent);
 }
 
 .eas-title {

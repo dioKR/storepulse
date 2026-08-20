@@ -51,6 +51,20 @@ describe("dashboard Android install URLs", () => {
           state: "rollout",
           rolloutPercent: 50,
           releaseNotes: "New tester flow",
+          easUpdate: {
+            groupId: "new-group",
+            createdAt: "2026-08-19T10:00:00.000Z",
+          },
+        },
+        {
+          channel: "production",
+          version: "1.1.0",
+          build: "100",
+          state: "live",
+          easUpdate: {
+            groupId: "old-group",
+            createdAt: "2026-08-18T10:00:00.000Z",
+          },
         },
         { channel: "internal", version: "1.2.0", build: "101", state: "draft" },
       ],
@@ -67,8 +81,10 @@ describe("dashboard Android install URLs", () => {
       channelEntries: [
         { channel: "beta", state: "live" },
         { channel: "internal", state: "rollout", rolloutPercent: 50 },
+        { channel: "production", state: "live" },
       ],
       releaseNotes: "New tester flow",
+      easUpdate: { groupId: "new-group", createdAt: "2026-08-19T10:00:00.000Z" },
       installUrl: "https://play.google.com/apps/test/com.example.app/100",
     });
   });
