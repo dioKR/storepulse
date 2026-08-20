@@ -402,10 +402,25 @@ export function matchEasBuild(
 }
 
 /**
+ * Pick the newest record only when all candidates belong to one EAS branch.
+ * Without an explicit channel-to-branch mapping, records spanning branches
+ * are ambiguous: an update published to development is not proof that a
+ * production binary received it, even when native identity is identical.
+ */
+function pickUnambiguousUpdate(candidates: EasUpdate[]): EasUpdate | undefined {
+  if (candidates.length === 0) return undefined;
+  const branches = new Set(candidates.map((update) => update.branch ?? null));
+  if (branches.size > 1) return undefined;
+  return candidates.reduce((latest, update) =>
+    (update.createdAt ?? "").localeCompare(latest.createdAt ?? "") > 0 ? update : latest,
+  );
+}
+
+/**
  * Match an OTA update to the native binary represented by a store channel.
- * When both version and build are known, both must match. Without a build
- * number, a version matches only when it identifies a single update record;
- * storepulse never guesses among several native runtimes.
+ * Version + build must match when both are known. A custom Play release name
+ * can fall back to a unique versionCode, matching the EAS build behavior.
+ * Missing build numbers and multi-branch candidates stay conservative.
  */
 export function matchEasUpdate(
   channel: Pick<ChannelStatus, "version" | "build">,
@@ -413,10 +428,21 @@ export function matchEasUpdate(
 ): EasUpdate | undefined {
   if (channel.version == null) return undefined;
   const sameVersion = updates.filter((update) => update.appVersion === channel.version);
-  if (channel.build != null) {
-    return sameVersion.find((update) => update.appBuildVersion === channel.build);
+  if (sameVersion.length > 0) {
+    if (channel.build != null) {
+      return pickUnambiguousUpdate(
+        sameVersion.filter((update) => update.appBuildVersion === channel.build),
+      );
+    }
+    const builds = new Set(sameVersion.map((update) => update.appBuildVersion ?? null));
+    return builds.size === 1 ? pickUnambiguousUpdate(sameVersion) : undefined;
   }
-  return sameVersion.length === 1 ? sameVersion[0] : undefined;
+  if (channel.build != null) {
+    const sameBuild = updates.filter((update) => update.appBuildVersion === channel.build);
+    const versions = new Set(sameBuild.map((update) => update.appVersion ?? null));
+    return versions.size === 1 ? pickUnambiguousUpdate(sameBuild) : undefined;
+  }
+  return undefined;
 }
 
 function withEasInfo(channel: ChannelStatus, builds: EasBuild[]): ChannelStatus {

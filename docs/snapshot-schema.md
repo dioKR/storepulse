@@ -108,8 +108,9 @@ the channel entry. storepulse reads binary identity from the update's
 `manifestFragment.extra.expoClient` and matches app version, iOS build number
 or Android versionCode, and bundle/package identifier. This also works for
 binaries built locally and submitted to a store, because no EAS Build record
-is required. Ambiguous or incomplete identity is left unmatched rather than
-guessed.
+is required. Custom Play release names can fall back to a unique versionCode.
+If matching records span multiple EAS branches, or native identity is otherwise
+ambiguous or incomplete, the update is left unmatched rather than guessed.
 
 | Field | Type | Notes |
 | --- | --- | --- |

@@ -271,6 +271,29 @@ describe("EasEnricher — OTA matching", () => {
     expect(enriched.channels[0].easUpdate).toBeUndefined();
   });
 
+  it("does not guess when the same binary has updates on multiple branches", async () => {
+    const production = updateRecord();
+    const development = updateRecord({
+      id: "development-update",
+      group: "development-group",
+      createdAt: "2026-07-24T10:00:00Z",
+      branch: { name: "development" },
+    });
+    const { fn } = gqlFetch(
+      () => ({ payload: buildsPayload([]) }),
+      () => ({ payload: updatesPayload([[production, development]]) }),
+    );
+    const enricher = new EasEnricher({ token: TOKEN }, fn);
+
+    const [enriched] = await enricher.enrich([
+      status({ ...target("aurora-ios", "ios", PROJECT), easAppIdentifier: "com.example.aurora" }, [
+        { channel: "production", version: "2.5.0", build: "108", state: "live" },
+      ]),
+    ]);
+
+    expect(enriched.channels[0].easUpdate).toBeUndefined();
+  });
+
   it("keeps build enrichment when the independent OTA query fails", async () => {
     const { fn } = gqlFetch(
       () => ({ payload: buildsPayload([build108]) }),
@@ -550,6 +573,56 @@ describe("matchEasUpdate", () => {
         { appVersion: "0.2.0", appBuildVersion: "24", groupId: "g24" },
       ])?.groupId,
     ).toBe("g24");
+  });
+
+  it("chooses the newest update when one binary has several updates on one branch", () => {
+    const sameBinary = [
+      {
+        appVersion: "0.1.1",
+        appBuildVersion: "23",
+        groupId: "old",
+        branch: "production",
+        createdAt: "2026-08-19T10:00:00Z",
+      },
+      {
+        appVersion: "0.1.1",
+        appBuildVersion: "23",
+        groupId: "latest",
+        branch: "production",
+        createdAt: "2026-08-20T10:00:00Z",
+      },
+    ];
+    expect(matchEasUpdate({ version: "0.1.1", build: "23" }, sameBinary)?.groupId).toBe("latest");
+  });
+
+  it("leaves identical native binaries on multiple branches unmatched", () => {
+    const branches = [
+      {
+        appVersion: "0.1.1",
+        appBuildVersion: "23",
+        groupId: "prod",
+        branch: "production",
+      },
+      {
+        appVersion: "0.1.1",
+        appBuildVersion: "23",
+        groupId: "dev",
+        branch: "development",
+      },
+    ];
+    expect(matchEasUpdate({ version: "0.1.1", build: "23" }, branches)).toBeUndefined();
+  });
+
+  it("custom Play release names fall back to a unique versionCode", () => {
+    expect(matchEasUpdate({ version: "여름 프로모션", build: "23" }, updates)?.groupId).toBe("g23");
+  });
+
+  it("versionCode fallback stays off when the native build is ambiguous", () => {
+    const reused = [
+      { appVersion: "0.1.1", appBuildVersion: "23", groupId: "old" },
+      { appVersion: "0.2.0", appBuildVersion: "23", groupId: "new" },
+    ];
+    expect(matchEasUpdate({ version: "custom name", build: "23" }, reused)).toBeUndefined();
   });
 });
 
