@@ -439,6 +439,64 @@
         }
       }
     },
+    "appsigning": {
+      "methods": {
+        "enrollApp": {
+          "description": "Enrolls an app in Play App Signing using a self-hosted Google Cloud KMS key. Warning: Do not use this method for standard Play App Signing enrollment. * Standard enrollment with Google-generated or Google-managed keys cannot be done via API. * This advanced API is strictly for enterprise organizations with mandatory compliance, regulatory, or policy requirements to retain key custody in an external Google Cloud KMS instance. * Prerequisites: Requires an active, properly configured Google Cloud KMS key with appropriate IAM permissions granted to Google Play before calling this method. See Help Center: https://support.google.com/googleplay/android-developer/answer/9842756",
+          "flatPath": "androidpublisher/v3/applications/{name}/appSigning:enrollApp",
+          "httpMethod": "POST",
+          "id": "androidpublisher.appsigning.enrollApp",
+          "parameterOrder": [
+            "name"
+          ],
+          "parameters": {
+            "name": {
+              "description": "Required. Either package name or app ID of the app enrolling in Play Signing.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "androidpublisher/v3/applications/{name}/appSigning:enrollApp",
+          "request": {
+            "$ref": "EnrollAppRequest"
+          },
+          "response": {
+            "$ref": "EnrollAppResponse"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/androidpublisher"
+          ]
+        },
+        "rotateAppSigningKey": {
+          "description": "Rotates an app's signing key to a new self-hosted Google Cloud KMS key. Warning: This method only applies to apps enrolled with self-hosted Cloud KMS keys. For apps using standard Google-managed Play App Signing, key rotation requests must be initiated through the Google Play Console UI. See Help Center: https://support.google.com/googleplay/android-developer/answer/9842756",
+          "flatPath": "androidpublisher/v3/applications/{name}/appSigning:rotateAppSigningKey",
+          "httpMethod": "POST",
+          "id": "androidpublisher.appsigning.rotateAppSigningKey",
+          "parameterOrder": [
+            "name"
+          ],
+          "parameters": {
+            "name": {
+              "description": "Required. Either package name or app ID of the app rotating the signing key.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "androidpublisher/v3/applications/{name}/appSigning:rotateAppSigningKey",
+          "request": {
+            "$ref": "RotateAppSigningKeyRequest"
+          },
+          "response": {
+            "$ref": "RotateAppSigningKeyResponse"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/androidpublisher"
+          ]
+        }
+      }
+    },
     "appstoreappsreview": {
       "methods": {
         "createappstorehostedapp": {
@@ -6429,9 +6487,13 @@
       "type": "object"
     },
     "AppStoreAppActiveApkSet": {
-      "description": "An installable set of active APKs. A set of APKs might only contain 1 APK if the app in question publishes using APKs. If the app uses app bundles (or a similar technology), this set should contain all APKs (even optional ones) that might be installed for this app. A set of APKs should be installable together. If certain APKs are exclusive to one another and cannot be installed together, then a separate AppStoreAppActiveApkSet should be created.",
+      "description": "An installable set of active APKs. All APKs in this set should belong to the same version of the app. A set of APKs might only contain 1 APK if the app in question publishes using APKs. If the app uses app bundles (or a similar technology), this set should contain all APKs (even optional ones) that might be installed for this app. A set of APKs should be installable together. If certain APKs are exclusive to one another and cannot be installed together, then a separate AppStoreAppActiveApkSet should be created.",
       "id": "AppStoreAppActiveApkSet",
       "properties": {
+        "alreadyPublishedOnPlay": {
+          "description": "Optional. Whether all APKs referenced in this active APK set are published on Play Store (or derived from an app bundle published on Play Store). When this is set, version_code must be provided.",
+          "type": "boolean"
+        },
         "baseApkId": {
           "description": "Required. The ID for the main base application module. Example: base.apk or app.apk.",
           "type": "string"
@@ -6442,6 +6504,11 @@
             "type": "string"
           },
           "type": "array"
+        },
+        "versionCode": {
+          "description": "Optional. Version code for the version this APK set represents.",
+          "format": "int64",
+          "type": "string"
         }
       },
       "type": "object"
@@ -7576,6 +7643,52 @@
       },
       "type": "object"
     },
+    "CertificateHashes": {
+      "description": "Hash digests of a certificate.",
+      "id": "CertificateHashes",
+      "properties": {
+        "certificateHashMd5": {
+          "description": "Hex-encoded MD5 hash of the certificate. example: `43:51:43:A1:B5:FC:8B:B7:0A:3A:A9:B1:0F:66:73:A8`",
+          "type": "string"
+        },
+        "certificateHashSha1": {
+          "description": "Hex-encoded SHA1 hash of the certificate. example: `86:61:97:1A:D5:EF:E5:74:1E:A7:5B:84:7C:68:37:65:CD:94:16:DE`",
+          "type": "string"
+        },
+        "certificateHashSha256": {
+          "description": "Hex-encoded SHA256 hash of the certificate. example: `94:49:C7:F3:A9:3C:F0:C5:5A:67:5D:DF:1C:83:73:2D:87:D5:62:55:E7:0B:15:0D:9E:6F:3C:F8:63:BB:7F:C1`",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "CloudKmsKey": {
+      "description": "Reference to a private key hosted in developer-managed Google Cloud KMS.",
+      "id": "CloudKmsKey",
+      "properties": {
+        "cryptoKeyVersionResource": {
+          "description": "Required. Resource identifier of the private key hosted in Google Cloud KMS. The Google Play service account must be granted Decrypt and Sign permissions on this resource. Format: projects//locations//keyRings//cryptoKeys//cryptoKeyVersions/",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "CloudKmsKeyAndCert": {
+      "description": "Cloud KMS key and the certificate associated with the key.",
+      "id": "CloudKmsKeyAndCert",
+      "properties": {
+        "cloudKmsKey": {
+          "$ref": "CloudKmsKey",
+          "description": "Required. Cloud KMS key."
+        },
+        "pemCertificate": {
+          "description": "Required. Certificate associated with the key. The bytes must contain the certificate in PEM format.",
+          "format": "byte",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "CoarseLocation": {
       "description": "Coarse Geographic location details for where the consumption happened.",
       "id": "CoarseLocation",
@@ -8633,6 +8746,63 @@
       },
       "type": "object"
     },
+    "EnrollAppRequest": {
+      "description": "Request to enroll an app into Play App Signing using a self-hosted Cloud KMS key.",
+      "id": "EnrollAppRequest",
+      "properties": {
+        "enrollExistingApp": {
+          "$ref": "EnrollExistingApp",
+          "description": "Enrolls an existing app into Play signing using an external Cloud KMS key."
+        },
+        "enrollNewApp": {
+          "$ref": "EnrollNewApp",
+          "description": "Changes the signing key of a new app to an external Cloud KMS key. The app must not have published to Open testing or Production tracks."
+        },
+        "pemUploadCertificate": {
+          "description": "The certificate associated with the upload key, in PEM format.",
+          "format": "byte",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "EnrollAppResponse": {
+      "description": "Response to enroll an app into Play signing.",
+      "id": "EnrollAppResponse",
+      "properties": {
+        "signingCertificate": {
+          "$ref": "CertificateHashes",
+          "description": "The signing certificate hashes for the app. Always set."
+        },
+        "uploadCertificate": {
+          "$ref": "CertificateHashes",
+          "description": "The upload certificate hashes for the app. Set iff pem_upload_certificate was set in the request."
+        }
+      },
+      "type": "object"
+    },
+    "EnrollExistingApp": {
+      "description": "Enroll an existing app into Play signing.",
+      "id": "EnrollExistingApp",
+      "properties": {
+        "cloudKmsKey": {
+          "$ref": "CloudKmsKey",
+          "description": "Required. Self-hosted key. Once enrolled, this key will be used to sign your app."
+        }
+      },
+      "type": "object"
+    },
+    "EnrollNewApp": {
+      "description": "Enroll a new app into Play signing.",
+      "id": "EnrollNewApp",
+      "properties": {
+        "cloudKmsKeyAndCert": {
+          "$ref": "CloudKmsKeyAndCert",
+          "description": "Required. Self-hosted key. Once enrolled, this key will be used to sign your app."
+        }
+      },
+      "type": "object"
+    },
     "ExpansionFile": {
       "description": "An expansion file. The resource for ExpansionFilesService.",
       "id": "ExpansionFile",
@@ -8690,6 +8860,45 @@
         },
         "obfuscatedProfileId": {
           "description": "Optional. Specifies an optional obfuscated string that is uniquely associated with the purchaser's user profile in your app. If you pass this value, Google Play can use it to detect irregular activity. Do not use this field to store any Personally Identifiable Information (PII) such as emails in cleartext. Attempting to store PII in this field will result in purchases being blocked. Google Play recommends that you use either encryption or a one-way hash to generate an obfuscated identifier to send to Google Play. This identifier is limited to 64 characters. This field can only be set for resubscription purchases. See https://developer.android.com/reference/com/android/billingclient/api/BillingFlowParams.Builder#setobfuscatedprofileid to set this field for purchases made using the standard in-app billing flow.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ExternalContentLinkDetails": {
+      "description": "Reporting details unique to the external content link program.",
+      "id": "ExternalContentLinkDetails",
+      "properties": {
+        "externalAppCategory": {
+          "description": "Optional. The category of the downlaoded app. This must match the category provided in Play Console during the external app verification process. Only required for app installs.",
+          "enum": [
+            "EXTERNAL_CONTENT_APP_CATEGORY_UNSPECIFIED",
+            "APP",
+            "GAME"
+          ],
+          "enumDescriptions": [
+            "Unspecified, do not use.",
+            "The app is classified under the app category.",
+            "The app is classified under the game category."
+          ],
+          "type": "string"
+        },
+        "installedAppPackage": {
+          "description": "Optional. The package name of the app downloaded through this transaction. Only required for app installs.",
+          "type": "string"
+        },
+        "linkType": {
+          "description": "Required. The type content being reported by this transaction.",
+          "enum": [
+            "EXTERNAL_CONTENT_LINK_TYPE_UNSPECIFIED",
+            "LINK_TO_DIGITAL_CONTENT_OFFER",
+            "LINK_TO_APP_DOWNLOAD"
+          ],
+          "enumDescriptions": [
+            "Unspecified, do not use.",
+            "An offer to purchase digital content.",
+            "An app install."
+          ],
           "type": "string"
         }
       },
@@ -8778,6 +8987,10 @@
           "$ref": "Price",
           "description": "Output only. The current tax amount. This represents the current tax amount including any refunds that may have been applied to this transaction.",
           "readOnly": true
+        },
+        "externalContentLinkDetails": {
+          "$ref": "ExternalContentLinkDetails",
+          "description": "Optional. Details necessary to accurately report external content link transactions."
         },
         "externalOfferDetails": {
           "$ref": "ExternalOfferDetails",
@@ -10630,6 +10843,18 @@
       },
       "type": "object"
     },
+    "OneTimeProductGameRewardOffer": {
+      "description": "Configuration specific to game reward offers.",
+      "id": "OneTimeProductGameRewardOffer",
+      "properties": {
+        "redemptionLimit": {
+          "description": "Optional. The number of times this offer can be redeemed. If unset or set to 0, allows for unlimited offer redemptions. Otherwise must be a number between 1 and 50 inclusive.",
+          "format": "int64",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "OneTimeProductListing": {
       "description": "Regional store listing for a one-time product.",
       "id": "OneTimeProductListing",
@@ -10656,6 +10881,10 @@
         "discountedOffer": {
           "$ref": "OneTimeProductDiscountedOffer",
           "description": "A discounted offer."
+        },
+        "gameRewardOffer": {
+          "$ref": "OneTimeProductGameRewardOffer",
+          "description": "A game reward offer."
         },
         "offerId": {
           "description": "Required. Immutable. The ID of this product offer. Must be unique within the purchase option. It must start with a number or lower-case letter, and can only contain lower-case letters (a-z), numbers (0-9), and hyphens (-). The maximum length is 63 characters.",
@@ -11464,7 +11693,7 @@
       "type": "object"
     },
     "PolicyResponse": {
-      "description": "An individual response to a policy question about an app.",
+      "description": "An individual response (answer) to a policy question about an app.",
       "id": "PolicyResponse",
       "properties": {
         "booleanResponse": {
@@ -12640,6 +12869,64 @@
       "description": "Response for the purchases.subscriptionsv2.revoke API.",
       "id": "RevokeSubscriptionPurchaseResponse",
       "properties": {},
+      "type": "object"
+    },
+    "RotateAppSigningKeyRequest": {
+      "description": "Request to rotate an app's signing key.",
+      "id": "RotateAppSigningKeyRequest",
+      "properties": {
+        "keyRotationReason": {
+          "description": "Required. Reason for rotating the app key.",
+          "enum": [
+            "KEY_ROTATION_REASON_UNSPECIFIED",
+            "COMPROMISED_KEY",
+            "USE_STRONGER_KEY",
+            "USE_SAME_KEY_FOR_MULTIPLE_APPS",
+            "ROUTINE_KEY_UPGRADE",
+            "OTHER"
+          ],
+          "enumDescriptions": [
+            "Unspecified key rotation reason. Cannot be used.",
+            "Key is compromised.",
+            "Stronger key is required.",
+            "Same key is used for multiple apps.",
+            "Routine key upgrade.",
+            "Other reason."
+          ],
+          "type": "string"
+        },
+        "rotatedCloudKmsKey": {
+          "$ref": "RotatedCloudKmsKey",
+          "description": "Required. Self-hosted Cloud KMS key."
+        }
+      },
+      "type": "object"
+    },
+    "RotateAppSigningKeyResponse": {
+      "description": "Response to rotate an app's signing key.",
+      "id": "RotateAppSigningKeyResponse",
+      "properties": {
+        "rotatedKeyCertificate": {
+          "$ref": "CertificateHashes",
+          "description": "The rotated key certificate hashes for the app. Always set."
+        }
+      },
+      "type": "object"
+    },
+    "RotatedCloudKmsKey": {
+      "description": "Message representing rotated Cloud KMS key. Consists of the Cloud KMS key and its associated proof of rotation.",
+      "id": "RotatedCloudKmsKey",
+      "properties": {
+        "cloudKmsKeyAndCert": {
+          "$ref": "CloudKmsKeyAndCert",
+          "description": "Required. Cloud KMS key and the certificate associated with the key."
+        },
+        "signingCertificateLineage": {
+          "description": "Required. Proof-of-rotation. See [creating signing certificate lineages](https://developer.android.com/studio/command-line/apksigner#rotate_signing_keys_2).",
+          "format": "byte",
+          "type": "string"
+        }
+      },
       "type": "object"
     },
     "SafetyLabelsUpdateRequest": {
@@ -14296,7 +14583,7 @@
               false,
               false,
               false,
-              false,
+              true,
               false,
               false,
               false,
@@ -14319,7 +14606,7 @@
               "Manage store presence.",
               "Create, edit, and delete draft apps.",
               "Create and publish private apps to your organization.",
-              "Choose whether apps are public, or only available to your organization.",
+              "Deprecated: This permission is no longer supported. Choose whether apps are public, or only available to your organization.",
               "Manage orders and subscriptions.",
               "Manage policy related pages on all apps for the developer.",
               "View app information and download bulk reports (read-only).",
